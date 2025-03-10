@@ -1,0 +1,33 @@
+Memory & Variables
+Text Data
+Numerical Data
+Working with Variables
+Debugging
+Standards and Best Practices
+Applying Best Practices
+Inputs and Outputs
+Data Types
+Data Type Checking
+Data Conversion
+Fixing Data Types
+Comparison Operations (NO CONDITIONALS)
+Logical Operations (NO CONDITIONALS)
+Combining Comparison and Logical Operations (NO CONDITIONALS)
+Control Flow
+For Loops
+While Loops
+More on Iteration
+Conditional Statements
+More on Conditional Statements
+Lists
+Indexing
+Using Indexing
+Slicing
+Using Slicing
+Advanced Slicing and Indexing
+Functions
+Function Arguments
+String Functions
+List Functions
+Custom Functions
+More on Custom Functions

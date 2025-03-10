@@ -1,0 +1,102 @@
+/* Overall reset/typography */
+body, html {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    font-family: Arial, sans-serif;
+  }
+  
+  /* Main container: two columns (Markdown | Code) */
+  .container {
+    display: flex;
+    height: 100vh;
+  }
+  
+  /* Left column: Markdown area */
+  .markdown {
+    flex: 1;
+    padding: 20px;
+    overflow-y: auto;
+    border-right: 1px solid #ccc;
+  }
+  
+  /* Right column: Code environment (split top/bottom) */
+  .code-env {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    padding: 20px;
+    overflow-y: hidden;
+  }
+  
+  /* Editor container (top) */
+  .editor-container {
+    flex: 2; /* 2/3 or so of the right column */
+    margin-bottom: 10px;
+    border: 1px solid #ccc;
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .editor-header {
+    padding: 5px;
+    background-color: #f0f0f0;
+    border-bottom: 1px solid #ccc;
+  }
+  
+  /* CodeMirror text area */
+  .editor-container textarea {
+    flex: 1;
+    width: 100%;
+    resize: none;
+    font-family: monospace;
+    font-size: 14px;
+    padding: 10px;
+    box-sizing: border-box;
+    border: none;
+  }
+  
+  /* Bottom container (split between input box or console) */
+  .bottom-container {
+    flex: 1; /* 1/3 of the right column */
+    display: flex;
+    flex-direction: column;
+    border: 1px solid #ccc;
+    overflow: hidden;
+  }
+  
+  /* The input container */
+  .input-container {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    padding: 10px;
+    box-sizing: border-box;
+    overflow-y: auto;
+    background-color: #f7f7f7;
+  }
+  
+  .input-container textarea {
+    flex: 1;
+    width: 100%; /* Ensure full width */
+    height: 120px; /* Adjust to your preferred size */
+    resize: vertical; /* Allow vertical resizing but not horizontal */
+    font-family: monospace; /* Keep it consistent */
+    font-size: 14px;
+    padding: 10px;
+    box-sizing: border-box;
+  }
+  
+  /* The console container (hidden by default) */
+  .console-container {
+    flex: 1;
+    padding: 10px;
+    box-sizing: border-box;
+    overflow-y: auto;
+    background-color: #fafafa;
+    font-family: monospace; /* Enforce monospace font */
+    font-size: 14px;
+    white-space: pre-wrap; /* Ensures proper formatting */
+    border: 1px solid #ccc;
+  }
+  

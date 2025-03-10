@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Markdown & Code Editor</title>
+
+  <!-- Correct path for CSS -->
+  <link rel="stylesheet" href="/static/style.css" />
+
+  <!-- CodeMirror (for code editor) -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/codemirror.min.css" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/codemirror.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/python/python.min.js"></script>
+
+  <!-- Marked.js for Markdown rendering -->
+  <script src="https://cdn.jsdelivr.net/npm/marked@5.0.2/marked.min.js"></script>
+</head>
+<body>
+  <div class="container">
+    <!-- Left Side: Problem Generator -->
+    <div class="markdown">
+      <h1 id="title">Problem Generator</h1> <!-- Title updates dynamically -->
+
+      <!-- Course Selection -->
+      <label for="course-select"><strong>Course:</strong></label>
+      <br>
+      <select id="course-select">
+        <option value="Sololearn Introduction to Python">Sololearn Introduction to Python</option>
+      </select>
+
+      <br><br> <!-- Line Break to Separate Fields -->
+
+      <!-- Lesson Input -->
+      <label for="lesson-input"><strong>Current Lesson:</strong></label>
+      <br>
+      <input type="text" id="lesson-input" placeholder="Enter your lesson...">
+
+      <br><br>
+
+      <!-- Generate Button -->
+      <button id="generate-btn">Generate Problem</button>
+
+      <div id="result">
+        <p>Your generated problem will appear here.</p>
+      </div>
+      
+      <button id="check-answer-btn" style="display: none;">Check Answer</button>
+      <button id="retry-btn" style="display: none;">Retry</button> <!-- Changed from "Regenerate" -->
+
+      <!-- 🚀 Added this missing div for results -->
+      <div id="results"></div>
+    </div>
+
+    <!-- Right Side: Code Environment -->
+    <div class="code-env">
+      <div class="editor-container">
+        <div class="editor-header">
+          <button id="run-btn">Run Code</button>
+          <button id="reset-btn" style="display: none;">Reset</button>
+        </div>
+        <textarea id="code-editor"></textarea>
+      </div>
+
+      <div class="bottom-container">
+        <div class="input-container" id="input-container">
+          <h4>Enter Program Input:</h4>
+          <textarea id="input-editor" placeholder="Line-by-line input for your code..."></textarea>
+        </div>
+        <div class="console-container" id="console" style="display: none;"></div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // --- DOM elements ---
+    const generateBtn    = document.getElementById("generate-btn");
+    const checkAnswerBtn = document.getElementById("check-answer-btn");
+    const retryBtn       = document.getElementById("retry-btn"); // Previously "Regenerate"
+    const resultDiv      = document.getElementById("result");
+    const titleHeader    = document.getElementById("title"); // Title updates dynamically
+    const resultsDiv     = document.getElementById("results"); // 🚀 Added reference to results div
+
+    const runBtn         = document.getElementById("run-btn");
+    const resetBtn       = document.getElementById("reset-btn");
+    const consoleDiv     = document.getElementById("console");
+    const inputContainer = document.getElementById("input-container");
+    const inputEditor    = document.getElementById("input-editor");
+
+    // Initialize CodeMirror for the top code editor
+    const codeEditor = CodeMirror.fromTextArea(document.getElementById("code-editor"), {
+      mode: "python",
+      lineNumbers: true,
+      indentUnit: 4,
+      theme: "default"
+    });
+
+    // Handle Generate Problem
+    generateBtn.addEventListener("click", () => {
+      const course = document.getElementById("course-select").value;
+      const lesson = document.getElementById("lesson-input").value;
+
+      if (!lesson.trim()) {
+        alert("Please enter the lesson you're currently learning.");
+        return;
+      }
+
+      generateBtn.style.display = "none";
+      resultDiv.textContent = "Generating...";
+
+      fetch("/generate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ course, lesson })
+      })
+      .then(res => res.json())
+      .then(data => {
+        const title = data?.data?.outputs?.Title || "Generated Problem";
+        const problemMarkdown = data?.data?.outputs?.Problem || "No problem found.";
+        const testcases = data?.data?.outputs?.Testcases || ""; // Extract test cases directly
+
+        titleHeader.textContent = title;
+        resultDiv.innerHTML = marked.parse(problemMarkdown);
+        
+        // Store test cases globally so they can be accessed later
+        window.testcases = testcases; 
+
+        checkAnswerBtn.style.display = "inline-block";
+        retryBtn.style.display = "inline-block";
+      })
+      .catch(err => {
+        console.error(err);
+        resultDiv.textContent = "Error generating problem.";
+      });
+    });
+
+    // Handle Retry - Goes back to input stage
+    retryBtn.addEventListener("click", () => {
+      checkAnswerBtn.style.display = "none";
+      retryBtn.style.display = "none";
+      resultsDiv.innerHTML = "";  // 🚀 Clear test case results
+
+      // Reset UI elements back to input stage
+      titleHeader.textContent = "Problem Generator"; // Reset title
+      resultDiv.innerHTML = `<p>Your generated problem will appear here.</p>`;
+      generateBtn.style.display = "inline-block";
+    });
+
+    // Run Code logic
+    runBtn.addEventListener("click", () => {
+      const code = codeEditor.getValue();
+      const userInput = inputEditor.value;
+
+      inputContainer.style.display = "none";
+      consoleDiv.style.display = "block";
+      consoleDiv.textContent = "Running code...";
+      resetBtn.style.display = "inline-block";
+
+      fetch("/run_code", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ code, stdin: userInput })
+      })
+      .then(res => res.json())
+      .then(data => {
+        let output = "";
+        if (data.stdout) output += data.stdout + "\n";
+        if (data.stderr) output += "Errors:\n" + data.stderr + "\n";
+        if (!data.stdout && !data.stderr) output = "No output.";
+        consoleDiv.textContent = output;
+      })
+      .catch(err => {
+        console.error("Error:", err);
+        consoleDiv.textContent = "Error running code.";
+      });
+    });
+
+    // Reset logic
+    resetBtn.addEventListener("click", () => {
+      consoleDiv.style.display = "none";
+      inputContainer.style.display = "block";
+      resetBtn.style.display = "none";
+
+      consoleDiv.textContent = "";
+    });
+
+    // Handle Checking Answers
+    document.getElementById("check-answer-btn").addEventListener("click", () => {
+      const code = codeEditor.getValue();
+      if (!code.trim()) {
+        alert("Please enter code before checking.");
+        return;
+      }
+
+      const testcases = window.testcases;
+      if (!testcases) {
+        alert("No test cases found.");
+        return;
+      }
+
+      fetch("/check_code", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ code, testcases })
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (data.error) {
+          resultsDiv.innerHTML = `<p style="color: red;">Error: ${data.error}</p>`;
+          return;
+        }
+
+        let tableHTML = `<h2>Test Case Results</h2><table border="1">
+                        <tr><th>Input</th><th>Expected Output</th><th>Your Output</th><th>Status</th></tr>`;
+        data.results.forEach(tc => {
+          tableHTML += `<tr>
+                          <td><pre>${tc.input}</pre></td>
+                          <td><pre>${tc.expected_output}</pre></td>
+                          <td><pre>${tc.user_output}</pre></td>
+                          <td style="color: ${tc.status === '✅' ? 'green' : 'red'}">${tc.status}</td>
+                        </tr>`;
+          if (tc.error) {
+            tableHTML += `<tr><td colspan="4"><button onclick="this.nextElementSibling.style.display='block'">Show Error</button>
+                          <pre style="display:none; color: red;">${tc.error}</pre></td></tr>`;
+          }
+        });
+        tableHTML += "</table>";
+
+        resultsDiv.innerHTML = tableHTML;  // 🚀 Now results are stored correctly
+      })
+      .catch(err => {
+        console.error(err);
+        resultsDiv.innerHTML = `<p style="color: red;">Error checking answer.</p>`;
+      });
+    });
+  </script>
+</body>
+</html>
