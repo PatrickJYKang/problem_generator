@@ -1,8 +1,6 @@
 appdirs==1.4.4
 atomicwrites==1.4.0
 backports.weakref==1.0.post1
-conda-repo-cli==1.0.75
-conda-verify==3.4.2
 et-xmlfile==1.1.0
 fonttools==4.25.0
 inflection==0.5.1
@@ -14,7 +12,6 @@ ply==3.11
 protobuf==3.20.3
 pyasn1-modules==0.2.8
 PyDispatcher==2.0.5
-pyls-spyder==0.4.0
 PyQt5==5.15.10
 PyQtWebEngine==5.15.6
 python-lsp-jsonrpc==1.0.0
