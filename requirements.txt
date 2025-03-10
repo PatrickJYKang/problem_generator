@@ -1,7 +1,7 @@
 appdirs==1.4.4
 atomicwrites==1.4.0
 backports.weakref==1.0.post1
-clyent==1.2.2
+clyent==1.2.1
 conda-repo-cli==1.0.75
 conda-verify==3.4.2
 et-xmlfile==1.1.0
