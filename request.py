@@ -13,7 +13,7 @@ API_KEY = os.getenv("API_KEY")
 if not API_KEY:
     raise ValueError("Missing API_KEY. Set it in the .env file.")
 
-BASE_URL = "https://api.dify.ai/v1"
+BASE_URL = "http://47.251.117.165/v1"
 
 def upload_file(file_path, user):
     """ Uploads a file to the API and returns the file ID. """
@@ -62,7 +62,7 @@ if __name__ == "__main__":
 
     course = sys.argv[1]
     lesson = sys.argv[2]
-    user = "difyuser123"
+    user = "testuser"
     file_path = "sololearn_intro_python.txt"
 
     file_id = upload_file(file_path, user)

@@ -44,9 +44,18 @@ body, html {
     border-bottom: 1px solid #ccc;
   }
   
+  /* Style the CodeMirror editor element itself */
+  .CodeMirror {
+    flex: 1; /* Allow it to grow and fill the vertical space */
+    height: 100%; /* Ensure it tries to take full height */
+    border: none; /* Optional: remove CodeMirror's default border */
+    font-size: 14px; /* Match textarea font-size */
+  }
+  
   /* CodeMirror text area */
   .editor-container textarea {
     flex: 1;
+    height: 100%; /* Ensure it fills the container */
     width: 100%;
     resize: none;
     font-family: monospace;
@@ -99,4 +108,3 @@ body, html {
     white-space: pre-wrap; /* Ensures proper formatting */
     border: 1px solid #ccc;
   }
-  
