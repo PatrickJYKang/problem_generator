@@ -22,7 +22,7 @@ A web application that dynamically generates coding problems based on your curre
 
 - **Frontend**: HTML, CSS, JavaScript with CodeMirror for the code editor
 - **Backend**: Flask (Python) for serving content and handling API requests
-- **Problem Generation**: Uses an external API to generate problems based on the syllabus
+- **Problem Generation**: Uses OpenAI models in Dify to generate problems based on the syllabus
 
 ## Attribution
 
