@@ -31,10 +31,13 @@
 
       <br><br> <!-- Line Break to Separate Fields -->
 
-      <!-- Lesson Input -->
-      <label for="lesson-input"><strong>Current Lesson:</strong></label>
+      <!-- Lesson Input (now a dropdown) -->
+      <label for="lesson-select"><strong>Current Lesson:</strong></label>
       <br>
-      <input type="text" id="lesson-input" placeholder="Enter your lesson...">
+      <select id="lesson-select">
+        <option value="" disabled selected>Select your current lesson...</option>
+        <!-- Lessons will be populated via JavaScript -->
+      </select>
 
       <br><br>
 
@@ -56,6 +59,9 @@
     <div class="code-env">
       <div class="editor-container">
         <div class="editor-header">
+          <select id="language-select">
+            <option value="python">Python</option>
+          </select>
           <button id="run-btn">Run Code</button>
           <button id="reset-btn" style="display: none;">Reset</button>
         </div>
@@ -80,12 +86,59 @@
     const resultDiv      = document.getElementById("result");
     const titleHeader    = document.getElementById("title"); // Title updates dynamically
     const resultsDiv     = document.getElementById("results"); // 🚀 Added reference to results div
+    const courseSelect   = document.getElementById("course-select");
+    const lessonSelect   = document.getElementById("lesson-select");
 
     const runBtn         = document.getElementById("run-btn");
     const resetBtn       = document.getElementById("reset-btn");
     const consoleDiv     = document.getElementById("console");
     const inputContainer = document.getElementById("input-container");
     const inputEditor    = document.getElementById("input-editor");
+    
+    // --- Populate lesson dropdown ---
+    // Fetch the index.json file to get the lessons
+    fetch("/syllabi/python/index.json")
+      .then(response => {
+        if (!response.ok) {
+          throw new Error("Failed to fetch lessons");
+        }
+        return response.json();
+      })
+      .then(data => {
+        // Clear any existing options except the placeholder
+        while (lessonSelect.options.length > 1) {
+          lessonSelect.remove(1);
+        }
+        
+        // Add optgroups for each category
+        const categories = ["basics", "advanced"];
+        
+        categories.forEach(category => {
+          if (data[category]) {
+            // Create an optgroup for this category
+            const group = document.createElement("optgroup");
+            group.label = category.charAt(0).toUpperCase() + category.slice(1); // Capitalize
+            
+            // Add all lessons in this category
+            Object.keys(data[category]).forEach(lesson => {
+              const option = document.createElement("option");
+              option.value = lesson;
+              option.textContent = lesson;
+              group.appendChild(option);
+            });
+            
+            lessonSelect.appendChild(group);
+          }
+        });
+      })
+      .catch(error => {
+        console.error("Error loading lessons:", error);
+        // Add a fallback option
+        const option = document.createElement("option");
+        option.value = "Variables and Types";
+        option.textContent = "Variables and Types (fallback)";
+        lessonSelect.appendChild(option);
+      });
 
     // Initialize CodeMirror for the top code editor
     const codeEditor = CodeMirror.fromTextArea(document.getElementById("code-editor"), {
@@ -97,11 +150,11 @@
 
     // Handle Generate Problem
     generateBtn.addEventListener("click", () => {
-      const course = document.getElementById("course-select").value;
-      const lesson = document.getElementById("lesson-input").value;
+      const course = courseSelect.value;
+      const lesson = lessonSelect.value;
 
-      if (!lesson.trim()) {
-        alert("Please enter the lesson you're currently learning.");
+      if (!lesson) {
+        alert("Please select the lesson you're currently learning.");
         return;
       }
 
@@ -151,8 +204,16 @@
       const code = codeEditor.getValue();
       const userInput = inputEditor.value;
 
+      // Save the current height of the input container before hiding it
+      const currentHeight = inputContainer.offsetHeight;
+      
       inputContainer.style.display = "none";
       consoleDiv.style.display = "block";
+      // Apply the same height to the console
+      if (currentHeight > 0) {
+        consoleDiv.style.minHeight = `${currentHeight}px`;
+      }
+      
       consoleDiv.textContent = "Running code...";
       resetBtn.style.display = "inline-block";
 
@@ -177,10 +238,17 @@
 
     // Reset logic
     resetBtn.addEventListener("click", () => {
+      // Save the current height of the console before hiding it
+      const currentHeight = consoleDiv.offsetHeight;
+      
       consoleDiv.style.display = "none";
       inputContainer.style.display = "block";
+      // Set a reasonable height for the input container
+      // Use a more moderate height instead of copying the console height
+      inputContainer.style.minHeight = "150px";
+      inputEditor.style.height = "120px";
+      
       resetBtn.style.display = "none";
-
       consoleDiv.textContent = "";
     });
 

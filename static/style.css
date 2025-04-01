@@ -42,6 +42,18 @@ body, html {
     padding: 5px;
     background-color: #f0f0f0;
     border-bottom: 1px solid #ccc;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  
+  /* Style the language selector */
+  #language-select {
+    padding: 4px 8px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    background-color: white;
+    font-size: 14px;
   }
   
   /* Style the CodeMirror editor element itself */
@@ -83,6 +95,7 @@ body, html {
     box-sizing: border-box;
     overflow-y: auto;
     background-color: #f7f7f7;
+    min-height: 150px; /* Ensure minimum height */
   }
   
   .input-container textarea {
@@ -107,4 +120,5 @@ body, html {
     font-size: 14px;
     white-space: pre-wrap; /* Ensures proper formatting */
     border: 1px solid #ccc;
+    min-height: 150px; /* Match input container minimum height */
   }

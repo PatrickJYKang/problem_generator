@@ -1,12 +1,19 @@
 from flask import Flask, request, jsonify, send_from_directory
 import subprocess
 import json
+import os
 
 app = Flask(__name__, static_folder='static')
 
 @app.route('/')
 def serve_index():
     return send_from_directory(app.static_folder, 'index.html')
+
+@app.route('/syllabi/<path:filename>')
+def serve_syllabi(filename):
+    """ Serves files from the syllabi directory """
+    syllabi_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'syllabi')
+    return send_from_directory(syllabi_dir, filename)
 
 @app.route('/generate', methods=['POST'])
 def generate():
