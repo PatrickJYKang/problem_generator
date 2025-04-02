@@ -1,68 +1,109 @@
 import os
 import sqlite3
 import json
+import logging
+import traceback
 from datetime import datetime
+
+# Set up logging
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+logger = logging.getLogger(__name__)
 
 # Database configuration
 DB_DIRECTORY = '/var/lib/problem_generator/'
 DB_PATH = os.path.join(DB_DIRECTORY, 'problem_generator.db')
 
-# Ensure the database directory exists
-os.makedirs(DB_DIRECTORY, exist_ok=True)
+try:
+    # Ensure the database directory exists
+    os.makedirs(DB_DIRECTORY, exist_ok=True)
+    logger.info(f"Database directory confirmed: {DB_DIRECTORY}")
+    
+    # Verify we can write to the directory
+    test_file_path = os.path.join(DB_DIRECTORY, 'test_write.tmp')
+    with open(test_file_path, 'w') as f:
+        f.write('test')
+    os.remove(test_file_path)
+    logger.info("Successfully verified write permissions to database directory")
+except Exception as e:
+    logger.error(f"Error setting up database directory: {str(e)}")
+    logger.error(traceback.format_exc())
+    
+    # Fall back to a directory we know should work
+    fallback_dir = os.path.dirname(os.path.abspath(__file__))
+    DB_DIRECTORY = os.path.join(fallback_dir, 'data')
+    DB_PATH = os.path.join(DB_DIRECTORY, 'problem_generator.db')
+    
+    logger.warning(f"Falling back to alternative database location: {DB_DIRECTORY}")
+    os.makedirs(DB_DIRECTORY, exist_ok=True)
 
 def get_db_connection():
     """Create a connection to the SQLite database."""
-    conn = sqlite3.connect(DB_PATH)
-    conn.row_factory = sqlite3.Row  # Returns rows as dictionaries
-    return conn
+    try:
+        logger.info(f"Connecting to database at {DB_PATH}")
+        conn = sqlite3.connect(DB_PATH)
+        conn.row_factory = sqlite3.Row  # Returns rows as dictionaries
+        return conn
+    except Exception as e:
+        logger.error(f"Database connection error: {str(e)}")
+        logger.error(traceback.format_exc())
+        raise
 
 def init_db():
     """Initialize the database with the required schema."""
-    conn = get_db_connection()
-    cursor = conn.cursor()
+    try:
+        logger.info("Initializing database...")
+        conn = get_db_connection()
+        cursor = conn.cursor()
 
-    # Create problems table
-    cursor.execute('''
-    CREATE TABLE IF NOT EXISTS problems (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        title TEXT NOT NULL,
-        problem_text TEXT NOT NULL,
-        course TEXT NOT NULL,
-        lesson TEXT NOT NULL,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-    )
-    ''')
+        # Create problems table
+        cursor.execute('''
+        CREATE TABLE IF NOT EXISTS problems (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            title TEXT NOT NULL,
+            problem_text TEXT NOT NULL,
+            course TEXT NOT NULL,
+            lesson TEXT NOT NULL,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+        ''')
 
-    # Create testcases table
-    cursor.execute('''
-    CREATE TABLE IF NOT EXISTS testcases (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        problem_id INTEGER NOT NULL,
-        input TEXT,
-        expected_output TEXT NOT NULL,
-        FOREIGN KEY (problem_id) REFERENCES problems(id) ON DELETE CASCADE
-    )
-    ''')
+        # Create testcases table
+        cursor.execute('''
+        CREATE TABLE IF NOT EXISTS testcases (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            problem_id INTEGER NOT NULL,
+            input TEXT,
+            expected_output TEXT NOT NULL,
+            FOREIGN KEY (problem_id) REFERENCES problems(id) ON DELETE CASCADE
+        )
+        ''')
 
-    # Create solutions table
-    cursor.execute('''
-    CREATE TABLE IF NOT EXISTS solutions (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        problem_id INTEGER NOT NULL,
-        language TEXT NOT NULL,
-        code TEXT NOT NULL,
-        passed_testcases INTEGER NOT NULL,
-        total_testcases INTEGER NOT NULL,
-        submitted_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        FOREIGN KEY (problem_id) REFERENCES problems(id)
-    )
-    ''')
+        # Create solutions table
+        cursor.execute('''
+        CREATE TABLE IF NOT EXISTS solutions (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            problem_id INTEGER NOT NULL,
+            language TEXT NOT NULL,
+            code TEXT NOT NULL,
+            passed_testcases INTEGER NOT NULL,
+            total_testcases INTEGER NOT NULL,
+            submitted_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (problem_id) REFERENCES problems(id)
+        )
+        ''')
 
-    # Enable foreign keys
-    cursor.execute('PRAGMA foreign_keys = ON')
-
-    conn.commit()
-    conn.close()
+        # Enable foreign keys
+        cursor.execute('PRAGMA foreign_keys = ON')
+        
+        conn.commit()
+        logger.info("Database schema created successfully")
+    except Exception as e:
+        logger.error(f"Error initializing database: {str(e)}")
+        logger.error(traceback.format_exc())
+        raise
+    finally:
+        if 'conn' in locals():
+            conn.close()
 
 def store_problem(title, problem_text, course, lesson, testcases):
     """
@@ -78,27 +119,52 @@ def store_problem(title, problem_text, course, lesson, testcases):
     Returns:
         int: ID of the inserted problem
     """
-    conn = get_db_connection()
-    cursor = conn.cursor()
+    logger.info(f"Storing problem: '{title}' for course '{course}', lesson '{lesson}'")
+    logger.info(f"Problem text length: {len(problem_text)} chars")
+    logger.info(f"Testcases: {len(testcases)} cases")
     
-    # Insert the problem
-    cursor.execute(
-        'INSERT INTO problems (title, problem_text, course, lesson) VALUES (?, ?, ?, ?)',
-        (title, problem_text, course, lesson)
-    )
-    problem_id = cursor.lastrowid
-    
-    # Insert each testcase
-    for tc in testcases:
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        
+        # Insert the problem
         cursor.execute(
-            'INSERT INTO testcases (problem_id, input, expected_output) VALUES (?, ?, ?)',
-            (problem_id, tc.get('input', ''), tc['expected_output'])
+            'INSERT INTO problems (title, problem_text, course, lesson) VALUES (?, ?, ?, ?)',
+            (title, problem_text, course, lesson)
         )
-    
-    conn.commit()
-    conn.close()
-    
-    return problem_id
+        problem_id = cursor.lastrowid
+        logger.info(f"Inserted problem with ID: {problem_id}")
+        
+        # Insert each testcase
+        for i, tc in enumerate(testcases):
+            try:
+                input_val = tc.get('input', '')
+                output_val = tc.get('expected_output', '')
+                
+                if not output_val and 'output' in tc:  # Handle alternate field name
+                    output_val = tc.get('output', '')
+                
+                if not output_val:
+                    logger.warning(f"Testcase {i} missing expected_output, data: {tc}")
+                    continue
+                
+                cursor.execute(
+                    'INSERT INTO testcases (problem_id, input, expected_output) VALUES (?, ?, ?)',
+                    (problem_id, input_val, output_val)
+                )
+                logger.debug(f"Inserted testcase {i} for problem {problem_id}")
+            except Exception as e:
+                logger.error(f"Error inserting testcase {i}: {str(e)}")
+                # Continue with other testcases
+        
+        conn.commit()
+        conn.close()
+        logger.info(f"Successfully stored problem ID {problem_id} with {len(testcases)} testcases")
+        return problem_id
+    except Exception as e:
+        logger.error(f"Error storing problem: {str(e)}")
+        logger.error(traceback.format_exc())
+        return None
 
 def store_solution(problem_id, language, code, passed_testcases, total_testcases):
     """
