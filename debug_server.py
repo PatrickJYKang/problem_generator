@@ -26,17 +26,39 @@ def check_environment():
             content = f.read()
             if 'API_KEY' in content:
                 print("API_KEY found in .env file")
+                # Try to extract API key format
+                import re
+                api_key_line = re.search(r'API_KEY\s*=\s*[^\n]*', content)
+                if api_key_line:
+                    sanitized = re.sub(r'API_KEY\s*=\s*([^\n]{1,5}).*([^\n]{1,5})', r'API_KEY=\1...\2', api_key_line.group(0))
+                    print(f"API_KEY format: {sanitized}")
             else:
                 print("WARNING: API_KEY not found in .env file")
     else:
         print(f"WARNING: .env file not found at {env_file}")
     
+    # Try loading with dotenv explicitly
+    try:
+        from dotenv import load_dotenv
+        print("Testing dotenv loading directly...")
+        load_dotenv(env_file)
+        print("dotenv.load_dotenv() called successfully")
+    except Exception as e:
+        print(f"Error loading dotenv: {str(e)}")
+    
     # Check API key in environment
     api_key = os.environ.get('API_KEY')
     if api_key:
         print("API_KEY found in environment variables")
+        print(f"API_KEY length: {len(api_key)} characters")
     else:
         print("WARNING: API_KEY not found in environment variables")
+        
+    # Print all environment variables (safe ones only)
+    print("\nEnvironment variables (partial list):")
+    safe_vars = ['PATH', 'PYTHONPATH', 'HOME', 'USER', 'SHELL', 'PWD', 'LANG']
+    for var in safe_vars:
+        print(f"  {var}: {os.environ.get(var, 'Not set')}")
 
 def check_dependencies():
     """Check required dependencies"""
