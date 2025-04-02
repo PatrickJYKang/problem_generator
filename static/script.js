@@ -104,19 +104,15 @@ function openHistoryModal() {
   // Show the modal
   historyModal.style.display = "flex";
   
-  // Get the current course and lesson
-  const course = courseSelect.value;
-  const lesson = lessonSelect.value;
-  
-  // Fetch problems for this course and lesson
-  fetch(`/problems?course=${encodeURIComponent(course)}&lesson=${encodeURIComponent(lesson)}`)
+  // Fetch all problems (not filtered by course/lesson)
+  fetch(`/problems`)
     .then(res => res.json())
     .then(data => {
       const problems = data.problems || [];
       
       // Update the modal with problems
       if (problems.length === 0) {
-        historyList.innerHTML = "<p>No problems found for this lesson.</p>";
+        historyList.innerHTML = "<p>No problems found.</p>";
         return;
       }
       
@@ -131,7 +127,10 @@ function openHistoryModal() {
         problemItem.className = "problem-item";
         problemItem.innerHTML = `
           <div class="problem-title">${problem.title}</div>
-          <div class="problem-meta">Created: ${formattedDate}</div>
+          <div class="problem-meta">
+            ${problem.course} / ${problem.lesson} <br>
+            Created: ${formattedDate}
+          </div>
         `;
         
         // Add click handler to load the problem
@@ -172,9 +171,12 @@ function loadProblem(problemId) {
       titleHeader.textContent = problem.title;
       resultDiv.innerHTML = marked.parse(problem.problem_text);
       
-      // Store problem ID and testcases
+      // Store problem ID, but don't show testcases for old problems
       currentProblemId = problem.id;
-      window.testcases = problem.testcases;
+      
+      // For historical problems, we don't show testcases to avoid confusion 
+      // since older problems might have different testcase formats
+      window.testcases = []; // Clear any existing testcases
       
       // Show check answer and retry buttons
       checkAnswerBtn.style.display = "inline-block";
@@ -188,27 +190,18 @@ function loadProblem(problemId) {
 }
 
 function checkForProblems() {
-  // Check if we have any problems in the database for the current lesson
-  const course = courseSelect.value;
-  const lesson = lessonSelect.value;
+  // Check if we have any problems in the database at all
+  if (!historyBtn) return;
   
-  // Only proceed if we have a valid lesson selected
-  if (!lesson) {
-    if (historyBtn) historyBtn.disabled = true;
-    return;
-  }
-  
-  fetch(`/problems?course=${encodeURIComponent(course)}&lesson=${encodeURIComponent(lesson)}`)
+  fetch(`/problems?limit=1`)
     .then(res => res.json())
     .then(data => {
       const problems = data.problems || [];
-      if (historyBtn) {
-        historyBtn.disabled = problems.length === 0;
-      }
+      historyBtn.disabled = problems.length === 0;
     })
     .catch(err => {
       console.error("Error checking for problems:", err);
-      if (historyBtn) historyBtn.disabled = true;
+      historyBtn.disabled = true;
     });
 }
 

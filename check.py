@@ -92,4 +92,13 @@ def check_code(code, testcases, language):
                 "error": str(e)
             })
     
-    return jsonify({"results": results})
+    # Count passed testcases
+    passed_count = sum(1 for r in results if r.get("status") == "✅")
+    total_count = len(results)
+    
+    return jsonify({
+        "results": results,
+        "passed": passed_count,
+        "total": total_count,
+        "success_rate": f"{passed_count}/{total_count}"
+    })
