@@ -26,7 +26,7 @@ def generate():
 
     try:
         print("Running request.py subprocess...")
-        result = subprocess.run(["python", "request.py", course, lesson], capture_output=True, text=True)
+        result = subprocess.run(["python3", "request.py", course, lesson], capture_output=True, text=True)
         
         print(f"Subprocess completed with return code: {result.returncode}")
         
