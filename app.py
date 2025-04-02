@@ -188,16 +188,20 @@ def check_code_endpoint():
     
     return result
 @app.route("/problems", methods=["GET"])
-def get_problems():
-    """ Get problems for a specific course and lesson """
-    course = request.args.get("course", "Learnpython.org")
-    lesson = request.args.get("lesson", "")
-    
-    if not lesson:
-        return jsonify({"error": "Lesson is required."}), 400
+def get_problems_endpoint():
+    """ Get all problems or filter by course/lesson """
+    course = request.args.get("course", None)
+    lesson = request.args.get("lesson", None)
     
     try:
-        problems = db.get_problems_by_lesson(course, lesson)
+        # If course and lesson are provided, filter by them
+        if course and lesson:
+            problems = db.get_problems_by_lesson(course, lesson)
+        else:
+            # Otherwise get all problems
+            limit = request.args.get("limit", 50, type=int)
+            problems = db.get_problems(limit)
+            
         return jsonify({"problems": problems})
     except Exception as e:
         print(f"Error retrieving problems: {str(e)}")

@@ -226,6 +226,28 @@ def get_problem_by_id(problem_id):
     conn.close()
     return problem_dict
 
+def get_problems(limit=50):
+    """
+    Get all problems across all courses and lessons, with optional limit.
+    
+    Args:
+        limit (int): Maximum number of problems to return (default: 50)
+        
+    Returns:
+        list: List of problem dictionaries (without testcases)
+    """
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    
+    cursor.execute(
+        'SELECT id, title, course, lesson, created_at FROM problems ORDER BY created_at DESC LIMIT ?',
+        (limit,)
+    )
+    problems = [dict(p) for p in cursor.fetchall()]
+    
+    conn.close()
+    return problems
+
 def get_problems_by_lesson(course, lesson):
     """
     Get all problems for a specific course and lesson.
