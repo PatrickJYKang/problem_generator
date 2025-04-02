@@ -4,6 +4,7 @@ Debug script to help identify server issues
 Run this on your server to check for common problems
 """
 
+from dotenv import load_dotenv
 import os
 import sys
 import json
@@ -31,12 +32,13 @@ def check_environment():
     else:
         print(f"WARNING: .env file not found at {env_file}")
     
-    # Check API key in environment
-    api_key = os.environ.get('API_KEY')
+    # Load .env file and check API key
+    load_dotenv()
+    api_key = os.getenv('API_KEY')
     if api_key:
-        print("API_KEY found in environment variables")
+        print("API_KEY successfully loaded with load_dotenv() and os.getenv()")
     else:
-        print("WARNING: API_KEY not found in environment variables")
+        print("WARNING: API_KEY not found after load_dotenv() and os.getenv()")
 
 def check_dependencies():
     """Check required dependencies"""
@@ -90,13 +92,17 @@ def check_api_connection():
     """Check connection to the external API"""
     print("\n=== CHECKING API CONNECTION ===")
     
-    # Try to import request.py to get the BASE_URL
+    # Load from dotenv instead of importing from request
     try:
         sys.path.append(os.path.dirname(os.path.abspath(__file__)))
-        from request import BASE_URL, API_KEY
+        from request import BASE_URL
+        
+        # Ensure .env is loaded
+        load_dotenv()
+        API_KEY = os.getenv("API_KEY")
         
         if not API_KEY:
-            print("ERROR: API_KEY is not set")
+            print("ERROR: API_KEY is not set after load_dotenv() and os.getenv()")
             return
             
         # Try a simple API request
