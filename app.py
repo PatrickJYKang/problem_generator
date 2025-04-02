@@ -31,22 +31,21 @@ def generate():
 
     try:
         print("Running request.py subprocess...")
-        # Try multiple Python commands to work on both Linux (python3) and other systems (python)
-        python_commands = ["python3", "python", "/usr/bin/python3", sys.executable]
-        success = False
+        # Use a hardcoded path that should work on Ubuntu servers
+        if os.path.exists("/usr/bin/python3"):
+            python_cmd = "/usr/bin/python3"
+        elif os.path.exists("/usr/bin/python"):
+            python_cmd = "/usr/bin/python"
+        else:
+            # Fall back to venv python as a last resort
+            venv_python = "/root/problem_generator/venv/bin/python"
+            if os.path.exists(venv_python):
+                python_cmd = venv_python
+            else:
+                return jsonify({"error": "No Python interpreter found on the system."}), 500
         
-        for python_cmd in python_commands:
-            try:
-                print(f"Attempting to run with {python_cmd}...")
-                result = subprocess.run([python_cmd, "request.py", course, lesson], capture_output=True, text=True)
-                success = True
-                print(f"Subprocess completed with return code: {result.returncode}")
-                break
-            except FileNotFoundError:
-                print(f"Command '{python_cmd}' not found, trying next option...")
-        
-        if not success:
-            return jsonify({"error": "Failed to execute Python. No available Python interpreter found."}), 500
+        print(f"Using Python interpreter: {python_cmd}")
+        result = subprocess.run([python_cmd, "request.py", course, lesson], capture_output=True, text=True)
         
         # Check if there was an error in the subprocess
         if result.returncode != 0:
