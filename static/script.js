@@ -13,9 +13,44 @@ const resultsDiv     = document.getElementById("results");
 const inputContainer = document.getElementById("input-container");
 const inputEditor    = document.getElementById("input-editor");
 const consoleDiv     = document.getElementById("console");
+const themeToggleBtn = document.getElementById("theme-toggle-btn");
+const themeIcon      = document.getElementById("theme-icon");
 
 // CodeMirror editor setup
 let codeEditor;
+
+// Theme management
+function initializeTheme() {
+  // Check for saved theme preference or use light mode as default
+  const savedTheme = localStorage.getItem('theme');
+  if (savedTheme) {
+    document.documentElement.setAttribute('data-theme', savedTheme);
+    updateThemeIcon(savedTheme);
+  } else {
+    // Default to light mode
+    document.documentElement.setAttribute('data-theme', 'light');
+    updateThemeIcon('light');
+    localStorage.setItem('theme', 'light');
+  }
+}
+
+function updateThemeIcon(theme) {
+  themeIcon.textContent = theme === 'dark' ? '☀️' : '🌙';
+}
+
+function toggleTheme() {
+  const currentTheme = document.documentElement.getAttribute('data-theme');
+  const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+  
+  document.documentElement.setAttribute('data-theme', newTheme);
+  localStorage.setItem('theme', newTheme);
+  updateThemeIcon(newTheme);
+  
+  // Update CodeMirror theme if editor is initialized
+  if (codeEditor) {
+    codeEditor.setOption('theme', newTheme === 'dark' ? 'darcula' : 'default');
+  }
+}
 
 // Initialize the editor when the DOM is loaded
 document.addEventListener("DOMContentLoaded", function() {
@@ -42,6 +77,9 @@ document.addEventListener("DOMContentLoaded", function() {
 
   // Set up event listeners
   setupEventListeners();
+  
+  // Initialize theme
+  initializeTheme();
 });
 
 // Load lessons based on the selected course
@@ -103,6 +141,9 @@ function loadLessons() {
 
 // Set up all event listeners
 function setupEventListeners() {
+  // Theme toggle button
+  themeToggleBtn.addEventListener("click", toggleTheme);
+  
   // Handle language change
   languageSelect.addEventListener("change", () => {
     const language = languageSelect.value;

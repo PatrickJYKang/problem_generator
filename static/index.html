@@ -10,6 +10,7 @@
 
   <!-- CodeMirror (for code editor) -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/codemirror.min.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/theme/darcula.min.css" />
   <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/codemirror.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/python/python.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/clike/clike.min.js"></script>
@@ -21,7 +22,14 @@
   <div class="container">
     <!-- Left Side: Problem Generator -->
     <div class="markdown">
-      <h1 id="title">Problem Generator</h1> <!-- Title updates dynamically -->
+      <div style="display: flex; justify-content: space-between; align-items: center;">
+        <h1 id="title">Problem Generator</h1> <!-- Title updates dynamically -->
+        <div class="theme-toggle">
+          <button id="theme-toggle-btn" title="Toggle Dark/Light Mode">
+            <span id="theme-icon">🌙</span>
+          </button>
+        </div>
+      </div>
 
       <!-- Course Selection -->
       <label for="course-select"><strong>Course:</strong></label>
@@ -79,6 +87,13 @@
         <div class="console-container" id="console" style="display: none;"></div>
       </div>
     </div>
+  </div>
+
+  <!-- GitHub Badge -->  
+  <div class="github-badge">
+    <a href="https://github.com/PatrickJYKang/problem_generator" target="_blank" rel="noopener noreferrer">
+      <img src="https://img.shields.io/github/stars/PatrickJYKang/problem_generator?style=social" alt="GitHub stars">
+    </a>
   </div>
 
   <!-- Include the external JavaScript file -->  
