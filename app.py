@@ -21,7 +21,6 @@ def generate():
     data = request.get_json()
     course = data.get("course", "Learnpython.org")
     lesson = data.get("lesson", "")
-
     if not lesson:
         return jsonify({"error": "Lesson is required."}), 400
 
