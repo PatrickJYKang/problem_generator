@@ -51,7 +51,10 @@
       <br><br>
 
       <!-- Generate Button -->
-      <button id="generate-btn">Generate Problem</button>
+      <div style="display: flex; gap: 10px;">
+        <button id="generate-btn">Generate Problem</button>
+        <button id="history-btn" disabled>Problem History</button>
+      </div>
 
       <div id="result">
         <p>Your generated problem will appear here.</p>
@@ -94,6 +97,19 @@
     <a href="https://github.com/PatrickJYKang/problem_generator" target="_blank" rel="noopener noreferrer">
       <img src="https://img.shields.io/github/stars/PatrickJYKang/problem_generator?style=social" alt="GitHub stars">
     </a>
+  </div>
+
+  <!-- History Modal -->
+  <div id="history-modal" class="modal" style="display: none;">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>Problem History</h2>
+        <span id="close-modal" class="close-button">&times;</span>
+      </div>
+      <div id="history-list" class="modal-body">
+        <!-- Problems will be populated here -->
+      </div>
+    </div>
   </div>
 
   <!-- Include the external JavaScript file -->  

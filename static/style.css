@@ -19,6 +19,79 @@
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
 }
 
+/* Modal Styles */
+.modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.modal-content {
+  background-color: var(--bg-color);
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  width: 80%;
+  max-width: 800px;
+  max-height: 90vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.modal-header {
+  padding: 15px 20px;
+  border-bottom: 1px solid var(--border-color);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.modal-body {
+  padding: 20px;
+  overflow-y: auto;
+  max-height: 70vh;
+}
+
+.close-button {
+  cursor: pointer;
+  font-size: 24px;
+  color: var(--text-color);
+}
+
+.close-button:hover {
+  color: #f44336;
+}
+
+.problem-item {
+  padding: 10px 15px;
+  margin-bottom: 10px;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.problem-item:hover {
+  background-color: var(--header-bg);
+}
+
+.problem-title {
+  font-weight: bold;
+  margin-bottom: 5px;
+}
+
+.problem-meta {
+  font-size: 0.9em;
+  color: #888;
+}
+
 /* Theme toggle button */
 .theme-toggle button {
   background: transparent;

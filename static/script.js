@@ -15,6 +15,13 @@ const inputEditor    = document.getElementById("input-editor");
 const consoleDiv     = document.getElementById("console");
 const themeToggleBtn = document.getElementById("theme-toggle-btn");
 const themeIcon      = document.getElementById("theme-icon");
+const historyBtn     = document.getElementById("history-btn");
+const historyModal   = document.getElementById("history-modal");
+const historyList    = document.getElementById("history-list");
+const closeModalBtn  = document.getElementById("close-modal");
+
+// Global state
+let currentProblemId = null;
 
 // CodeMirror editor setup
 let codeEditor;
@@ -71,6 +78,10 @@ document.addEventListener("DOMContentLoaded", function() {
 
   // Set initial height
   codeEditor.setSize(null, 400);
+  
+  // Set consistent initial heights for input boxes
+  inputContainer.style.minHeight = "150px";
+  inputEditor.style.height = "120px";
 
   // Load lessons for the selected course
   loadLessons();
@@ -80,7 +91,126 @@ document.addEventListener("DOMContentLoaded", function() {
   
   // Initialize theme
   initializeTheme();
+  
+  // Enable history button if problems exist
+  checkForProblems();
 });
+
+// History Modal Functions
+function openHistoryModal() {
+  // Clear previous history list
+  historyList.innerHTML = "<p>Loading problems...</p>";
+  
+  // Show the modal
+  historyModal.style.display = "flex";
+  
+  // Get the current course and lesson
+  const course = courseSelect.value;
+  const lesson = lessonSelect.value;
+  
+  // Fetch problems for this course and lesson
+  fetch(`/problems?course=${encodeURIComponent(course)}&lesson=${encodeURIComponent(lesson)}`)
+    .then(res => res.json())
+    .then(data => {
+      const problems = data.problems || [];
+      
+      // Update the modal with problems
+      if (problems.length === 0) {
+        historyList.innerHTML = "<p>No problems found for this lesson.</p>";
+        return;
+      }
+      
+      // Clear and build the problem list
+      historyList.innerHTML = "";
+      
+      problems.forEach(problem => {
+        const date = new Date(problem.created_at);
+        const formattedDate = date.toLocaleString();
+        
+        const problemItem = document.createElement("div");
+        problemItem.className = "problem-item";
+        problemItem.innerHTML = `
+          <div class="problem-title">${problem.title}</div>
+          <div class="problem-meta">Created: ${formattedDate}</div>
+        `;
+        
+        // Add click handler to load the problem
+        problemItem.addEventListener("click", () => loadProblem(problem.id));
+        
+        historyList.appendChild(problemItem);
+      });
+    })
+    .catch(err => {
+      console.error("Error loading problems:", err);
+      historyList.innerHTML = "<p>Error loading problems. Please try again.</p>";
+    });
+}
+
+function closeHistoryModal() {
+  historyModal.style.display = "none";
+}
+
+function loadProblem(problemId) {
+  // Close the modal
+  closeHistoryModal();
+  
+  // Show loading state
+  resultDiv.textContent = "Loading problem...";
+  
+  // Fetch the problem
+  fetch(`/problems/${problemId}`)
+    .then(res => res.json())
+    .then(data => {
+      if (data.error) {
+        resultDiv.textContent = `Error: ${data.error}`;
+        return;
+      }
+      
+      const problem = data.problem;
+      
+      // Update UI with problem details
+      titleHeader.textContent = problem.title;
+      resultDiv.innerHTML = marked.parse(problem.problem_text);
+      
+      // Store problem ID and testcases
+      currentProblemId = problem.id;
+      window.testcases = problem.testcases;
+      
+      // Show check answer and retry buttons
+      checkAnswerBtn.style.display = "inline-block";
+      retryBtn.style.display = "inline-block";
+      generateBtn.style.display = "none";
+    })
+    .catch(err => {
+      console.error("Error loading problem:", err);
+      resultDiv.textContent = "Error loading problem. Please try again.";
+    });
+}
+
+function checkForProblems() {
+  // Check if we have any problems in the database for the current lesson
+  const course = courseSelect.value;
+  const lesson = lessonSelect.value;
+  
+  // Only proceed if we have a valid lesson selected
+  if (!lesson) {
+    if (historyBtn) historyBtn.disabled = true;
+    return;
+  }
+  
+  fetch(`/problems?course=${encodeURIComponent(course)}&lesson=${encodeURIComponent(lesson)}`)
+    .then(res => res.json())
+    .then(data => {
+      const problems = data.problems || [];
+      if (historyBtn) {
+        historyBtn.disabled = problems.length === 0;
+      }
+    })
+    .catch(err => {
+      console.error("Error checking for problems:", err);
+      if (historyBtn) historyBtn.disabled = true;
+    });
+}
 
 // Load lessons based on the selected course
 function loadLessons() {
@@ -143,6 +273,22 @@ function loadLessons() {
 function setupEventListeners() {
   // Theme toggle button
   themeToggleBtn.addEventListener("click", toggleTheme);
+  
+  // History button and modal functionality
+  if (historyBtn) {
+    historyBtn.addEventListener("click", openHistoryModal);
+  }
+  
+  if (closeModalBtn) {
+    closeModalBtn.addEventListener("click", closeHistoryModal);
+  }
+  
+  // Close modal when clicking outside of it
+  window.addEventListener("click", (event) => {
+    if (event.target === historyModal) {
+      closeHistoryModal();
+    }
+  });
   
   // Handle language change
   languageSelect.addEventListener("change", () => {
@@ -212,6 +358,10 @@ int main() {
       const problemMarkdown = data?.data?.outputs?.Problem || "No problem found.";
       let testcases = data?.testcases || []; // Get testcases from the response
       
+      // Store the problem ID from the response
+      currentProblemId = data.problem_id || null;
+      console.log(`Problem ID: ${currentProblemId}`);
+      
       // Handle case where testcases might be a string instead of an array
       if (typeof testcases === 'string') {
         try {
@@ -233,6 +383,11 @@ int main() {
 
       checkAnswerBtn.style.display = "inline-block";
       retryBtn.style.display = "inline-block";
+      
+      // Enable history button since we now have problems in the database
+      if (historyBtn) {
+        historyBtn.disabled = false;
+      }
     })
     .catch(err => {
       console.error(err);
@@ -250,6 +405,13 @@ int main() {
     titleHeader.textContent = "Problem Generator"; // Reset title
     resultDiv.innerHTML = `<p>Your generated problem will appear here.</p>`;
     generateBtn.style.display = "inline-block";
+    
+    // Clear current problem ID
+    currentProblemId = null;
+    
+    // Ensure input container has consistent height
+    inputContainer.style.minHeight = "150px";
+    inputEditor.style.height = "120px";
   });
 
   // Run Code logic
@@ -292,13 +454,11 @@ int main() {
 
   // Reset logic
   resetBtn.addEventListener("click", () => {
-    // Save the current height of the console before hiding it
-    const currentHeight = consoleDiv.offsetHeight;
+    // We don't need to save the console height since we're using fixed heights
     
     consoleDiv.style.display = "none";
     inputContainer.style.display = "block";
-    // Set a reasonable height for the input container
-    // Use a more moderate height instead of copying the console height
+    // Set consistent fixed heights
     inputContainer.style.minHeight = "150px";
     inputEditor.style.height = "120px";
     
@@ -340,7 +500,12 @@ int main() {
     fetch("/check_code", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ code, testcases, language })
+      body: JSON.stringify({ 
+        code, 
+        testcases, 
+        language,
+        problem_id: currentProblemId 
+      })
     })
     .then(res => res.json())
     .then(data => {

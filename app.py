@@ -2,6 +2,7 @@ from flask import Flask, request, jsonify, send_from_directory
 import json
 import os
 import subprocess
+import db  # Import the database module
 
 app = Flask(__name__, static_folder='static')
 
@@ -108,6 +109,17 @@ def generate():
                     output["testcases"] = testcases_json
                     print(f"Added {len(testcases_json)} test cases to the output")
                     
+                    # Store the problem in the database
+                    try:
+                        title = output.get("data", {}).get("outputs", {}).get("Title", "Untitled Problem")
+                        problem_text = output.get("data", {}).get("outputs", {}).get("Problem", "")
+                        problem_id = db.store_problem(title, problem_text, course, lesson, testcases_json)
+                        output["problem_id"] = problem_id
+                        print(f"Stored problem in database with ID: {problem_id}")
+                    except Exception as e:
+                        print(f"Error storing problem in database: {str(e)}")
+                        # Continue even if database storage fails
+                    
                 except json.JSONDecodeError as e:
                     print(f"JSON decode error: {e}")
                     # If we can't parse as JSON, return the raw string (for backward compatibility)
@@ -154,9 +166,66 @@ def check_code_endpoint():
     user_code = data.get("code", "").strip()
     language = data.get("language", "python")
     testcases = data.get("testcases", [])
+    problem_id = data.get("problem_id", None)
     
     # Import the check_code function from check.py
     from check import check_code
-    return check_code(user_code, testcases, language)
+    result = check_code(user_code, testcases, language)
+    
+    # Store the solution in the database if problem_id is provided
+    if problem_id:
+        try:
+            # Parse the result to get passed/total testcases
+            result_data = json.loads(result.get_data(as_text=True))
+            passed = result_data.get("passed", 0)
+            total = result_data.get("total", len(testcases))
+            
+            # Store the solution
+            db.store_solution(problem_id, language, user_code, passed, total)
+            print(f"Stored solution for problem {problem_id}")
+        except Exception as e:
+            print(f"Error storing solution in database: {str(e)}")
+    
+    return result
+@app.route("/problems", methods=["GET"])
+def get_problems():
+    """ Get problems for a specific course and lesson """
+    course = request.args.get("course", "Learnpython.org")
+    lesson = request.args.get("lesson", "")
+    
+    if not lesson:
+        return jsonify({"error": "Lesson is required."}), 400
+    
+    try:
+        problems = db.get_problems_by_lesson(course, lesson)
+        return jsonify({"problems": problems})
+    except Exception as e:
+        print(f"Error retrieving problems: {str(e)}")
+        return jsonify({"error": "Failed to retrieve problems", "message": str(e)}), 500
+
+@app.route("/problems/<int:problem_id>", methods=["GET"])
+def get_problem(problem_id):
+    """ Get a specific problem by ID """
+    try:
+        problem = db.get_problem_by_id(problem_id)
+        
+        if not problem:
+            return jsonify({"error": "Problem not found"}), 404
+            
+        return jsonify({"problem": problem})
+    except Exception as e:
+        print(f"Error retrieving problem: {str(e)}")
+        return jsonify({"error": "Failed to retrieve problem", "message": str(e)}), 500
+
+@app.route("/problems/<int:problem_id>/solutions", methods=["GET"])
+def get_solutions(problem_id):
+    """ Get solutions for a specific problem """
+    try:
+        solutions = db.get_solutions_for_problem(problem_id)
+        return jsonify({"solutions": solutions})
+    except Exception as e:
+        print(f"Error retrieving solutions: {str(e)}")
+        return jsonify({"error": "Failed to retrieve solutions", "message": str(e)}), 500
+
 if __name__ == '__main__':
     app.run(port=5000, debug=True)
