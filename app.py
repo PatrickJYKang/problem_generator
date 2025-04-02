@@ -1,12 +1,7 @@
 from flask import Flask, request, jsonify, send_from_directory
 import json
 import os
-import sys
 import subprocess
-from dotenv import load_dotenv
-
-# Load environment variables from .env file
-load_dotenv()
 
 app = Flask(__name__, static_folder='static')
 
@@ -31,40 +26,9 @@ def generate():
 
     try:
         print("Running request.py subprocess...")
-        # Always use the virtual environment Python - this ensures all dependencies are available
-        base_dir = os.path.dirname(os.path.abspath(__file__))
+        result = subprocess.run(["python", "request.py", course, lesson], capture_output=True, text=True)
         
-        # Define potential venv paths - local development vs server paths
-        venv_paths = [
-            os.path.join(base_dir, "venv", "bin", "python"),  # Linux/Mac venv
-            "/root/problem_generator/venv/bin/python",         # Server absolute path
-            os.path.join(base_dir, "venv", "Scripts", "python.exe"),  # Windows venv
-        ]
-        
-        # Find a working venv Python
-        python_cmd = None
-        for path in venv_paths:
-            if os.path.exists(path):
-                python_cmd = path
-                break
-        
-        # If no venv Python found, try system Python as a last resort
-        if not python_cmd:
-            system_paths = ["/usr/bin/python3", "/usr/bin/python", sys.executable]
-            for path in system_paths:
-                if os.path.exists(path):
-                    python_cmd = path
-                    break
-            
-            if not python_cmd:
-                return jsonify({"error": "No Python interpreter found on the system."}), 500
-        
-        # Use absolute path to request.py
-        request_script = os.path.join(base_dir, "request.py")
-        
-        print(f"Using Python interpreter: {python_cmd}")
-        print(f"Running script: {request_script}")
-        result = subprocess.run([python_cmd, request_script, course, lesson], capture_output=True, text=True)
+        print(f"Subprocess completed with return code: {result.returncode}")
         
         # Check if there was an error in the subprocess
         if result.returncode != 0:

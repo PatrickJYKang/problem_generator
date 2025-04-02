@@ -3,54 +3,21 @@ import json
 import sys
 import os
 import tempfile
-import re
+from dotenv import load_dotenv
 
 # Define debug_print function globally
 def debug_print(*args, **kwargs):
     """Print debug messages to stderr"""
     print(*args, file=sys.stderr, **kwargs)
 
-# Read API key directly from .env file
-def read_env_file():
-    # Get the directory containing this script
-    base_dir = os.path.dirname(os.path.abspath(__file__))
-    env_path = os.path.join(base_dir, '.env')
-    
-    debug_print(f"Looking for .env file at: {env_path}")
-    
-    if os.path.exists(env_path):
-        try:
-            with open(env_path, 'r') as f:
-                env_content = f.read()
-                debug_print(f".env file found and read successfully")
-                
-                # Extract API_KEY using regex
-                match = re.search(r'API_KEY\s*=\s*([^\n\r]+)', env_content)
-                if match:
-                    api_key = match.group(1).strip()
-                    debug_print(f"API_KEY found in .env file (length: {len(api_key)})")
-                    return api_key
-                else:
-                    debug_print("API_KEY not found in .env file content")
-        except Exception as e:
-            debug_print(f"Error reading .env file: {str(e)}")
-    else:
-        debug_print(f".env file not found at {env_path}")
-    
-    # Check environment variable as fallback
-    api_key = os.environ.get('API_KEY')
-    if api_key:
-        debug_print(f"API_KEY found in environment variables")
-        return api_key
-    
-    debug_print("No API_KEY found in .env file or environment variables")
-    return None
+# Load the .env file
+load_dotenv()
 
-# Get API key
-API_KEY = read_env_file()
+# Access the API key
+API_KEY = os.getenv("API_KEY")
 
 if not API_KEY:
-    raise ValueError("Missing API_KEY. Set it in the .env file or as an environment variable.")
+    raise ValueError("Missing API_KEY. Set it in the .env file.")
 
 BASE_URL = "http://47.251.117.165/v1"
 
