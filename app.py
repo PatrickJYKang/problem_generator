@@ -1,6 +1,7 @@
 from flask import Flask, request, jsonify, send_from_directory
 import json
 import os
+import sys
 import subprocess
 from dotenv import load_dotenv
 
@@ -30,9 +31,22 @@ def generate():
 
     try:
         print("Running request.py subprocess...")
-        result = subprocess.run(["python", "request.py", course, lesson], capture_output=True, text=True)
+        # Try multiple Python commands to work on both Linux (python3) and other systems (python)
+        python_commands = ["python3", "python", "/usr/bin/python3", sys.executable]
+        success = False
         
-        print(f"Subprocess completed with return code: {result.returncode}")
+        for python_cmd in python_commands:
+            try:
+                print(f"Attempting to run with {python_cmd}...")
+                result = subprocess.run([python_cmd, "request.py", course, lesson], capture_output=True, text=True)
+                success = True
+                print(f"Subprocess completed with return code: {result.returncode}")
+                break
+            except FileNotFoundError:
+                print(f"Command '{python_cmd}' not found, trying next option...")
+        
+        if not success:
+            return jsonify({"error": "Failed to execute Python. No available Python interpreter found."}), 500
         
         # Check if there was an error in the subprocess
         if result.returncode != 0:
