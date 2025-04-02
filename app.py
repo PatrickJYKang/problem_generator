@@ -2,6 +2,10 @@ from flask import Flask, request, jsonify, send_from_directory
 import json
 import os
 import subprocess
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv()
 
 app = Flask(__name__, static_folder='static')
 
