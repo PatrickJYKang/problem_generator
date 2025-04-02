@@ -5,6 +5,11 @@ import os
 import tempfile
 from dotenv import load_dotenv
 
+# Define debug_print function globally
+def debug_print(*args, **kwargs):
+    """Print debug messages to stderr"""
+    print(*args, file=sys.stderr, **kwargs)
+
 # Load the .env file
 load_dotenv()
 
@@ -22,18 +27,28 @@ def upload_file(file_path, user):
     headers = { "Authorization": f"Bearer {API_KEY}" }
     
     try:
-        # print("Uploading file...")
+        debug_print(f"Uploading file: {file_path}")
+        if not os.path.exists(file_path):
+            debug_print(f"Error: File not found: {file_path}")
+            return None
+            
         with open(file_path, 'rb') as file:
-            files = { 'file': (file_path, file, 'text/plain') }
+            files = { 'file': (os.path.basename(file_path), file, 'text/plain') }
             data = { "user": user, "type": "document" }
+            
+            debug_print(f"Making API request to: {upload_url}")
             response = requests.post(upload_url, headers=headers, files=files, data=data)
+            
+            debug_print(f"Response status: {response.status_code}")
             if response.status_code == 201:
-                return response.json().get("id")
+                file_id = response.json().get("id")
+                debug_print(f"File uploaded successfully, ID: {file_id}")
+                return file_id
             else:
-                print(f"File upload failed: {response.text}")
+                debug_print(f"File upload failed: {response.text}")
                 return None
     except Exception as e:
-        print(f"Error: {str(e)}")
+        debug_print(f"Error during file upload: {str(e)}")
         return None
 
 def run_workflow(inputs, response_mode, user):
@@ -51,10 +66,24 @@ def run_workflow(inputs, response_mode, user):
     }
     
     try:
+        debug_print(f"Making workflow API request to: {url}")
+        debug_print(f"Request data: {json.dumps(data, indent=2)}")
+        
         response = requests.post(url, headers=headers, json=data)
-        return response.json() if response.status_code == 200 else {"error": response.text}
+        
+        debug_print(f"Workflow response status: {response.status_code}")
+        if response.status_code == 200:
+            result = response.json()
+            debug_print("Workflow API call successful")
+            return result
+        else:
+            error_msg = f"Workflow API error: {response.text}"
+            debug_print(error_msg)
+            return {"error": response.text}
     except Exception as e:
-        return {"error": str(e)}
+        error_msg = f"Exception during workflow API call: {str(e)}"
+        debug_print(error_msg)
+        return {"error": error_msg}
 
 def build_syllabus(lesson):
     """ Builds a syllabus from markdown files up to and including the current lesson. """
@@ -117,20 +146,36 @@ def build_syllabus(lesson):
         return None
 
 if __name__ == "__main__":
+    # Use stderr for debug messages so they don't interfere with JSON output
+    import sys
+    
+    def debug_print(*args, **kwargs):
+        print(*args, file=sys.stderr, **kwargs)
+    
+    debug_print("Starting request.py script")
+    
     if len(sys.argv) < 3:
-        print(json.dumps({"error": "Missing course or lesson"}))
+        error_msg = {"error": "Missing course or lesson"}
+        print(json.dumps(error_msg))
         sys.exit(1)
 
     course = sys.argv[1]
     lesson = sys.argv[2]
     user = "testuser"
     
+    debug_print(f"Course: {course}, Lesson: {lesson}")
+    
     # Build a dynamic syllabus based on the current lesson
+    debug_print("Building dynamic syllabus...")
     file_path = build_syllabus(lesson)
     if not file_path:
-        print(json.dumps({"error": "Failed to build syllabus"}))
+        error_msg = {"error": "Failed to build syllabus"}
+        print(json.dumps(error_msg))
         sys.exit(1)
     
+    debug_print(f"Syllabus built successfully: {file_path}")
+    
+    # Upload the syllabus file
     file_id = upload_file(file_path, user)
 
     if file_id:
@@ -143,14 +188,27 @@ if __name__ == "__main__":
                 "type": "document"
             }
         }
+        
+        debug_print("Calling workflow API...")
         response = run_workflow(inputs, "blocking", user)
-        print(json.dumps(response, indent=4))
+        
+        # Check for errors in the response
+        if "error" in response:
+            debug_print(f"Error in workflow response: {response['error']}")
+            print(json.dumps({"error": f"Workflow API error: {response['error']}"})) 
+        else:
+            debug_print("Workflow completed successfully")
+            # Only print the JSON response to stdout, with no other text
+            print(json.dumps(response))
     else:
-        print(json.dumps({"error": "File upload failed"}))
+        error_msg = {"error": "File upload failed"}
+        print(json.dumps(error_msg))
     
     # Clean up the temporary file
     if file_path and os.path.exists(file_path):
         try:
+            debug_print(f"Cleaning up temporary file: {file_path}")
             os.unlink(file_path)
+            debug_print("Temporary file deleted successfully")
         except Exception as e:
-            print(json.dumps({"warning": f"Failed to delete temporary file: {str(e)}"}), file=sys.stderr)
+            debug_print(f"Failed to delete temporary file: {str(e)}")
