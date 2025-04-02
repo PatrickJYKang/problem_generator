@@ -171,12 +171,12 @@ function loadProblem(problemId) {
       titleHeader.textContent = problem.title;
       resultDiv.innerHTML = marked.parse(problem.problem_text);
       
-      // Store problem ID, but don't show testcases for old problems
+      // Store problem ID and testcases
       currentProblemId = problem.id;
       
-      // For historical problems, we don't show testcases to avoid confusion 
-      // since older problems might have different testcase formats
-      window.testcases = []; // Clear any existing testcases
+      // Use the testcases from the database for this problem
+      window.testcases = problem.testcases || [];
+      console.log(`Loaded ${window.testcases.length} testcases for problem ${problem.id}`);
       
       // Show check answer and retry buttons
       checkAnswerBtn.style.display = "inline-block";

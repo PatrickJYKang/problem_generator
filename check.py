@@ -23,7 +23,14 @@ def check_code(code, testcases, language):
         
     # Extract inputs and expected outputs from JSON testcases
     inputs = [tc.get("input", "") for tc in testcases]
-    expected_outputs = [tc.get("output", "") for tc in testcases]
+    
+    # Handle different field names for expected output
+    expected_outputs = []
+    for tc in testcases:
+        if "expected_output" in tc:
+            expected_outputs.append(tc.get("expected_output", ""))
+        else:
+            expected_outputs.append(tc.get("output", ""))
     
     results = []
     for i, testcase in enumerate(inputs):
@@ -48,6 +55,22 @@ def check_code(code, testcases, language):
             else:
                 return jsonify({"error": f"Unsupported language: {language}"}), 400
 
+            # Normalize expected and user output for comparison
+            def normalize_output(output):
+                if output is None:
+                    return ""
+                # Standardize line endings and remove trailing whitespace from each line
+                lines = [line.rstrip() for line in output.strip().splitlines()]
+                # Remove empty lines at start and end
+                while lines and not lines[0]:
+                    lines.pop(0)
+                while lines and not lines[-1]:
+                    lines.pop()
+                return "\n".join(lines)
+                
+            normalized_expected = normalize_output(expected_output)
+            normalized_user = normalize_output(user_output)
+            
             # Determine status
             if error_output:
                 status = "Runtime Error"
@@ -58,7 +81,7 @@ def check_code(code, testcases, language):
                     "status": "❌",
                     "error": error_output
                 })
-            elif user_output == expected_output:
+            elif normalized_user == normalized_expected:
                 status = "Correct"
                 results.append({
                     "input": testcase, 
@@ -72,7 +95,8 @@ def check_code(code, testcases, language):
                     "input": testcase, 
                     "expected_output": expected_output, 
                     "user_output": user_output, 
-                    "status": "❌"
+                    "status": "❌",
+                    "diff": f"Expected:\n{normalized_expected}\n\nGot:\n{normalized_user}"
                 })
                 
         except subprocess.TimeoutExpired:
