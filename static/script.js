@@ -176,7 +176,6 @@ function loadProblem(problemId) {
       
       // Use the testcases from the database for this problem
       window.testcases = problem.testcases || [];
-      console.log(`Loaded ${window.testcases.length} testcases for problem ${problem.id}`);
       
       // Show check answer and retry buttons
       checkAnswerBtn.style.display = "inline-block";
@@ -353,14 +352,12 @@ int main() {
       
       // Store the problem ID from the response
       currentProblemId = data.problem_id || null;
-      console.log(`Problem ID: ${currentProblemId}`);
       
       // Handle case where testcases might be a string instead of an array
       if (typeof testcases === 'string') {
         try {
           // Try to parse the string as JSON
           testcases = JSON.parse(testcases);
-          console.log("Parsed testcases from string:", testcases);
         } catch (e) {
           console.error("Error parsing testcases:", e);
           testcases = [];
@@ -372,7 +369,6 @@ int main() {
       
       // Store test cases globally so they can be accessed later
       window.testcases = testcases;
-      console.log("Stored testcases:", window.testcases); 
 
       checkAnswerBtn.style.display = "inline-block";
       retryBtn.style.display = "inline-block";
@@ -488,7 +484,7 @@ int main() {
       return;
     }
     
-    console.log("Using testcases:", testcases);
+
 
     fetch("/check_code", {
       method: "POST",
