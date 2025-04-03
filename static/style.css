@@ -194,6 +194,8 @@
   --border-radius: 6px; /* Consistent border radius */
   --box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); /* Consistent shadow */
   --transition-speed: 0.2s; /* Standard transition speed */
+  --history-button-bg: #6200EA; /* History button background */
+  --history-button-hover-bg: #5000C8; /* History button hover */
 }
 
 /* Dark theme - greyscale only */
@@ -380,4 +382,58 @@ body, html {
     border-radius: var(--border-radius);
     min-height: 150px; /* Match input container minimum height */
     color: var(--text-color);
+  }
+  
+  /* General Button styling */
+  button {
+    padding: 8px 12px;
+    border: none;
+    border-radius: var(--border-radius);
+    background-color: var(--button-bg);
+    color: white;
+    font-size: var(--font-size-base);
+    cursor: pointer;
+    transition: all var(--transition-speed) ease;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+  }
+  
+  button:hover {
+    background-color: var(--button-hover-bg);
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    transform: translateY(-1px);
+  }
+  
+  button:active {
+    transform: translateY(1px);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+  }
+  
+  button:disabled {
+    background-color: #cccccc;
+    cursor: not-allowed;
+    box-shadow: none;
+    transform: none;
+  }
+  
+  /* History button specific styling */
+  #history-btn {
+    background-color: var(--history-button-bg);
+    padding: 10px 16px;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 10px 0;
+    width: auto;
+    min-width: 180px;
+  }
+  
+  #history-btn:hover {
+    background-color: var(--history-button-hover-bg);
+  }
+  
+  #history-btn:before {
+    content: '📋';
+    margin-right: 8px;
+    font-size: 1.1em;
   }

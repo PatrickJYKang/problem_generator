@@ -485,11 +485,8 @@ int main() {
       return;
     }
 
-    // Hide the generate button and history button while generating
+    // Hide the generate button while generating but keep the history button visible
     generateBtn.style.display = "none";
-    if (historyBtn) {
-      historyBtn.style.display = "none";
-    }
     
     // Show loading animation with dots
     let dots = 0;
@@ -539,12 +536,9 @@ int main() {
       checkAnswerBtn.style.display = "inline-block";
       retryBtn.style.display = "inline-block";
       
-      // Move history button to the bottom and show it
+      // Make sure history button is enabled
       if (historyBtn) {
         historyBtn.disabled = false;
-        historyBtn.style.display = "block";
-        historyBtn.style.marginTop = "20px";
-        document.querySelector('.code-env').appendChild(historyBtn);
       }
     })
     .catch(err => {
@@ -557,10 +551,7 @@ int main() {
       // Show generate button again on error
       generateBtn.style.display = "inline-block";
       
-      // Show history button
-      if (historyBtn) {
-        historyBtn.style.display = "block";
-      }
+
     });
   });
 
@@ -579,12 +570,7 @@ int main() {
     resultDiv.innerHTML = `<p>Your generated problem will appear here.</p>`;
     generateBtn.style.display = "inline-block";
     
-    // Move history button back to original position
-    if (historyBtn) {
-      const editorHeader = document.querySelector('.editor-header');
-      editorHeader.appendChild(historyBtn);
-      historyBtn.style.marginTop = "0";
-    }
+
     
     // Clear current problem ID
     currentProblemId = null;
@@ -656,6 +642,19 @@ int main() {
       return;
     }
 
+    // Show checking animation
+    checkAnswerBtn.disabled = true;
+    let dots = 0;
+    const originalText = checkAnswerBtn.textContent;
+    const loadingText = "Checking";
+    checkAnswerBtn.textContent = loadingText + "...";
+    
+    const loadingInterval = setInterval(() => {
+      dots = (dots + 1) % 4;
+      let dotsText = ".".repeat(dots);
+      checkAnswerBtn.textContent = loadingText + dotsText.padEnd(3, " ");
+    }, 300);
+
     let testcases = window.testcases;
     
     // Handle different formats of testcases
@@ -666,16 +665,20 @@ int main() {
       } catch (e) {
         console.error("Error parsing testcases in check_answer:", e);
         alert("Error parsing test cases. Please try generating the problem again.");
+        clearInterval(loadingInterval);
+        checkAnswerBtn.textContent = originalText;
+        checkAnswerBtn.disabled = false;
         return;
       }
     }
     
     if (!testcases || !Array.isArray(testcases) || testcases.length === 0) {
       alert("No valid test cases found.");
+      clearInterval(loadingInterval);
+      checkAnswerBtn.textContent = originalText;
+      checkAnswerBtn.disabled = false;
       return;
     }
-    
-
 
     fetch("/check_code", {
       method: "POST",
@@ -689,6 +692,11 @@ int main() {
     })
     .then(res => res.json())
     .then(data => {
+      // Clear loading animation
+      clearInterval(loadingInterval);
+      checkAnswerBtn.textContent = originalText;
+      checkAnswerBtn.disabled = false;
+      
       if (data.error) {
         resultsDiv.innerHTML = `<p style="color: red;">Error: ${data.error}</p>`;
         return;
@@ -713,6 +721,11 @@ int main() {
       resultsDiv.innerHTML = tableHTML;  // Now results are stored correctly
     })
     .catch(err => {
+      // Clear loading animation
+      clearInterval(loadingInterval);
+      checkAnswerBtn.textContent = originalText;
+      checkAnswerBtn.disabled = false;
+      
       console.error(err);
       resultsDiv.innerHTML = `<p style="color: red;">Error checking answer.</p>`;
     });

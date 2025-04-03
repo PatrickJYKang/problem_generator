@@ -54,9 +54,8 @@
       <br><br>
 
       <!-- Generate Button -->
-      <div style="display: flex; gap: 10px;">
+      <div style="display: flex; gap: 10px; margin-bottom: 15px;">
         <button id="generate-btn">Generate Problem</button>
-        <button id="history-btn" disabled>Problem History</button>
       </div>
 
       <div id="result">
@@ -91,6 +90,11 @@
           <textarea id="input-editor" placeholder="Line-by-line input for your code..."></textarea>
         </div>
         <div class="console-container" id="console" style="display: none;"></div>
+      </div>
+      
+      <!-- Fixed position history button -->
+      <div style="margin-top: 20px; text-align: center;">
+        <button id="history-btn" disabled>Problem History</button>
       </div>
     </div>
   </div>
