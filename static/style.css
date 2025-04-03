@@ -432,8 +432,4 @@ body, html {
     background-color: var(--history-button-hover-bg);
   }
   
-  #history-btn:before {
-    content: '📋';
-    margin-right: 8px;
-    font-size: 1.1em;
-  }
+  /* No emoji or icon needed */

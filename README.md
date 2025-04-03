@@ -11,8 +11,10 @@ A web application that dynamically generates coding problems based on your curre
 - **Automatic Feedback**: Check your solutions against test cases with detailed results
 - **Progressive Learning**: The app builds a custom syllabus based on your current lesson, including all previous lessons
 - **Problem History**: Review and reload previously generated problems
-- **Dark Mode**: Toggle between light and dark themes for comfortable coding in any environment
+- **Dark/Light Mode**: Toggle between themes for comfortable coding in any environment
 - **Database Storage**: All problems and solutions are stored for future reference
+- **Clean UI**: Focused interface that hides unnecessary elements when working on problems
+- **Consistent Course Structure**: Lessons are displayed in proper pedagogical order across all languages
 
 ## How It Works
 
@@ -27,10 +29,11 @@ A web application that dynamically generates coding problems based on your curre
 ## System Architecture
 
 ### Frontend
-- **HTML/CSS/JavaScript**: Responsive UI with dynamic content loading
+- **HTML/CSS/JavaScript**: Responsive UI with dynamic content loading and a clean grayscale design
 - **CodeMirror**: Feature-rich code editor with syntax highlighting for Python, Java, and C++
 - **Marked.js**: Markdown rendering for problem descriptions
 - **Light/Dark Theme**: Toggle between color schemes with persistent user preference storage
+- **Adaptive UI**: Interface elements that adapt based on the current context (e.g., hiding course selectors when viewing a problem)
 
 ### Backend
 - **Flask**: Python web framework handling HTTP requests and serving content
@@ -38,6 +41,8 @@ A web application that dynamically generates coding problems based on your curre
 - **Multi-language Execution**: Supports running code in Python, Java, and C++
 - **Error Handling**: Robust handling of compilation and runtime errors
 - **Dynamic Syllabus Generation**: Creates targeted problems based on learning progress
+- **Input Management**: Special handling of input() prompts in Python to ensure accurate test case validation
+- **Consistent Course Structure**: Custom course structures for languages without index.json files
 
 ### Database Schema
 - **Problems**: Stores problem title, description, course, and lesson
