@@ -2,8 +2,6 @@
 
 A web application that dynamically generates coding problems based on your current learning progress. This tool helps you practice and reinforce your programming skills with targeted exercises that match your knowledge level.
 
-Access at http://ai.patrickkang.me. Everything is free for now.
-
 ## Features
 
 - **Multi-language Support**: Write and test code in Python, Java, and C++
