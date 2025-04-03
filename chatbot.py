@@ -19,9 +19,9 @@ CHATBOT_API_KEY = os.getenv('DIFY_API_KEY', 'app-rDDSJ8nmFBq2bDxQ2j4oFQsw')
 # The app ID for the Dify chatbot
 APP_ID = 'd91beb8e-72c6-4aec-be40-6165f64d9222'
 
-# The correct API URL for Dify
-# Direct API endpoint based on the documentation at http://47.251.117.165/app/d91beb8e-72c6-4aec-be40-6165f64d9222/develop
-CHATBOT_API_URL = f"http://47.251.117.165/v1/chat-messages"
+# The correct API URL for Dify - use the endpoint format similar to your generate code
+# Based on the documentation at http://47.251.117.165/app/d91beb8e-72c6-4aec-be40-6165f64d9222/develop
+CHATBOT_API_URL = f"http://47.251.117.165/app/{APP_ID}/api/chat-messages"
 
 # Debug logging for API requests
 import logging
@@ -72,8 +72,8 @@ def handle_chatbot_request():
             'query': user_query,
             'user': 'end_user',  # Required parameter per API error
             'response_mode': 'blocking',  # Use blocking instead of streaming for simplicity
-            'conversation_id': conversation_id,
-            'app_id': APP_ID  # Include app_id in payload
+            'conversation_id': conversation_id
+            # app_id is in the URL path, not needed in payload
         }
         
         # Add code and syllabus to inputs if available
@@ -99,38 +99,29 @@ def handle_chatbot_request():
         logging.info(f"Payload: {json.dumps(payload)[:500]}..." if len(json.dumps(payload)) > 500 else f"Payload: {json.dumps(payload)}")
         
         try:
-            if files:
-                # When sending files, we need to use multipart/form-data
-                multipart_data = {
-                    'query': (None, user_query),
-                    'user': (None, 'end_user'),  # Required parameter per API error
-                    'response_mode': (None, 'blocking'),  # Use blocking instead of streaming for simplicity
-                    'app_id': (None, APP_ID)  # Include app_id in form data
-                }
-                
-                # Add inputs as separate fields
-                for key, value in payload.get('inputs', {}).items():
-                    multipart_data[f'inputs[{key}]'] = (None, value)
-                
-                # Add conversation_id if present
-                if conversation_id:
-                    multipart_data['conversation_id'] = (None, conversation_id)
-                
-                # Add the files
-                multipart_data.update(files)
-                
-                response = requests.post(
-                    CHATBOT_API_URL,
-                    headers=headers,
-                    files=multipart_data
-                )
-            else:
-                # When not sending files, we can send JSON directly
-                response = requests.post(
-                    CHATBOT_API_URL,
-                    headers=headers,
-                    json=payload
-                )
+            # Simplify the approach - create a simple JSON request
+            # Set the correct content type for JSON requests
+            headers['Content-Type'] = 'application/json'
+            
+            # The app_id is already in the URL path
+            api_url = CHATBOT_API_URL
+            logging.info(f"Using API URL: {api_url}")
+            
+            # For simplicity, always use JSON - add code and syllabus as text in inputs
+            if code:
+                payload['inputs']['code'] = code
+            
+            if syllabus:
+                payload['inputs']['syllabus'] = syllabus
+            
+            # Send the request with JSON content
+            response = requests.post(
+                api_url,
+                headers=headers,
+                json=payload
+            )
+            
+            logging.info(f"Request sent with Content-Type: {headers.get('Content-Type')}")
         except Exception as req_error:
             logging.error(f"Request error: {str(req_error)}")
             raise

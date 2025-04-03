@@ -174,20 +174,26 @@ async function sendChatRequest(query, course, lesson, problem, code, syllabus) {
       syllabus = syllabus.substring(0, 50000) + '\n... (truncated for size)';
     }
     
+    // Create request data - using same format that works with generate endpoint
+    const requestData = {
+      query,
+      course,
+      lesson,
+      problem,
+      code,
+      syllabus,
+      conversation_id: conversationId,
+      user: 'end_user' // Required parameter
+    };
+    
+    console.log('Sending request data:', requestData);
+    
     const response = await fetch('/chatbot', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
       },
-      body: JSON.stringify({
-        query,
-        course,
-        lesson,
-        problem,
-        code,
-        syllabus,
-        conversation_id: conversationId
-      })
+      body: JSON.stringify(requestData)
     });
 
     const data = await response.json();
