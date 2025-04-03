@@ -55,14 +55,26 @@ function handleChatSubmit(e) {
   // Get current state of the application
   const currentCourse = document.getElementById('course-select').value;
   const currentLesson = document.getElementById('lesson-select').value;
-  const currentProblem = document.getElementById('result').innerHTML;
-  const currentCode = codeEditor.getValue();
+  
+  // Get the problem description
+  const resultElement = document.getElementById('result');
+  const currentProblem = resultElement ? resultElement.innerHTML : '';
+  
+  // Make sure we're getting the code from the global CodeMirror instance
+  let currentCode = '';
+  if (typeof codeEditor !== 'undefined' && codeEditor) {
+    currentCode = codeEditor.getValue();
+    console.log('Got code from editor:', currentCode.substring(0, 100) + '...');
+  } else {
+    console.warn('CodeMirror editor not found!');
+  }
 
   // Get syllabus content (if available)
   let syllabus = '';
   // We'll try to get the syllabus for the current lesson
   fetchSyllabus(currentCourse, currentLesson)
     .then(syllabusContent => {
+      console.log('Got syllabus:', syllabusContent ? 'yes' : 'no');
       // Now we have all the data needed to send to the chatbot API
       sendChatRequest(message, currentCourse, currentLesson, currentProblem, currentCode, syllabusContent);
     })
