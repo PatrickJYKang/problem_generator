@@ -706,9 +706,7 @@ function setupEventListeners() {
                         <td><pre>${tc.user_output}</pre></td>
                         <td style="color: ${tc.status === '✅' ? 'green' : 'red'}">${tc.status}</td>
                       </tr>`;
-        if (tc.error) {
-          tableHTML += `<tr><td colspan="4"><pre style="color: red;">${tc.error}</pre></td></tr>`;
-        }
+        // No longer displaying error messages
       });
       tableHTML += "</table>";
 

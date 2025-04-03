@@ -55,7 +55,7 @@ def input_wrapper(prompt=''):
         print(prompt, file=sys.stderr, end='')
         sys.stderr.flush()
     # Get input from stdin without printing anything to stdout
-    return sys.stdin.readline().rstrip('\n')
+    return sys.stdin.readline().rstrip("\n")
 
 # Override the built-in input function
 builtins.input = input_wrapper
