@@ -1,16 +1,36 @@
 /* Dark Mode & UI Fixes for Problem Generator */
 
-/* Only apply button color changes in dark mode */
+/* Use greyscale for all buttons in dark mode */
+[data-theme="dark"] button {
+  background-color: #444444;
+  color: #f0f0f0;
+}
+
 [data-theme="dark"] button:hover:not(:disabled) {
-  background-color: var(--button-hover-bg, #2e7d32);
+  background-color: #555555;
+}
+
+/* Specific button targeting */
+[data-theme="dark"] #generate-btn,
+[data-theme="dark"] #history-btn,
+[data-theme="dark"] #check-answer-btn,
+[data-theme="dark"] #retry-btn {
+  background-color: #444444;
+}
+
+[data-theme="dark"] #generate-btn:hover:not(:disabled),
+[data-theme="dark"] #history-btn:hover:not(:disabled),
+[data-theme="dark"] #check-answer-btn:hover:not(:disabled),
+[data-theme="dark"] #retry-btn:hover:not(:disabled) {
+  background-color: #555555;
 }
 
 [data-theme="dark"] #run-btn {
-  background-color: var(--run-button-bg, #0d47a1);
+  background-color: #555555;
 }
 
 [data-theme="dark"] #run-btn:hover:not(:disabled) {
-  background-color: var(--run-button-hover-bg, #1565c0);
+  background-color: #666666;
 }
 
 /* Ensure form elements respect dark mode */
@@ -44,11 +64,16 @@
   background: #666666;
 }
 
-/* Dark mode variable additions - only needed if we reference these elsewhere */
+/* Dark mode greyscale variables */
 [data-theme="dark"] {
-  --button-hover-bg: #2e7d32;
-  --run-button-bg: #0d47a1;
-  --run-button-hover-bg: #1565c0;
+  --button-bg: #444444;
+  --button-hover-bg: #555555;
+  --run-button-bg: #555555;
+  --run-button-hover-bg: #666666;
+  --border-color: #555555;
+  --header-bg: #2d2d2d;
+  --input-bg: #333333;
+  --text-color: #e0e0e0;
 }
 
 /* Ensure console has proper color in dark mode */
