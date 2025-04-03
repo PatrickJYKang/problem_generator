@@ -354,13 +354,24 @@ function loadLessons() {
           const group = document.createElement("optgroup");
           group.label = category.charAt(0).toUpperCase() + category.slice(1); // Capitalize
           
-          // For each category, maintain the exact order from the server response
-          // We don't use Object.keys() here as it doesn't guarantee order
+          // For ordered categories, we need a special approach
+          // Since Object.keys() and for...in loops don't guarantee order in JS objects
+          
+          // If the data comes with an _order array property, use that
           const orderedLessons = [];
           
-          // First, collect all lessons with their order intact
-          for (const lessonName in data[category]) {
-            orderedLessons.push(lessonName);
+          if (Array.isArray(data[category]._order)) {
+            // Server provided an explicit order
+            console.log(`Using explicit _order array for ${category}`); 
+            orderedLessons.push(...data[category]._order);
+          } else {
+            // Fallback: collect lessons and maintain insertion order
+            console.log(`No explicit ordering found for ${category}, collecting lessons`);
+            for (const lessonName in data[category]) {
+              if (lessonName !== '_order') { // Skip the order property itself
+                orderedLessons.push(lessonName);
+              }
+            }
           }
           
           // Now add each lesson to the group in the original order

@@ -19,10 +19,20 @@ class GitHubFetcher:
         # Create cache directory if it doesn't exist
         os.makedirs(self.cache_dir, exist_ok=True)
         
-        # Define custom course structures for sites without index.json
+        # Define custom course structures for sites without index.json or need explicit ordering
         self.custom_structures = {
             "learn-cpp.org": {
                 "basics": {
+                    "_order": [  # This ensures exact ordering as specified
+                        "Hello, World!",
+                        "Variables and Types",
+                        "Arrays",
+                        "Strings",
+                        "if-else",
+                        "For loops",
+                        "While loops",
+                        "Functions"
+                    ],
                     "Hello, World!": "Hello, World!",
                     "Variables and Types": "Variables and Types",
                     "Arrays": "Arrays",
@@ -33,6 +43,17 @@ class GitHubFetcher:
                     "Functions": "Functions"
                 },
                 "advanced": {
+                    "_order": [  # This ensures exact ordering as specified
+                        "Pointers",
+                        "Structures",
+                        "Function arguments by reference",
+                        "Dynamic allocation",
+                        "Recursion",
+                        "Linked lists",
+                        "Binary trees",
+                        "Function Pointers",
+                        "Template Metaprogramming"
+                    ],
                     "Pointers": "Pointers",
                     "Structures": "Structures",
                     "Function arguments by reference": "Function arguments by reference",
@@ -42,6 +63,48 @@ class GitHubFetcher:
                     "Binary trees": "Binary trees",
                     "Function Pointers": "Function Pointers",
                     "Template Metaprogramming": "Template Metaprogramming"
+                }
+            },
+            "learnjavaonline.org": {
+                "basics": {
+                    "_order": [
+                        "Hello World",
+                        "Variables and Types",
+                        "Conditionals",
+                        "Arrays",
+                        "Loops",
+                        "Functions",
+                        "Objects",
+                        "Compiling and Running with Arguments"
+                    ],
+                    "Hello World": "Hello World",
+                    "Variables and Types": "Variables and Types",
+                    "Conditionals": "Conditionals",
+                    "Arrays": "Arrays",
+                    "Loops": "Loops",
+                    "Functions": "Functions",
+                    "Objects": "Objects",
+                    "Compiling and Running with Arguments": "Compiling and Running with Arguments"
+                },
+                "advanced": {
+                    "_order": [
+                        "Inheritance",
+                        "Try and Catch",
+                        "Abstract Classes",
+                        "Interfaces",
+                        "Using Generics",
+                        "Collections",
+                        "Exceptions",
+                        "Generic Types"
+                    ],
+                    "Inheritance": "Inheritance",
+                    "Try and Catch": "Try and Catch",
+                    "Abstract Classes": "Abstract Classes",
+                    "Interfaces": "Interfaces",
+                    "Using Generics": "Using Generics",
+                    "Collections": "Collections",
+                    "Exceptions": "Exceptions",
+                    "Generic Types": "Generic Types"
                 }
             }
         }
@@ -226,16 +289,20 @@ class GitHubFetcher:
                 for category in ["basics", "advanced"]:
                     if category in result:
                         ordered_result[category] = {}
+                        # Add the _order array to help the frontend maintain order
+                        ordered_result[category]["_order"] = []
                         
                         # Add lessons in the correct order, but only if they exist in the API response
                         for lesson in python_order[category]:
                             if lesson in result[category]:
                                 ordered_result[category][lesson] = result[category][lesson]
+                                ordered_result[category]["_order"].append(lesson)
                         
                         # Add any remaining lessons not in our predefined order
                         for lesson in result[category]:
                             if lesson not in ordered_result[category]:
                                 ordered_result[category][lesson] = result[category][lesson]
+                                ordered_result[category]["_order"].append(lesson)
                 
                 print(f"Returning ordered lessons for {language}")
                 return ordered_result

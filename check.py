@@ -48,10 +48,121 @@ def check_code(code, testcases, language):
                 )
                 user_output = result.stdout.strip()
                 error_output = result.stderr.strip()
-            elif language == "java" or language == "cpp":
-                # For compiled languages, we need to use the same approach as in run_code
-                # This is a simplified version that just returns an error for now
-                return jsonify({"error": f"Checking {language} code against test cases is not yet implemented."}), 501
+            elif language == "java":
+                # Create a temporary Java file from the user code
+                import tempfile
+                import os
+                temp_dir = tempfile.mkdtemp()
+                
+                # Extract the class name from the code
+                import re
+                class_match = re.search(r'public\s+class\s+(\w+)', code)
+                class_name = class_match.group(1) if class_match else "Main"
+                
+                # Write the code to a temporary file
+                file_path = os.path.join(temp_dir, f"{class_name}.java")
+                with open(file_path, 'w') as f:
+                    f.write(code)
+                
+                try:
+                    # Compile the code
+                    compile_result = subprocess.run(
+                        ["javac", file_path],
+                        capture_output=True,
+                        text=True,
+                        timeout=5
+                    )
+                    
+                    if compile_result.returncode != 0:
+                        # Compilation error
+                        error_output = compile_result.stderr.strip()
+                        return jsonify({
+                            "results": [{
+                                "input": "N/A",
+                                "expected_output": "N/A",
+                                "user_output": error_output,
+                                "status": "❌",
+                                "error": f"Compilation error: {error_output}"
+                            }],
+                            "passed": 0,
+                            "total": 1,
+                            "success_rate": "0/1"
+                        })
+                    
+                    # Execute the compiled code with the test case input
+                    result = subprocess.run(
+                        ["java", "-cp", temp_dir, class_name],
+                        input=testcase,
+                        capture_output=True,
+                        text=True,
+                        timeout=2
+                    )
+                    user_output = result.stdout.strip()
+                    error_output = result.stderr.strip()
+                    
+                    # Clean up the temporary directory
+                    import shutil
+                    shutil.rmtree(temp_dir)
+                    
+                except Exception as e:
+                    user_output = ""
+                    error_output = str(e)
+            
+            elif language == "cpp":
+                # Create a temporary C++ file from the user code
+                import tempfile
+                import os
+                temp_dir = tempfile.mkdtemp()
+                file_path = os.path.join(temp_dir, "solution.cpp")
+                executable_path = os.path.join(temp_dir, "solution")
+                
+                # Write the code to a temporary file
+                with open(file_path, 'w') as f:
+                    f.write(code)
+                
+                try:
+                    # Compile the code with C++17 standard
+                    compile_result = subprocess.run(
+                        ["g++", "-std=c++17", file_path, "-o", executable_path],
+                        capture_output=True,
+                        text=True,
+                        timeout=5
+                    )
+                    
+                    if compile_result.returncode != 0:
+                        # Compilation error
+                        error_output = compile_result.stderr.strip()
+                        return jsonify({
+                            "results": [{
+                                "input": "N/A",
+                                "expected_output": "N/A",
+                                "user_output": error_output,
+                                "status": "❌",
+                                "error": f"Compilation error: {error_output}"
+                            }],
+                            "passed": 0,
+                            "total": 1,
+                            "success_rate": "0/1"
+                        })
+                    
+                    # Execute the compiled code with the test case input
+                    result = subprocess.run(
+                        [executable_path],
+                        input=testcase,
+                        capture_output=True,
+                        text=True,
+                        timeout=2
+                    )
+                    user_output = result.stdout.strip()
+                    error_output = result.stderr.strip()
+                    
+                    # Clean up the temporary directory
+                    import shutil
+                    shutil.rmtree(temp_dir)
+                    
+                except Exception as e:
+                    user_output = ""
+                    error_output = str(e)
             else:
                 return jsonify({"error": f"Unsupported language: {language}"}), 400
 
