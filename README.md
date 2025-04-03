@@ -31,7 +31,7 @@ A web application that dynamically generates coding problems based on your curre
 ## System Architecture
 
 ### Frontend
-- **HTML/CSS/JavaScript**: Responsive UI with dynamic content loading and a clean grayscale design
+- **HTML/CSS/JavaScript**: Responsive UI with dynamic content loading and a clean greyscale design
 - **CodeMirror**: Feature-rich code editor with syntax highlighting for Python, Java, and C++
 - **Marked.js**: Markdown rendering for problem descriptions and chatbot messages
 - **Light/Dark Theme**: Toggle between color schemes with persistent user preference storage
