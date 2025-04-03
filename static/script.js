@@ -31,7 +31,8 @@ function syncLanguageWithCourse(course) {
   // Map course names to their corresponding programming languages
   const courseToLanguage = {
     "learnpython.org": "python",
-    "learn-cpp.org": "cpp"
+    "learn-cpp.org": "cpp",
+    "learnjavaonline.org": "java"
   };
   
   // Get the appropriate language for the course
@@ -484,8 +485,22 @@ int main() {
       return;
     }
 
+    // Hide the generate button and history button while generating
     generateBtn.style.display = "none";
-    resultDiv.textContent = "Generating...";
+    if (historyBtn) {
+      historyBtn.style.display = "none";
+    }
+    
+    // Show loading animation with dots
+    let dots = 0;
+    const loadingText = "Generating";
+    resultDiv.textContent = loadingText + "...";
+    
+    const loadingInterval = setInterval(() => {
+      dots = (dots + 1) % 4;
+      let dotsText = ".".repeat(dots);
+      resultDiv.textContent = loadingText + dotsText.padEnd(3, " ");
+    }, 300);
 
     fetch("/generate", {
       method: "POST",
@@ -494,6 +509,9 @@ int main() {
     })
     .then(res => res.json())
     .then(data => {
+      // Clear the loading interval
+      clearInterval(loadingInterval);
+      
       const title = data?.data?.outputs?.Title || "Generated Problem";
       const problemMarkdown = data?.data?.outputs?.Problem || "No problem found.";
       let testcases = data?.testcases || []; // Get testcases from the response
@@ -521,14 +539,28 @@ int main() {
       checkAnswerBtn.style.display = "inline-block";
       retryBtn.style.display = "inline-block";
       
-      // Enable history button since we now have problems in the database
+      // Move history button to the bottom and show it
       if (historyBtn) {
         historyBtn.disabled = false;
+        historyBtn.style.display = "block";
+        historyBtn.style.marginTop = "20px";
+        document.querySelector('.code-env').appendChild(historyBtn);
       }
     })
     .catch(err => {
+      // Clear the loading interval
+      clearInterval(loadingInterval);
+      
       console.error(err);
       resultDiv.textContent = "Error generating problem.";
+      
+      // Show generate button again on error
+      generateBtn.style.display = "inline-block";
+      
+      // Show history button
+      if (historyBtn) {
+        historyBtn.style.display = "block";
+      }
     });
   });
 
@@ -546,6 +578,13 @@ int main() {
     titleHeader.textContent = "Problem Generator"; // Reset title
     resultDiv.innerHTML = `<p>Your generated problem will appear here.</p>`;
     generateBtn.style.display = "inline-block";
+    
+    // Move history button back to original position
+    if (historyBtn) {
+      const editorHeader = document.querySelector('.editor-header');
+      editorHeader.appendChild(historyBtn);
+      historyBtn.style.marginTop = "0";
+    }
     
     // Clear current problem ID
     currentProblemId = null;

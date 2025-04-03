@@ -188,6 +188,12 @@
   --scrollbar-thumb-hover: #a1a1a1;
   --run-button-bg: #2196F3;
   --run-button-hover-bg: #0b7dda;
+  --font-size-base: 16px; /* Base font size */
+  --font-size-code: 15px; /* Code editor font size */
+  --font-size-small: 14px; /* Small font size */
+  --border-radius: 6px; /* Consistent border radius */
+  --box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); /* Consistent shadow */
+  --transition-speed: 0.2s; /* Standard transition speed */
 }
 
 /* Dark theme - greyscale only */
@@ -220,6 +226,7 @@ body, html {
   background-color: var(--bg-color);
   color: var(--text-color);
   transition: background-color 0.3s ease, color 0.3s ease;
+  font-size: var(--font-size-base); /* Using the base font size variable */
 }
   
   /* Main container: two columns (Markdown | Code) */
@@ -265,12 +272,24 @@ body, html {
   
   /* Style the language selector and all selects */
   select, #language-select, #course-select, #lesson-select {
-    padding: 4px 8px;
+    padding: 8px 12px;
     border: 1px solid var(--border-color);
-    border-radius: 4px;
+    border-radius: var(--border-radius);
     background-color: var(--input-bg);
     color: var(--text-color);
-    font-size: 14px;
+    font-size: var(--font-size-base);
+    transition: all 0.2s ease;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  }
+  
+  select:hover, #language-select:hover, #course-select:hover, #lesson-select:hover {
+    border-color: var(--button-bg);
+  }
+  
+  select:focus, #language-select:focus, #course-select:focus, #lesson-select:focus {
+    outline: none;
+    border-color: var(--button-bg);
+    box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.15);
   }
   
   /* Style the CodeMirror editor element itself */
@@ -278,7 +297,7 @@ body, html {
     flex: 1; /* Allow it to grow and fill the vertical space */
     height: 100%; /* Ensure it tries to take full height */
     border: none; /* Optional: remove CodeMirror's default border */
-    font-size: 14px; /* Match textarea font-size */
+    font-size: var(--font-size-code); /* Slightly larger font size */
   }
   
   /* Ensure CodeMirror respects dark mode */
@@ -304,7 +323,7 @@ body, html {
     width: 100%;
     resize: none;
     font-family: monospace;
-    font-size: 14px;
+    font-size: var(--font-size-code);
     padding: 10px;
     box-sizing: border-box;
     border: none;
@@ -338,13 +357,13 @@ body, html {
     height: 120px; /* Adjust to your preferred size */
     resize: vertical; /* Allow vertical resizing but not horizontal */
     font-family: monospace; /* Keep it consistent */
-    font-size: 14px;
+    font-size: var(--font-size-code);
     padding: 10px;
     box-sizing: border-box;
     background-color: var(--input-textarea-bg);
     color: var(--text-color);
     border: 1px solid var(--border-color);
-    border-radius: 4px;
+    border-radius: var(--border-radius);
   }
   
   /* The console container (hidden by default) */
@@ -355,9 +374,10 @@ body, html {
     overflow-y: auto;
     background-color: var(--output-bg);
     font-family: monospace; /* Enforce monospace font */
-    font-size: 14px;
+    font-size: var(--font-size-code);
     white-space: pre-wrap; /* Ensures proper formatting */
     border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
     min-height: 150px; /* Match input container minimum height */
     color: var(--text-color);
   }
