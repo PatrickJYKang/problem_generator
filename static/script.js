@@ -285,6 +285,11 @@ function loadLessons() {
   const course = courseSelect.value || "learnpython.org";
   const lang = "en"; // Default language is English
   
+  console.log(`Loading lessons for course: ${course}`);
+  
+  // Sync language selector with course
+  syncLanguageWithCourse(course);
+  
   // Use our new endpoint that fetches from GitHub
   fetch(`/github/lessons?language=${course}&lang=${lang}`)
     .then(response => {
@@ -305,7 +310,7 @@ function loadLessons() {
       defaultOption.selected = true;
       lessonSelect.appendChild(defaultOption);
       
-      // Add optgroups for each category
+      // Add optgroups for each category in the correct order
       const categories = ["basics", "advanced"];
       
       categories.forEach(category => {
@@ -314,8 +319,17 @@ function loadLessons() {
           const group = document.createElement("optgroup");
           group.label = category.charAt(0).toUpperCase() + category.slice(1); // Capitalize
           
-          // Add all lessons in this category
-          Object.keys(data[category]).forEach(lesson => {
+          // For each category, maintain the exact order from the server response
+          // We don't use Object.keys() here as it doesn't guarantee order
+          const orderedLessons = [];
+          
+          // First, collect all lessons with their order intact
+          for (const lessonName in data[category]) {
+            orderedLessons.push(lessonName);
+          }
+          
+          // Now add each lesson to the group in the original order
+          orderedLessons.forEach(lesson => {
             const option = document.createElement("option");
             option.value = lesson;
             option.textContent = lesson;
@@ -348,6 +362,28 @@ function setupEventListeners() {
     // Reload lessons when course changes
     loadLessons();
   });
+  
+  // Sync the programming language with the selected course
+  function syncLanguageWithCourse(course) {
+    // Map course names to their corresponding programming languages
+    const courseToLanguage = {
+      "learnpython.org": "python",
+      "learn-cpp.org": "cpp"
+    };
+    
+    // Get the appropriate language for the course
+    const language = courseToLanguage[course] || "python";
+    
+    // Update the language selector
+    if (languageSelect.value !== language) {
+      console.log(`Changing language from ${languageSelect.value} to ${language} based on course selection`);
+      languageSelect.value = language;
+      
+      // Trigger the change event to update the editor mode and template
+      const changeEvent = new Event('change');
+      languageSelect.dispatchEvent(changeEvent);
+    }
+  }
 
   // Theme toggle button
   themeToggleBtn.addEventListener("click", toggleTheme);

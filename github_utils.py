@@ -177,6 +177,73 @@ class GitHubFetcher:
             print(f"Using custom structure for {language}")
             return self.custom_structures[language]
         
+        # For learnpython.org, we need to ensure proper order
+        if language == "learnpython.org":
+            # Define the correct order for Python lessons
+            # This ensures consistency regardless of JSON ordering
+            python_order = {
+                "basics": [
+                    "Hello, World!",
+                    "Variables and Types",
+                    "Lists",
+                    "Basic Operators",
+                    "String Formatting",
+                    "Basic String Operations",
+                    "Conditions",
+                    "Loops",
+                    "Functions",
+                    "Classes and Objects",
+                    "Dictionaries",
+                    "Modules and Packages"
+                ],
+                "advanced": [
+                    "Generators",
+                    "List Comprehensions",
+                    "Multiple Function Arguments",
+                    "Regular Expressions",
+                    "Exception Handling",
+                    "Sets",
+                    "Serialization",
+                    "Partial functions",
+                    "Closures",
+                    "Decorators",
+                    "Map, Filter, Reduce",
+                    "Code Introspection",
+                    "Input and Output",
+                    "Parsing CSV Files"
+                ]
+            }
+            
+            try:
+                # Get the actual content from GitHub
+                path = f"tutorials/{language}/{lang}/index.json"
+                result = self.get_json_content(path)
+                print(f"Successfully retrieved lessons from {path}")
+                
+                # Create ordered dictionary based on our predefined order
+                ordered_result = {}
+                
+                for category in ["basics", "advanced"]:
+                    if category in result:
+                        ordered_result[category] = {}
+                        
+                        # Add lessons in the correct order, but only if they exist in the API response
+                        for lesson in python_order[category]:
+                            if lesson in result[category]:
+                                ordered_result[category][lesson] = result[category][lesson]
+                        
+                        # Add any remaining lessons not in our predefined order
+                        for lesson in result[category]:
+                            if lesson not in ordered_result[category]:
+                                ordered_result[category][lesson] = result[category][lesson]
+                
+                print(f"Returning ordered lessons for {language}")
+                return ordered_result
+                
+            except Exception as e:
+                print(f"Error getting ordered lessons: {str(e)}")
+                # Fall through to the general case
+        
         # Otherwise try to fetch from GitHub
         path = f"tutorials/{language}/{lang}/index.json"
         
