@@ -19,9 +19,10 @@ CHATBOT_API_KEY = os.getenv('DIFY_API_KEY', 'app-rDDSJ8nmFBq2bDxQ2j4oFQsw')
 # The app ID for the Dify chatbot
 APP_ID = 'd91beb8e-72c6-4aec-be40-6165f64d9222'
 
-# The correct API URL for Dify - use the endpoint format similar to your generate code
-# Based on the documentation at http://47.251.117.165/app/d91beb8e-72c6-4aec-be40-6165f64d9222/develop
-CHATBOT_API_URL = f"http://47.251.117.165/app/{APP_ID}/api/chat-messages"
+# Direct Dify API endpoint as provided in the documentation
+# The Dify API URL is based on their standard format
+# Using the public API endpoint
+CHATBOT_API_URL = "http://47.251.117.165/v1/chat-messages"
 
 # Debug logging for API requests
 import logging
@@ -72,8 +73,7 @@ def handle_chatbot_request():
             'query': user_query,
             'user': 'end_user',  # Required parameter per API error
             'response_mode': 'blocking',  # Use blocking instead of streaming for simplicity
-            'conversation_id': conversation_id
-            # app_id is in the URL path, not needed in payload
+            'conversation_id': conversation_id,
         }
         
         # Add code and syllabus to inputs if available
@@ -88,8 +88,10 @@ def handle_chatbot_request():
             payload['inputs']['problem'] = problem
 
         # Set up headers for the API request
+        # Make sure we're using the correct authorization format
         headers = {
-            'Authorization': f'Bearer {CHATBOT_API_KEY}'
+            'Authorization': f'Bearer {CHATBOT_API_KEY}',
+            'Content-Type': 'application/json'
         }
 
         # Make API request to Dify
@@ -100,12 +102,12 @@ def handle_chatbot_request():
         
         try:
             # Simplify the approach - create a simple JSON request
-            # Set the correct content type for JSON requests
-            headers['Content-Type'] = 'application/json'
-            
-            # The app_id is already in the URL path
-            api_url = CHATBOT_API_URL
+            # Use query parameter approach for the app_id
+            api_url = f"{CHATBOT_API_URL}?app_id={APP_ID}"
             logging.info(f"Using API URL: {api_url}")
+            
+            # Log complete request data for debugging
+            logging.info(f"Complete request: URL={api_url}, Headers={headers}, Payload={json.dumps(payload)[:200]}...")
             
             # For simplicity, always use JSON - add code and syllabus as text in inputs
             if code:
@@ -143,6 +145,15 @@ def handle_chatbot_request():
         except Exception as log_error:
             logging.error(f"Error logging response: {str(log_error)}")
         
+        # Print full details of the request for debugging
+        logging.info(f"Full request details:")
+        logging.info(f"URL: {api_url}")
+        logging.info(f"Headers: {headers}")
+        logging.info(f"Payload size: {len(json.dumps(payload))} bytes")
+        logging.info(f"Payload keys: {payload.keys()}")
+        if 'inputs' in payload:
+            logging.info(f"Input keys: {payload['inputs'].keys()}")
+        
         if response.status_code == 200:
             try:
                 response_data = response.json()
@@ -160,8 +171,14 @@ def handle_chatbot_request():
                 if 'message' in error_data:
                     logging.error(f"API error message: {error_data['message']}")
                     error_message = f"API error: {error_data['message']}"
-            except:
-                pass
+                elif 'detail' in error_data:
+                    logging.error(f"API error detail: {error_data['detail']}")
+                    error_message = f"API error: {error_data['detail']}"
+                elif 'error' in error_data:
+                    logging.error(f"API error description: {error_data['error']}")
+                    error_message = f"API error: {error_data['error']}"
+            except Exception as e:
+                logging.error(f"Error parsing error response: {str(e)}")
             
             return jsonify({"error": f"API error", "answer": error_message}), 200  # Return 200 to client with error message
 
