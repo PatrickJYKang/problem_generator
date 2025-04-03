@@ -15,6 +15,7 @@ A web application that dynamically generates coding problems based on your curre
 - **Database Storage**: All problems and solutions are stored for future reference
 - **Clean UI**: Focused interface that hides unnecessary elements when working on problems
 - **Consistent Course Structure**: Lessons are displayed in proper pedagogical order across all languages
+- **AI Chatbot Assistant**: Get help with your code or problems through an integrated chatbot
 
 ## How It Works
 
@@ -25,20 +26,24 @@ A web application that dynamically generates coding problems based on your curre
 5. Run your code to test it with custom input
 6. Check your answer against the provided test cases
 7. Access your problem history to review previous exercises
+8. Click the chat icon to open the AI assistant for help with your problem or code
 
 ## System Architecture
 
 ### Frontend
 - **HTML/CSS/JavaScript**: Responsive UI with dynamic content loading and a clean grayscale design
 - **CodeMirror**: Feature-rich code editor with syntax highlighting for Python, Java, and C++
-- **Marked.js**: Markdown rendering for problem descriptions
+- **Marked.js**: Markdown rendering for problem descriptions and chatbot messages
 - **Light/Dark Theme**: Toggle between color schemes with persistent user preference storage
 - **Adaptive UI**: Interface elements that adapt based on the current context (e.g., hiding course selectors when viewing a problem)
+- **Sliding Chat Panel**: A responsive chat window that pushes content instead of overlaying it
 
 ### Backend
 - **Flask**: Python web framework handling HTTP requests and serving content
 - **SQLite Database**: Stores generated problems, test cases, and user solutions
 - **Multi-language Execution**: Supports running code in Python, Java, and C++
+- **Dify API Integration**: Connects to the Dify AI service for chatbot functionality
+- **File Upload System**: Handles code, syllabus, and problem content uploads to the AI service
 - **Error Handling**: Robust handling of compilation and runtime errors
 - **Dynamic Syllabus Generation**: Creates targeted problems based on learning progress
 - **Input Management**: Special handling of input() prompts in Python to ensure accurate test case validation
