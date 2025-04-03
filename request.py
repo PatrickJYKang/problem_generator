@@ -14,13 +14,14 @@ def debug_print(*args, **kwargs):
 # Load the .env file
 load_dotenv()
 
-# Access the API key
-API_KEY = os.getenv("API_KEY")
+# Access the API key using the correct environment variable name
+API_KEY = os.getenv("PROBLEM_GENERATOR_API_KEY")
 
 if not API_KEY:
-    raise ValueError("Missing API_KEY. Set it in the .env file.")
+    raise ValueError("Missing PROBLEM_GENERATOR_API_KEY. Set it in the .env file.")
 
-BASE_URL = "http://47.251.117.165/v1"
+# Get base URL from environment variables, with a fallback
+BASE_URL = os.getenv("PROBLEM_GENERATOR_API_URL", "http://47.251.117.165/v1/workflows/run").rsplit('/', 1)[0]
 
 def upload_file(file_path, user):
     """ Uploads a file to the API and returns the file ID. """

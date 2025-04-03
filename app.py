@@ -10,8 +10,9 @@ import chatbot  # Import the chatbot module
 # Load environment variables from .env file
 load_dotenv()
 
-# Get problem generator API key from environment variables
+# Get API keys and URLs from environment variables
 PROBLEM_GENERATOR_API_KEY = os.getenv('PROBLEM_GENERATOR_API_KEY', 'app-NxALjP6yItovyBLW2UZJIxcJ')
+PROBLEM_GENERATOR_API_URL = os.getenv('PROBLEM_GENERATOR_API_URL', 'http://47.251.117.165/v1/workflows/run')
 
 app = Flask(__name__, static_folder='static')
 

@@ -13,16 +13,15 @@ from dotenv import load_dotenv
 # Load environment variables
 load_dotenv()
 
-# Get Dify API key from environment variables
-CHATBOT_API_KEY = os.getenv('DIFY_API_KEY', 'app-rDDSJ8nmFBq2bDxQ2j4oFQsw')
+# Get chatbot API key from environment variables
+CHATBOT_API_KEY = os.getenv('CHATBOT_API_KEY', 'app-rDDSJ8nmFBq2bDxQ2j4oFQsw')
 
-# The app ID for the Dify chatbot
+# The app ID for the chatbot
 APP_ID = 'd91beb8e-72c6-4aec-be40-6165f64d9222'
 
-# Direct Dify API endpoint as provided in the documentation
-# The Dify API URL is based on their standard format
-# Using the public API endpoint
-CHATBOT_API_URL = "http://47.251.117.165/v1/chat-messages"
+# Get the API URL from environment variables
+# Using the proper API endpoint from .env
+CHATBOT_API_URL = os.getenv('CHATBOT_API_URL', 'http://47.251.117.165/v1/chat-messages')
 
 # Debug logging for API requests
 import logging
