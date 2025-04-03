@@ -66,7 +66,11 @@
 }
 
 .close-button:hover {
-  color: #f44336;
+  color: #999;
+}
+
+[data-theme="dark"] .close-button:hover {
+  color: #aaa;
 }
 
 .problem-item {
@@ -136,14 +140,14 @@
   --run-button-hover-bg: #0b7dda;
 }
 
-/* Dark theme */
+/* Dark theme - greyscale only */
 [data-theme="dark"] {
   --bg-color: #1e1e1e;
   --text-color: #e0e0e0;
   --border-color: #555555;
   --header-bg: #2d2d2d;
-  --button-bg: #388e3c;
-  --button-hover-bg: #2e7d32;
+  --button-bg: #444444;
+  --button-hover-bg: #555555;
   --button-text: #f0f0f0;
   --input-bg: #2d2d2d;
   --code-bg: #252525;
@@ -153,8 +157,8 @@
   --scrollbar-track: #2a2a2a;
   --scrollbar-thumb: #555555;
   --scrollbar-thumb-hover: #666666;
-  --run-button-bg: #0d47a1;
-  --run-button-hover-bg: #1565c0;
+  --run-button-bg: #555555;
+  --run-button-hover-bg: #666666;
 }
 
 /* Overall reset/typography */
@@ -225,6 +229,22 @@ body, html {
     height: 100%; /* Ensure it tries to take full height */
     border: none; /* Optional: remove CodeMirror's default border */
     font-size: 14px; /* Match textarea font-size */
+  }
+  
+  /* Ensure CodeMirror respects dark mode */
+  [data-theme="dark"] .CodeMirror {
+    background-color: var(--input-textarea-bg);
+    color: var(--text-color);
+  }
+  
+  /* CodeMirror-specific dark mode styling */
+  [data-theme="dark"] .CodeMirror-gutters {
+    background-color: var(--code-bg);
+    border-color: var(--border-color);
+  }
+  
+  [data-theme="dark"] .CodeMirror-linenumber {
+    color: #777;
   }
   
   /* CodeMirror text area */

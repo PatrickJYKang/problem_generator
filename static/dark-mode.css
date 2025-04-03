@@ -1,0 +1,121 @@
+/* Dark Mode Greyscale Theme for Problem Generator */
+
+/* Only apply these styles when dark mode is active */
+[data-theme="dark"] {
+  /* Base variables */
+  --bg-color: #1e1e1e;
+  --text-color: #e0e0e0;
+  --border-color: #555555;
+  --header-bg: #2d2d2d;
+  
+  /* Button colors */
+  --button-bg: #444444;
+  --button-hover-bg: #555555;
+  --button-text: #f0f0f0;
+  
+  /* Editor colors */
+  --input-bg: #2d2d2d;
+  --code-bg: #252525;
+  --output-bg: #252525;
+  --input-container-bg: #2a2a2a;
+  --input-textarea-bg: #333333;
+  
+  /* Scrollbars */
+  --scrollbar-track: #2a2a2a;
+  --scrollbar-thumb: #555555;
+  --scrollbar-thumb-hover: #666666;
+}
+
+/* Dark Mode Button Styles */
+[data-theme="dark"] button {
+  background-color: #444444;
+  color: #f0f0f0;
+}
+
+[data-theme="dark"] button:hover:not(:disabled) {
+  background-color: #555555;
+}
+
+[data-theme="dark"] #run-btn {
+  background-color: #555555;
+}
+
+[data-theme="dark"] #run-btn:hover:not(:disabled) {
+  background-color: #666666;
+}
+
+/* Ensure form elements respect dark mode */
+[data-theme="dark"] select,
+[data-theme="dark"] #language-select,
+[data-theme="dark"] #course-select,
+[data-theme="dark"] #lesson-select,
+[data-theme="dark"] textarea,
+[data-theme="dark"] input {
+  background-color: #333333;
+  color: #e0e0e0;
+  border-color: #555555;
+}
+
+/* CodeMirror Editor Dark Mode */
+[data-theme="dark"] .CodeMirror {
+  background-color: #333333;
+  color: #e0e0e0;
+}
+
+[data-theme="dark"] .CodeMirror-gutters {
+  background-color: #252525;
+  border-color: #555555;
+}
+
+[data-theme="dark"] .CodeMirror-linenumber {
+  color: #777777;
+}
+
+/* Custom scrollbar styling for dark mode */
+[data-theme="dark"] ::-webkit-scrollbar-track {
+  background: #2a2a2a;
+}
+
+[data-theme="dark"] ::-webkit-scrollbar-thumb {
+  background: #555555;
+  border-radius: 5px;
+}
+
+[data-theme="dark"] ::-webkit-scrollbar-thumb:hover {
+  background: #666666;
+}
+
+/* Console container dark mode */
+[data-theme="dark"] .console-container {
+  color: #e0e0e0;
+  background-color: #252525;
+}
+
+/* Input container dark mode */
+[data-theme="dark"] .input-container {
+  border-color: #555555;
+  background-color: #2a2a2a;
+}
+
+/* Modal dark mode enhancements */
+[data-theme="dark"] .modal-content {
+  background-color: #1e1e1e;
+}
+
+[data-theme="dark"] .close-button:hover {
+  color: #aaaaaa;
+}
+
+[data-theme="dark"] .problem-item:hover {
+  background-color: #2d2d2d;
+}
+
+/* Remove specific colored highlights */
+[data-theme="dark"] .problem-meta {
+  color: #888888;
+}
+
+/* Testcase results */
+[data-theme="dark"] #results {
+  color: #e0e0e0;
+}
