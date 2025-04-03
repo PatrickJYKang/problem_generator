@@ -19,8 +19,9 @@ CHATBOT_API_KEY = os.getenv('DIFY_API_KEY', 'app-rDDSJ8nmFBq2bDxQ2j4oFQsw')
 # The app ID for the Dify chatbot
 APP_ID = 'd91beb8e-72c6-4aec-be40-6165f64d9222'
 
-# The single, correct API URL for Dify
-CHATBOT_API_URL = f"http://47.251.117.165/app/{APP_ID}/api/chat-messages"
+# The correct API URL for Dify
+# Direct API endpoint based on the documentation at http://47.251.117.165/app/d91beb8e-72c6-4aec-be40-6165f64d9222/develop
+CHATBOT_API_URL = f"http://47.251.117.165/v1/chat-messages"
 
 # Debug logging for API requests
 import logging
@@ -69,10 +70,18 @@ def handle_chatbot_request():
                 'lesson': lesson,
             },
             'query': user_query,
+            'user': 'end_user',  # Required parameter per API error
             'response_mode': 'blocking',  # Use blocking instead of streaming for simplicity
-            'conversation_id': conversation_id
-            # No need to include app_id in payload as it's in the URL
+            'conversation_id': conversation_id,
+            'app_id': APP_ID  # Include app_id in payload
         }
+        
+        # Add code and syllabus to inputs if available
+        if code:
+            payload['inputs']['code'] = code
+            
+        if syllabus:
+            payload['inputs']['syllabus'] = syllabus
 
         # Add problem to inputs if available
         if problem:
@@ -94,8 +103,9 @@ def handle_chatbot_request():
                 # When sending files, we need to use multipart/form-data
                 multipart_data = {
                     'query': (None, user_query),
+                    'user': (None, 'end_user'),  # Required parameter per API error
                     'response_mode': (None, 'blocking'),  # Use blocking instead of streaming for simplicity
-                    # App ID is in the URL, not needed in the form data
+                    'app_id': (None, APP_ID)  # Include app_id in form data
                 }
                 
                 # Add inputs as separate fields
