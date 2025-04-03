@@ -177,6 +177,13 @@ function loadProblem(problemId) {
       // Use the testcases from the database for this problem
       window.testcases = problem.testcases || [];
       
+      // Clear any previous results and hide console
+      resultsDiv.innerHTML = "";
+      if (consoleDiv.style.display !== "none") {
+        consoleDiv.style.display = "none";
+        inputContainer.style.display = "block";
+      }
+      
       // Show check answer and retry buttons
       checkAnswerBtn.style.display = "inline-block";
       retryBtn.style.display = "inline-block";
@@ -389,6 +396,10 @@ int main() {
     checkAnswerBtn.style.display = "none";
     retryBtn.style.display = "none";
     resultsDiv.innerHTML = "";  // Clear test case results
+
+    // Hide console if visible and show input container
+    consoleDiv.style.display = "none";
+    inputContainer.style.display = "block";
 
     // Reset UI elements back to input stage
     titleHeader.textContent = "Problem Generator"; // Reset title

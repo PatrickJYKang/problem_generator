@@ -1,0 +1,80 @@
+/* Dark Mode & UI Fixes for Problem Generator */
+
+/* Enhanced button styling */
+button {
+  transition: background-color 0.3s ease !important;
+}
+
+button:hover:not(:disabled) {
+  background-color: var(--button-hover-bg, #45a049) !important;
+}
+
+/* Run button styling */
+#run-btn {
+  background-color: var(--run-button-bg, #2196F3) !important;
+}
+
+#run-btn:hover:not(:disabled) {
+  background-color: var(--run-button-hover-bg, #0b7dda) !important;
+}
+
+/* Ensure all form elements respect dark mode */
+select, #language-select, #course-select, #lesson-select, textarea, input {
+  background-color: var(--input-bg) !important;
+  color: var(--text-color) !important;
+  border-color: var(--border-color) !important;
+}
+
+/* Custom scrollbar styling */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--scrollbar-track, #f1f1f1) !important;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--scrollbar-thumb, #c1c1c1) !important;
+  border-radius: 5px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--scrollbar-thumb-hover, #a1a1a1) !important;
+}
+
+/* Dark mode variable additions */
+:root {
+  --button-hover-bg: #45a049;
+  --scrollbar-track: #f1f1f1;
+  --scrollbar-thumb: #c1c1c1;
+  --scrollbar-thumb-hover: #a1a1a1;
+  --run-button-bg: #2196F3;
+  --run-button-hover-bg: #0b7dda;
+}
+
+[data-theme="dark"] {
+  --button-hover-bg: #2e7d32;
+  --scrollbar-track: #2a2a2a;
+  --scrollbar-thumb: #555555;
+  --scrollbar-thumb-hover: #666666;
+  --run-button-bg: #0d47a1;
+  --run-button-hover-bg: #1565c0;
+}
+
+/* Ensure console has proper color in dark mode */
+.console-container {
+  color: var(--text-color) !important;
+}
+
+/* Fix for input container in dark mode */
+.input-container {
+  border: 1px solid var(--border-color) !important;
+}
+
+/* Make dropdown arrows visible in dark mode */
+select {
+  padding-right: 20px !important;
+  appearance: auto !important;
+}
