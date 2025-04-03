@@ -282,12 +282,14 @@ function checkForProblems() {
 
 // Load lessons based on the selected course
 function loadLessons() {
-  const course = courseSelect.value;
+  const course = courseSelect.value || "learnpython.org";
+  const lang = "en"; // Default language is English
   
-  fetch(`/syllabi/python/index.json`)
+  // Use our new endpoint that fetches from GitHub
+  fetch(`/github/lessons?language=${course}&lang=${lang}`)
     .then(response => {
       if (!response.ok) {
-        throw new Error("Failed to fetch lessons");
+        throw new Error("Failed to fetch lessons from GitHub");
       }
       return response.json();
     })
@@ -323,22 +325,30 @@ function loadLessons() {
           lessonSelect.appendChild(group);
         }
       });
+      
+      console.log(`Loaded ${Object.keys(data.basics || {}).length + Object.keys(data.advanced || {}).length} lessons from GitHub`);
     })
     .catch(err => {
-      console.error("Error loading lessons:", err);
+      console.error("Error loading lessons from GitHub:", err);
       // Add a fallback option
-      lessonSelect.innerHTML = "<option value=''>Error loading lessons</option>";
+      lessonSelect.innerHTML = "<option value=''>Error loading lessons from GitHub</option>";
       
       // Add a fallback option for testing
       const option = document.createElement("option");
-      option.value = "Variables and Types";
-      option.textContent = "Variables and Types (fallback)";
+      option.value = "Hello, World!";
+      option.textContent = "Hello, World! (fallback)";
       lessonSelect.appendChild(option);
     });
 }
 
 // Set up all event listeners
 function setupEventListeners() {
+  // Course select change handler
+  courseSelect.addEventListener("change", function() {
+    // Reload lessons when course changes
+    loadLessons();
+  });
+
   // Theme toggle button
   themeToggleBtn.addEventListener("click", toggleTheme);
   

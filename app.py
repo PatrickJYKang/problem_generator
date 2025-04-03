@@ -3,6 +3,7 @@ import json
 import os
 import subprocess
 import db  # Import the database module
+from github_utils import GitHubFetcher  # Import GitHub fetcher
 
 app = Flask(__name__, static_folder='static')
 
@@ -12,9 +13,68 @@ def serve_index():
 
 @app.route('/syllabi/<path:filename>')
 def serve_syllabi(filename):
-    """ Serves files from the syllabi directory """
-    syllabi_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'syllabi')
-    return send_from_directory(syllabi_dir, filename)
+    """ 
+    Fetches syllabus files from GitHub repository.
+    This endpoint now acts as a proxy to GitHub content.
+    """
+    try:
+        # Create a GitHub fetcher
+        github_fetcher = GitHubFetcher()
+        
+        # Parse the requested path
+        path_parts = filename.split('/')
+        language = path_parts[0] if len(path_parts) > 0 else 'learnpython.org'
+        
+        # Handle index.json separately as it's needed for lesson navigation
+        if path_parts[-1] == 'index.json':
+            # Determine language and locale from path
+            lang = path_parts[1] if len(path_parts) > 1 else 'en'
+            repo_path = f"tutorials/{language}/{lang}/index.json"
+            
+            try:
+                content = github_fetcher.get_file_content(repo_path)
+                return jsonify(json.loads(content))
+            except Exception as e:
+                print(f"Error fetching index.json: {str(e)}")
+                return jsonify({"error": "Failed to fetch index.json"}), 404
+        
+        # For all other files, get the full path in the repo
+        try:
+            # Construct repository path
+            repo_path = f"tutorials/{filename}"
+            content = github_fetcher.get_file_content(repo_path)
+            
+            # Determine content type based on file extension
+            if filename.endswith('.json'):
+                return jsonify(json.loads(content))
+            elif filename.endswith('.md'):
+                return content, 200, {'Content-Type': 'text/markdown'}
+            else:
+                return content
+        except Exception as e:
+            print(f"Error fetching file {filename}: {str(e)}")
+            return jsonify({"error": f"Failed to fetch {filename}"}), 404
+    except Exception as e:
+        print(f"General error in serve_syllabi: {str(e)}")
+        return jsonify({"error": "An error occurred"}), 500
+
+@app.route('/github/lessons', methods=['GET'])
+def get_lessons():
+    """ 
+    Gets the list of available lessons from GitHub repository.
+    This helps the frontend to populate the lesson dropdown.
+    """
+    try:
+        language = request.args.get('language', 'learnpython.org')
+        lang = request.args.get('lang', 'en')
+        
+        github_fetcher = GitHubFetcher()
+        lessons = github_fetcher.get_lessons(language, lang)
+        
+        return jsonify(lessons)
+    except Exception as e:
+        print(f"Error fetching lessons: {str(e)}")
+        return jsonify({"error": "Failed to fetch lessons"}), 500
 
 @app.route('/generate', methods=['POST'])
 def generate():
