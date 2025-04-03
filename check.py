@@ -39,15 +39,50 @@ def check_code(code, testcases, language):
         # Run user's code based on language
         try:
             if language == "python":
-                result = subprocess.run(
-                    ["python3", "-c", code],
-                    input=testcase,
-                    capture_output=True,
-                    text=True,
-                    timeout=2
-                )
-                user_output = result.stdout.strip()
-                error_output = result.stderr.strip()
+                # Create a wrapper script that redirects input() prompts to stderr
+                import tempfile
+                with tempfile.NamedTemporaryFile(suffix='.py', delete=False) as wrapper_file:
+                    wrapper_code = f'''
+# Wrap built-in input function to print prompts to stderr instead of stdout
+import builtins
+import sys
+original_input = builtins.input
+
+def input_wrapper(prompt=''):
+    if prompt:
+        print(prompt, file=sys.stderr, end='')
+        sys.stderr.flush()
+    return original_input()
+
+builtins.input = input_wrapper
+
+# User code begins here
+{code}
+'''
+                    wrapper_file.write(wrapper_code.encode())
+                    wrapper_path = wrapper_file.name
+                
+                try:
+                    # Run the code with the wrapper
+                    result = subprocess.run(
+                        ["python3", wrapper_path],
+                        input=testcase,
+                        capture_output=True,
+                        text=True,
+                        timeout=2
+                    )
+                    user_output = result.stdout.strip()
+                    error_output = result.stderr.strip()
+                    
+                    # Clean up the temporary file
+                    import os
+                    os.unlink(wrapper_path)
+                except Exception as e:
+                    # Make sure to clean up even if an error occurs
+                    import os
+                    if os.path.exists(wrapper_path):
+                        os.unlink(wrapper_path)
+                    raise e
             elif language == "java":
                 # Create a temporary Java file from the user code
                 import tempfile
