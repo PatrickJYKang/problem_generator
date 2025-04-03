@@ -1,53 +1,211 @@
 # Problem Generator
 
-A web application that dynamically generates coding problems based on your current learning progress in Python. This tool helps you practice and reinforce your programming skills with targeted exercises.
+A web application that dynamically generates coding problems based on your current learning progress. This tool helps you practice and reinforce your programming skills with targeted exercises that match your knowledge level.
 
 ## Features
 
+- **Multi-language Support**: Write and test code in Python, Java, and C++
 - **Dynamic Problem Generation**: Select your current lesson and get a problem tailored to your learning progress
-- **Interactive Code Editor**: Write and test your Python code directly in the browser
-- **Real Terminal Environment**: Execute code in a true interactive terminal with full input/output support
-- **Automatic Feedback**: Check your solutions against test cases
+- **Interactive Code Editor**: Write and test your code directly in the browser with syntax highlighting
+- **Input/Output Testing**: Provide input to your programs and see the output in real-time
+- **Automatic Feedback**: Check your solutions against test cases with detailed results
 - **Progressive Learning**: The app builds a custom syllabus based on your current lesson, including all previous lessons
-- **Intuitive Lesson Selection**: Easy-to-use dropdown menu organized by learning categories
+- **Problem History**: Review and reload previously generated problems
+- **Dark Mode**: Toggle between light and dark themes for comfortable coding in any environment
+- **Database Storage**: All problems and solutions are stored for future reference
 
 ## How It Works
 
 1. Select your course and current lesson from the dropdown menus
 2. Click "Generate Problem" to receive a problem tailored to your current knowledge
-3. Write your solution in the code editor
-4. Run your code to test it
-5. Check your answer against the provided test cases
+3. Choose your preferred programming language (Python, Java, or C++)
+4. Write your solution in the code editor
+5. Run your code to test it with custom input
+6. Check your answer against the provided test cases
+7. Access your problem history to review previous exercises
 
-## Technical Details
+## System Architecture
 
-- **Frontend**: HTML, CSS, JavaScript with CodeMirror for the code editor and xterm.js for the terminal
-- **Backend**: Flask (Python) with Flask-SocketIO for real-time terminal communication
-- **Problem Generation**: Uses OpenAI models in Dify to generate problems based on the syllabus
-- **Terminal Implementation**: Full PTY-based terminal using Socket.IO for bidirectional communication
-- **Syllabus Management**: Dynamic syllabus generation based on the user's current lesson progress
+### Frontend
+- **HTML/CSS/JavaScript**: Responsive UI with dynamic content loading
+- **CodeMirror**: Feature-rich code editor with syntax highlighting for Python, Java, and C++
+- **Marked.js**: Markdown rendering for problem descriptions
+- **Light/Dark Theme**: Toggle between color schemes with persistent user preference storage
 
-## Installation
+### Backend
+- **Flask**: Python web framework handling HTTP requests and serving content
+- **SQLite Database**: Stores generated problems, test cases, and user solutions
+- **Multi-language Execution**: Supports running code in Python, Java, and C++
+- **Error Handling**: Robust handling of compilation and runtime errors
+- **Dynamic Syllabus Generation**: Creates targeted problems based on learning progress
 
-1. Clone the repository
-2. Install the required dependencies:
+### Database Schema
+- **Problems**: Stores problem title, description, course, and lesson
+- **Testcases**: Linked to problems, contains input and expected output for validation
+- **Solutions**: Tracks user solution attempts, language used, and test results
+
+## Installation and Setup
+
+### Prerequisites
+- Python 3.6+
+- Java JDK 11+ (for Java execution)
+- g++ with C++17 support (for C++ execution)
+
+### Installation
+
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/PatrickJYKang/problem_generator.git
+   cd problem_generator
+   ```
+
+2. Install dependencies:
    ```bash
    pip install -r requirements.txt
    ```
+
 3. Run the application:
    ```bash
    python app.py
    ```
 
-## Deployment Notes
+4. Access the web interface at http://localhost:5000
 
-When deploying to a production environment, ensure proper configuration of WebSocket support:
+## Deployment
 
-- Use the eventlet worker with Gunicorn:
-  ```bash
-  gunicorn --worker-class eventlet -w 1 app:app
-  ```
-- Configure your web server to support WebSocket connections for the real terminal functionality
+### Local Development
+For local development, run the application using Flask's built-in server:
+```bash
+python app.py
+```
+Or use the debug server for additional logging:
+```bash
+python debug_server.py
+```
+
+### Production Deployment
+
+#### Using Gunicorn (Recommended)
+For production environments, we recommend using Gunicorn as a WSGI server:
+
+1. Install Gunicorn:
+   ```bash
+   pip install gunicorn
+   ```
+
+2. Start the server:
+   ```bash
+   gunicorn -c gunicorn_config.py app:app
+   ```
+
+   The included `gunicorn_config.py` file contains optimized settings for production.
+
+#### Deploying on a VPS/Dedicated Server
+
+1. Clone the repository to your server
+2. Set up a virtual environment and install dependencies
+3. Configure the database path in `db.py` to a persistent location
+4. Set up a systemd service for automatic startup:
+
+   Create `/etc/systemd/system/problem-generator.service`:
+   ```
+   [Unit]
+   Description=Problem Generator Application
+   After=network.target
+
+   [Service]
+   User=your_username
+   WorkingDirectory=/path/to/problem_generator
+   ExecStart=/path/to/venv/bin/gunicorn -c gunicorn_config.py app:app
+   Restart=always
+
+   [Install]
+   WantedBy=multi-user.target
+   ```
+
+5. Enable and start the service:
+   ```bash
+   sudo systemctl enable problem-generator
+   sudo systemctl start problem-generator
+   ```
+
+6. Set up Nginx as a reverse proxy:
+
+   ```
+   server {
+       listen 80;
+       server_name yourdomain.com;
+
+       location / {
+           proxy_pass http://localhost:8000;
+           proxy_set_header Host $host;
+           proxy_set_header X-Real-IP $remote_addr;
+           proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+           proxy_set_header X-Forwarded-Proto $scheme;
+       }
+   }
+   ```
+
+7. Obtain SSL certificates with Let's Encrypt:
+   ```bash
+   sudo certbot --nginx -d yourdomain.com
+   ```
+
+#### Deploying on PythonAnywhere
+
+1. Create a PythonAnywhere account
+2. Upload your code or clone from GitHub
+3. Create a virtual environment and install requirements
+4. Set up a web app with the following configuration:
+   - Framework: Flask
+   - Path to source code: `/path/to/problem_generator`
+   - Working directory: `/path/to/problem_generator`
+   - WSGI configuration file: Edit to point to your app
+
+5. Configure the database path in `db.py` to a location in your user directory
+
+#### Deploying with Docker
+
+1. Build the Docker image:
+   ```bash
+   docker build -t problem-generator .
+   ```
+
+2. Run the container:
+   ```bash
+   docker run -d -p 8000:8000 -v data:/var/lib/problem_generator problem-generator
+   ```
+
+   This mounts a volume for persistent database storage.
+
+## API Endpoints
+
+- **GET /** - Serves the main application interface
+- **POST /generate** - Generates a new problem based on course and lesson
+- **POST /run_code** - Executes user code in the specified language
+- **POST /check_code** - Validates user code against test cases
+- **GET /problems** - Retrieves all stored problems or filters by course/lesson
+- **GET /problems/:id** - Gets a specific problem by ID with test cases
+- **GET /problems/:id/solutions** - Gets all solutions for a specific problem
+
+## Project Structure
+
+- **app.py**: Main Flask application with route handlers
+- **db.py**: Database interaction module for storing and retrieving problems
+- **run.py**: Handles code execution for different programming languages
+- **check.py**: Validates code against test cases with detailed feedback
+- **request.py**: Interfaces with external API for problem generation
+- **static/**: Frontend assets (HTML, CSS, JavaScript)
+- **syllabi/**: Curriculum content organized by course and lesson
+
+## Customization
+
+The application can be customized in several ways:
+
+1. **Add New Languages**: Extend `run.py` and `check.py` with additional language support
+2. **Custom Courses**: Add new curriculum content to the syllabi directory
+3. **UI Customization**: Modify the CSS variables in `style.css` and `dark-mode.css`
+4. **Database Location**: Configure the database path in `db.py`
 
 ## Attribution
 

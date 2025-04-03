@@ -8,7 +8,6 @@
   <!-- Correct path for CSS -->
   <link rel="stylesheet" href="/static/style.css" />
   <link rel="stylesheet" href="/static/dark-mode.css" />
-  <link rel="stylesheet" href="/static/terminal.css" />
 
   <!-- CodeMirror (for code editor) -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/codemirror.min.css" />
@@ -16,15 +15,6 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/codemirror.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/python/python.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/clike/clike.min.js"></script>
-  
-  <!-- xterm.js - Real Terminal Library -->
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/xterm@5.3.0/css/xterm.min.css" />
-  <script src="https://cdn.jsdelivr.net/npm/xterm@5.3.0/lib/xterm.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/xterm-addon-fit@0.8.0/lib/xterm-addon-fit.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/xterm-addon-web-links@0.9.0/lib/xterm-addon-web-links.min.js"></script>
-  
-  <!-- Socket.IO client for real-time communication -->
-  <script src="https://cdn.socket.io/4.7.4/socket.io.min.js"></script>
 
   <!-- Marked.js for Markdown rendering -->
   <script src="https://cdn.jsdelivr.net/npm/marked@5.0.2/marked.min.js"></script>
@@ -94,17 +84,11 @@
       </div>
 
       <div class="bottom-container">
-        <div class="terminal-container" id="terminal-container">
-          <div class="terminal-header">
-            <span>Terminal</span>
-            <div class="terminal-controls">
-              <button id="clear-terminal-btn" title="Clear Terminal">Clear</button>
-            </div>
-          </div>
-          <div id="xterm-container" class="xterm-container">
-            <!-- xterm.js terminal will be mounted here -->
-          </div>
+        <div class="input-container" id="input-container">
+          <h4>Enter Program Input:</h4>
+          <textarea id="input-editor" placeholder="Line-by-line input for your code..."></textarea>
         </div>
+        <div class="console-container" id="console" style="display: none;"></div>
       </div>
     </div>
   </div>
@@ -129,8 +113,7 @@
     </div>
   </div>
 
-  <!-- Include the external JavaScript files -->  
+  <!-- Include the external JavaScript file -->  
   <script src="/static/script.js"></script>
-  <script src="/static/terminal.js"></script>
 </body>
 </html>

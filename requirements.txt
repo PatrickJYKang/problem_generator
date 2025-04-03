@@ -1,12 +1,5 @@
-Flask==2.2.5
-Flask-Cors==4.0.0
-requests==2.31.0
-python-dotenv==1.0.0
-gunicorn==21.2.0
-# Socket.IO dependencies for real terminal
-Flask-SocketIO==5.3.6
-python-socketio==5.10.0
-eventlet==0.33.3
-bidict==0.22.1
-# Terminal handling
-ptyprocess==0.7.0
+Flask
+Flask-Cors
+requests
+python-dotenv
+gunicorn

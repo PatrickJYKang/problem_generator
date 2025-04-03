@@ -80,8 +80,8 @@ document.addEventListener("DOMContentLoaded", function() {
   codeEditor.setSize(null, 400);
   
   // Set consistent initial heights for input boxes
-  if (inputContainer) inputContainer.style.minHeight = "150px";
-  if (inputEditor) inputEditor.style.height = "120px";
+  inputContainer.style.minHeight = "150px";
+  inputEditor.style.height = "120px";
 
   // Load lessons for the selected course
   loadLessons();
@@ -215,10 +215,6 @@ function checkForProblems() {
 function loadLessons() {
   const course = courseSelect.value;
   
-  // Show loading in the dropdown
-  lessonSelect.innerHTML = "<option value=''>Loading lessons...</option>";
-  lessonSelect.disabled = true;
-  
   fetch(`/syllabi/python/index.json`)
     .then(response => {
       if (!response.ok) {
@@ -227,13 +223,13 @@ function loadLessons() {
       return response.json();
     })
     .then(data => {
-      // Clear any existing options
+      // Clear any existing options except the placeholder
       lessonSelect.innerHTML = "";
       
-      // Add a default placeholder option
+      // Add a default empty option
       const defaultOption = document.createElement("option");
       defaultOption.value = "";
-      defaultOption.textContent = "Select your current lesson...";
+      defaultOption.textContent = "-- Select a lesson --";
       defaultOption.disabled = true;
       defaultOption.selected = true;
       lessonSelect.appendChild(defaultOption);
@@ -242,7 +238,7 @@ function loadLessons() {
       const categories = ["basics", "advanced"];
       
       categories.forEach(category => {
-        if (data[category] && Object.keys(data[category]).length > 0) {
+        if (data[category]) {
           // Create an optgroup for this category
           const group = document.createElement("optgroup");
           group.label = category.charAt(0).toUpperCase() + category.slice(1); // Capitalize
@@ -258,42 +254,17 @@ function loadLessons() {
           lessonSelect.appendChild(group);
         }
       });
-      
-      // Enable the select element now that it's populated
-      lessonSelect.disabled = false;
-      
-      // If we have a previously selected lesson, try to re-select it
-      const savedLesson = localStorage.getItem('selectedLesson');
-      if (savedLesson) {
-        // Find if the option exists
-        const options = Array.from(lessonSelect.querySelectorAll('option'));
-        const optionExists = options.some(option => option.value === savedLesson);
-        
-        if (optionExists) {
-          lessonSelect.value = savedLesson;
-        }
-      }
     })
     .catch(err => {
       console.error("Error loading lessons:", err);
-      // Add a clear error message
-      lessonSelect.innerHTML = "";
-      
-      const errorOption = document.createElement("option");
-      errorOption.value = "";
-      errorOption.textContent = "Error loading lessons - please try again";
-      errorOption.disabled = true;
-      errorOption.selected = true;
-      lessonSelect.appendChild(errorOption);
+      // Add a fallback option
+      lessonSelect.innerHTML = "<option value=''>Error loading lessons</option>";
       
       // Add a fallback option for testing
       const option = document.createElement("option");
       option.value = "Variables and Types";
       option.textContent = "Variables and Types (fallback)";
       lessonSelect.appendChild(option);
-      
-      // Re-enable the select
-      lessonSelect.disabled = false;
     });
 }
 
@@ -318,14 +289,6 @@ function setupEventListeners() {
     }
   });
   
-  // Save selected lesson whenever it changes
-  lessonSelect.addEventListener("change", () => {
-    const selectedLesson = lessonSelect.value;
-    if (selectedLesson) {
-      localStorage.setItem('selectedLesson', selectedLesson);
-    }
-  });
-
   // Handle language change
   languageSelect.addEventListener("change", () => {
     const language = languageSelect.value;
@@ -451,35 +414,42 @@ int main() {
     inputEditor.style.height = "120px";
   });
 
-  // Run Code logic - Replaced by our new terminal implementation
+  // Run Code logic
   runBtn.addEventListener("click", () => {
-    // Only execute this handler if the terminal isn't initialized yet
-    if (!window.terminal) {
-      console.warn("Terminal not initialized, falling back to old implementation");
-      
-      const code = codeEditor.getValue();
-      const language = languageSelect.value;
+    const code = codeEditor.getValue();
+    const userInput = inputEditor.value;
+    const language = languageSelect.value;
 
-      // Show the terminal container instead of input/console
-      const terminalContainer = document.getElementById('terminal-container');
-      if (terminalContainer) {
-        terminalContainer.style.display = 'block';
-        resetBtn.style.display = "inline-block";
-        
-        // If we have a terminal class but no instance, try to initialize it
-        if (typeof Terminal !== 'undefined') {
-          window.terminal = new Terminal();
-          window.terminal.executeCode();
-          return;
-        }
-      }
-      
-      // Fallback to old behavior if terminal container not found
-      alert("Terminal container not found. Please refresh the page.");
-    } else {
-      // Use our new terminal implementation
-      window.terminal.executeCode();
+    // Save the current height of the input container before hiding it
+    const currentHeight = inputContainer.offsetHeight;
+    
+    inputContainer.style.display = "none";
+    consoleDiv.style.display = "block";
+    // Apply the same height to the console
+    if (currentHeight > 0) {
+      consoleDiv.style.minHeight = `${currentHeight}px`;
     }
+    
+    consoleDiv.textContent = `Running ${language} code...`;
+    resetBtn.style.display = "inline-block";
+
+    fetch("/run_code", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ code, stdin: userInput, language })
+    })
+    .then(res => res.json())
+    .then(data => {
+      let output = "";
+      if (data.stdout) output += data.stdout + "\n";
+      if (data.stderr) output += "Errors:\n" + data.stderr + "\n";
+      if (!data.stdout && !data.stderr) output = "No output.";
+      consoleDiv.textContent = output;
+    })
+    .catch(err => {
+      console.error("Error:", err);
+      consoleDiv.textContent = "Error running code.";
+    });
   });
 
   // Reset logic
