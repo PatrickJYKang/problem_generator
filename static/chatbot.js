@@ -82,7 +82,7 @@ function addUserMessage(message) {
   scrollToBottom();
 }
 
-// Add bot message to chat window
+// Add bot message to chat window with markdown support
 function addBotMessage(message) {
   // Remove typing indicator if present
   const typingIndicator = document.querySelector('.typing-indicator');
@@ -92,7 +92,52 @@ function addBotMessage(message) {
 
   const messageElement = document.createElement('div');
   messageElement.className = 'message bot-message';
-  messageElement.textContent = message;
+  
+  // Use marked.js to render markdown
+  try {
+    // Set options for marked to enable proper code highlighting and safety
+    marked.setOptions({
+      breaks: true,        // Convert line breaks to <br>
+      gfm: true,           // GitHub Flavored Markdown
+      headerIds: false,    // Don't add IDs to headers (for security)
+      mangle: false,       // Don't mangle email addresses
+      sanitize: true,      // Sanitize the output (prevent XSS)
+    });
+    
+    // Render markdown to HTML
+    messageElement.innerHTML = marked.parse(message);
+    
+    // Add special handling for code blocks
+    const codeBlocks = messageElement.querySelectorAll('pre code');
+    codeBlocks.forEach(codeBlock => {
+      // Create a copy button for code blocks
+      const copyButton = document.createElement('button');
+      copyButton.className = 'copy-code-btn';
+      copyButton.innerText = 'Copy';
+      copyButton.onclick = function() {
+        navigator.clipboard.writeText(codeBlock.innerText)
+          .then(() => {
+            copyButton.innerText = 'Copied!';
+            setTimeout(() => { copyButton.innerText = 'Copy'; }, 2000);
+          })
+          .catch(err => {
+            console.error('Failed to copy code:', err);
+          });
+      };
+      
+      // Create a wrapper for the code block to position the button
+      const wrapper = document.createElement('div');
+      wrapper.className = 'code-block-wrapper';
+      codeBlock.parentNode.insertBefore(wrapper, codeBlock);
+      wrapper.appendChild(codeBlock);
+      wrapper.appendChild(copyButton);
+    });
+  } catch (error) {
+    console.error('Error rendering markdown:', error);
+    // Fallback to plain text if markdown parsing fails
+    messageElement.textContent = message;
+  }
+  
   chatMessages.appendChild(messageElement);
   scrollToBottom();
 }

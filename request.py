@@ -20,8 +20,8 @@ API_KEY = os.getenv("PROBLEM_GENERATOR_API_KEY")
 if not API_KEY:
     raise ValueError("Missing PROBLEM_GENERATOR_API_KEY. Set it in the .env file.")
 
-# Get base URL from environment variables, with a fallback
-BASE_URL = os.getenv("PROBLEM_GENERATOR_API_URL", "http://47.251.117.165/v1/workflows/run").rsplit('/', 1)[0]
+# Keep the original BASE_URL - this is critical for the generate functionality
+BASE_URL = "http://47.251.117.165/v1"
 
 def upload_file(file_path, user):
     """ Uploads a file to the API and returns the file ID. """
@@ -55,7 +55,8 @@ def upload_file(file_path, user):
 
 def run_workflow(inputs, response_mode, user):
     """ Calls the workflow API. """
-    url = f"{BASE_URL}/workflows/run"
+    # Use the full workflow URL from environment or fall back to constructed URL
+    workflow_url = os.getenv("PROBLEM_GENERATOR_API_URL", f"{BASE_URL}/workflows/run")
     headers = {
         "Authorization": f"Bearer {API_KEY}",
         "Content-Type": "application/json"
@@ -68,10 +69,10 @@ def run_workflow(inputs, response_mode, user):
     }
     
     try:
-        debug_print(f"Making workflow API request to: {url}")
+        debug_print(f"Making workflow API request to: {workflow_url}")
         debug_print(f"Request data: {json.dumps(data, indent=2)}")
         
-        response = requests.post(url, headers=headers, json=data)
+        response = requests.post(workflow_url, headers=headers, json=data)
         
         debug_print(f"Workflow response status: {response.status_code}")
         if response.status_code == 200:

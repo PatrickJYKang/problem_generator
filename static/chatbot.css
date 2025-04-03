@@ -90,6 +90,8 @@
   background-color: #e0e0e0;
   color: #333333;
   align-self: flex-start;
+  /* Improved styling for markdown content */
+  line-height: 1.5;
 }
 
 .chat-input {
@@ -161,6 +163,162 @@
   background-color: #2d2d2d;
   border: 1px solid #555555;
   color: #e0e0e0;
+}
+
+/* Markdown styling for bot messages */
+.bot-message h1,
+.bot-message h2,
+.bot-message h3,
+.bot-message h4,
+.bot-message h5,
+.bot-message h6 {
+  margin-top: 16px;
+  margin-bottom: 10px;
+  font-weight: 600;
+  line-height: 1.25;
+}
+
+.bot-message h1 { font-size: 1.5em; }
+.bot-message h2 { font-size: 1.3em; }
+.bot-message h3 { font-size: 1.2em; }
+.bot-message h4 { font-size: 1.1em; }
+.bot-message h5 { font-size: 1em; }
+.bot-message h6 { font-size: 0.9em; }
+
+.bot-message p {
+  margin-top: 0;
+  margin-bottom: 10px;
+}
+
+.bot-message ul,
+.bot-message ol {
+  padding-left: 20px;
+  margin-bottom: 10px;
+}
+
+.bot-message li {
+  margin-bottom: 5px;
+}
+
+.bot-message a {
+  color: #0366d6;
+  text-decoration: none;
+}
+
+.bot-message a:hover {
+  text-decoration: underline;
+}
+
+.bot-message code {
+  font-family: monospace;
+  padding: 2px 4px;
+  background-color: rgba(0, 0, 0, 0.05);
+  border-radius: 3px;
+  font-size: 0.9em;
+}
+
+.bot-message pre {
+  background-color: rgba(0, 0, 0, 0.05);
+  border-radius: 3px;
+  padding: 12px;
+  overflow-x: auto;
+  margin-bottom: 10px;
+  position: relative;
+}
+
+.bot-message pre code {
+  background-color: transparent;
+  padding: 0;
+  border-radius: 0;
+  font-size: 0.9em;
+  display: block;
+  white-space: pre-wrap;
+}
+
+.code-block-wrapper {
+  position: relative;
+}
+
+.copy-code-btn {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  background-color: #555555;
+  color: white;
+  border: none;
+  border-radius: 3px;
+  padding: 4px 8px;
+  font-size: 12px;
+  cursor: pointer;
+  opacity: 0.7;
+  transition: opacity 0.2s;
+}
+
+.copy-code-btn:hover {
+  opacity: 1;
+}
+
+.bot-message blockquote {
+  margin-left: 0;
+  padding-left: 10px;
+  border-left: 3px solid #ddd;
+  color: #555;
+  font-style: italic;
+}
+
+.bot-message table {
+  border-collapse: collapse;
+  width: 100%;
+  margin-bottom: 16px;
+}
+
+.bot-message table th,
+.bot-message table td {
+  border: 1px solid #ddd;
+  padding: 6px 12px;
+  text-align: left;
+}
+
+.bot-message table th {
+  background-color: #f0f0f0;
+}
+
+.bot-message hr {
+  border: 0;
+  height: 1px;
+  background-color: #ddd;
+  margin: 16px 0;
+}
+
+/* Dark mode support for markdown */
+[data-theme="dark"] .bot-message code {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+[data-theme="dark"] .bot-message pre {
+  background-color: rgba(255, 255, 255, 0.05);
+}
+
+[data-theme="dark"] .bot-message blockquote {
+  border-left-color: #555;
+  color: #aaa;
+}
+
+[data-theme="dark"] .bot-message a {
+  color: #58a6ff;
+}
+
+[data-theme="dark"] .bot-message table th {
+  background-color: #333;
+}
+
+[data-theme="dark"] .bot-message table th,
+[data-theme="dark"] .bot-message table td {
+  border-color: #555;
+}
+
+[data-theme="dark"] .bot-message hr {
+  background-color: #555;
 }
 
 /* Loading animation for chat */
