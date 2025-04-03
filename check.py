@@ -55,7 +55,11 @@ def input_wrapper(prompt=''):
         print(prompt, file=sys.stderr, end='')
         sys.stderr.flush()
     # Get input from stdin without printing anything to stdout
-    return sys.stdin.readline().rstrip("\n")
+    line = sys.stdin.readline()
+    # Remove the trailing newline character if present
+    if line.endswith('\n'):
+        line = line[:-1]
+    return line
 
 # Override the built-in input function
 builtins.input = input_wrapper
