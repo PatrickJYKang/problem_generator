@@ -20,8 +20,7 @@ CHATBOT_API_KEY = os.getenv('DIFY_API_KEY', 'app-rDDSJ8nmFBq2bDxQ2j4oFQsw')
 APP_ID = 'd91beb8e-72c6-4aec-be40-6165f64d9222'
 
 # The single, correct API URL for Dify
-# Based on documentation at http://47.251.117.165/app/d91beb8e-72c6-4aec-be40-6165f64d9222/develop
-CHATBOT_API_URL = "http://47.251.117.165/api/chat-messages"
+CHATBOT_API_URL = f"http://47.251.117.165/app/{APP_ID}/api/chat-messages"
 
 # Debug logging for API requests
 import logging
@@ -65,19 +64,15 @@ def handle_chatbot_request():
 
         # Prepare the payload for Dify API
         payload = {
-            'inputs': {},
+            'inputs': {
+                'course': course,
+                'lesson': lesson,
+            },
             'query': user_query,
-            'user': 'user123',  # Add a user identifier
             'response_mode': 'blocking',  # Use blocking instead of streaming for simplicity
-            'conversation_id': conversation_id,
-            'app_id': APP_ID  # Include app_id in the payload
+            'conversation_id': conversation_id
+            # No need to include app_id in payload as it's in the URL
         }
-        
-        # Add non-empty inputs
-        if course:
-            payload['inputs']['course'] = course
-        if lesson:
-            payload['inputs']['lesson'] = lesson
 
         # Add problem to inputs if available
         if problem:
@@ -85,8 +80,7 @@ def handle_chatbot_request():
 
         # Set up headers for the API request
         headers = {
-            'Authorization': f'Bearer {CHATBOT_API_KEY}',
-            'Content-Type': 'application/json'
+            'Authorization': f'Bearer {CHATBOT_API_KEY}'
         }
 
         # Make API request to Dify
@@ -98,31 +92,19 @@ def handle_chatbot_request():
         try:
             if files:
                 # When sending files, we need to use multipart/form-data
-                # First, let's create a proper request payload
-                request_payload = {
-                    'query': user_query,
-                    'user': 'user123',
-                    'response_mode': 'blocking',
-                    'app_id': APP_ID
+                multipart_data = {
+                    'query': (None, user_query),
+                    'response_mode': (None, 'blocking'),  # Use blocking instead of streaming for simplicity
+                    # App ID is in the URL, not needed in the form data
                 }
                 
-                # Add inputs to the request payload
-                request_payload['inputs'] = {}
-                if course:
-                    request_payload['inputs']['course'] = course
-                if lesson:
-                    request_payload['inputs']['lesson'] = lesson
-                if problem:
-                    request_payload['inputs']['problem'] = problem
+                # Add inputs as separate fields
+                for key, value in payload.get('inputs', {}).items():
+                    multipart_data[f'inputs[{key}]'] = (None, value)
                 
                 # Add conversation_id if present
                 if conversation_id:
-                    request_payload['conversation_id'] = conversation_id
-                
-                # Create multipart form data with the request JSON and files
-                multipart_data = {
-                    'request': (None, json.dumps(request_payload), 'application/json')
-                }
+                    multipart_data['conversation_id'] = (None, conversation_id)
                 
                 # Add the files
                 multipart_data.update(files)

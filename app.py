@@ -306,14 +306,8 @@ def delete_problem(problem_id):
 @app.route('/chatbot', methods=['POST'])
 def chatbot_endpoint():
     """ Handle chatbot requests through Dify API """
-    # Temporarily return a graceful error to keep the app running
-    return jsonify({
-        "error": "Chatbot temporarily unavailable", 
-        "answer": "The chatbot service is currently unavailable. We're working on fixing it."
-    })
-    
-    # Commented out to prevent 502 errors
-    # return chatbot.handle_chatbot_request()
+    # This route now uses the dedicated chatbot module
+    return chatbot.handle_chatbot_request()
 
 if __name__ == '__main__':
     app.run(port=5000, debug=True)
