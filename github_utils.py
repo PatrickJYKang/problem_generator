@@ -45,27 +45,46 @@ class GitHubFetcher:
         Returns:
             The content of the file as a string
         """
+        print(f"Fetching file content for path: {path}")
         cache_path = self._get_cache_path(path)
         
         # Check if we have a valid cached version
         if use_cache and self._is_cache_valid(cache_path):
-            with open(cache_path, 'r', encoding='utf-8') as f:
-                return f.read()
+            print(f"Using cached content for {path}")
+            try:
+                with open(cache_path, 'r', encoding='utf-8') as f:
+                    return f.read()
+            except Exception as e:
+                print(f"Error reading from cache: {str(e)}")
+                # Continue to fetch from GitHub if cache read fails
         
         # Fetch from GitHub
         url = f"{self.raw_base_url}/{path}"
-        response = requests.get(url)
+        print(f"Fetching from GitHub URL: {url}")
         
-        if response.status_code != 200:
-            raise Exception(f"Failed to fetch file from GitHub: {url}, Status: {response.status_code}")
+        try:
+            response = requests.get(url, timeout=10)
+            
+            if response.status_code != 200:
+                print(f"GitHub API error: Status {response.status_code}, Response: {response.text}")
+                raise Exception(f"Failed to fetch file from GitHub: {url}, Status: {response.status_code}")
+            
+            content = response.text
+            
+            # Save to cache
+            try:
+                with open(cache_path, 'w', encoding='utf-8') as f:
+                    f.write(content)
+                print(f"Cached content for {path}")
+            except Exception as e:
+                print(f"Error writing to cache: {str(e)}")
+                # Continue even if cache write fails
+            
+            return content
         
-        content = response.text
-        
-        # Save to cache
-        with open(cache_path, 'w', encoding='utf-8') as f:
-            f.write(content)
-        
-        return content
+        except requests.RequestException as e:
+            print(f"Request exception when fetching {url}: {str(e)}")
+            raise Exception(f"Network error when fetching from GitHub: {str(e)}")
     
     def list_directory(self, path):
         """
@@ -77,13 +96,27 @@ class GitHubFetcher:
         Returns:
             A list of items in the directory
         """
+        print(f"Listing directory: {path}")
         url = f"{self.api_base_url}/{path}"
-        response = requests.get(url)
+        print(f"GitHub API URL: {url}")
         
-        if response.status_code != 200:
-            raise Exception(f"Failed to list directory: {url}, Status: {response.status_code}")
-        
-        return response.json()
+        try:
+            response = requests.get(url, timeout=10)
+            
+            if response.status_code != 200:
+                print(f"GitHub API error: Status {response.status_code}, Response: {response.text}")
+                raise Exception(f"Failed to list directory: {url}, Status: {response.status_code}")
+            
+            data = response.json()
+            print(f"Successfully listed directory with {len(data)} items")
+            return data
+            
+        except requests.RequestException as e:
+            print(f"Request exception when listing directory {path}: {str(e)}")
+            raise Exception(f"Network error when listing directory from GitHub: {str(e)}")
+        except ValueError as e:
+            print(f"JSON parsing error when listing directory {path}: {str(e)}")
+            raise Exception(f"Failed to parse GitHub response as JSON: {str(e)}")
     
     def get_json_content(self, path, use_cache=True):
         """
@@ -110,8 +143,44 @@ class GitHubFetcher:
         Returns:
             The parsed index.json content for the language
         """
+        print(f"Getting lessons for {language}/{lang}")
         path = f"tutorials/{language}/{lang}/index.json"
-        return self.get_json_content(path)
+        
+        try:
+            result = self.get_json_content(path)
+            print(f"Successfully retrieved lessons from {path}")
+            return result
+        except Exception as e:
+            print(f"Error getting lessons from {path}: {str(e)}")
+            
+            # Fallback to a simplified structure if we can't get the real lessons
+            print("Providing fallback lesson structure")
+            return {
+                "basics": {
+                    "Hello, World!": "Hello, World!",
+                    "Variables and Types": "Variables and Types",
+                    "Lists": "Lists",
+                    "Basic Operators": "Basic Operators",
+                    "String Formatting": "String Formatting",
+                    "Basic String Operations": "Basic String Operations",
+                    "Conditions": "Conditions",
+                    "Loops": "Loops",
+                    "Functions": "Functions",
+                    "Classes and Objects": "Classes and Objects"
+                },
+                "advanced": {
+                    "Generators": "Generators",
+                    "List Comprehensions": "List Comprehensions",
+                    "Multiple Function Arguments": "Multiple Function Arguments",
+                    "Regular Expressions": "Regular Expressions",
+                    "Exception Handling": "Exception Handling",
+                    "Sets": "Sets",
+                    "Serialization": "Serialization",
+                    "Partial functions": "Partial functions",
+                    "Code Introspection": "Code Introspection",
+                    "Decorators": "Decorators"
+                }
+            }
     
     def build_syllabus(self, lesson, language="learnpython.org", lang="en"):
         """
