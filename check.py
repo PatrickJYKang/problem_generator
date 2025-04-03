@@ -41,36 +41,38 @@ def check_code(code, testcases, language):
             if language == "python":
                 # Create a wrapper script that redirects input() prompts to stderr
                 import tempfile
-                with tempfile.NamedTemporaryFile(suffix='.py', delete=False) as wrapper_file:
-                    wrapper_code = f'''
-# Wrap built-in input function to print prompts to stderr instead of stdout
-import builtins
-import sys
-original_input = builtins.input
-
-# This completely replaces the input function to ensure prompts only go to stderr
-def input_wrapper(prompt=''):
-    # If there's a prompt, print it to stderr only
-    if prompt:
-        print(prompt, file=sys.stderr, end='')
-        sys.stderr.flush()
-    # Get input from stdin without printing anything to stdout
-    line = sys.stdin.readline()
-    # Remove the trailing newline character if present
-    if line.endswith('\n'):
-        line = line[:-1]
-    return line
-
-# Override the built-in input function
-builtins.input = input_wrapper
-
-# User code begins here
-{code}
-'''
-                    wrapper_file.write(wrapper_code.encode())
-                    wrapper_path = wrapper_file.name
+                import os
+                
+                # Create a temporary file for the wrapper code
+                wrapper_fd, wrapper_path = tempfile.mkstemp(suffix='.py')
                 
                 try:
+                    # Build the wrapper code as separate strings to avoid any escaping issues
+                    wrapper_parts = [
+                        "import builtins",
+                        "import sys",
+                        "original_input = builtins.input",
+                        "",
+                        "def input_wrapper(prompt=''):",
+                        "    if prompt:",
+                        "        print(prompt, file=sys.stderr, end='')",
+                        "        sys.stderr.flush()",
+                        "    line = sys.stdin.readline()",
+                        "    if line and line[-1] == chr(10):",
+                        "        line = line[:-1]",
+                        "    return line",
+                        "",
+                        "builtins.input = input_wrapper",
+                        "",
+                        "# User code begins here",
+                        code
+                    ]
+                    
+                    # Join with newlines and write to file
+                    wrapper_code = "\n".join(wrapper_parts)
+                    with os.fdopen(wrapper_fd, 'w') as f:
+                        f.write(wrapper_code)
+                    
                     # Run the code with the wrapper
                     result = subprocess.run(
                         ["python3", wrapper_path],
@@ -81,16 +83,10 @@ builtins.input = input_wrapper
                     )
                     user_output = result.stdout.strip()
                     error_output = result.stderr.strip()
-                    
-                    # Clean up the temporary file
-                    import os
-                    os.unlink(wrapper_path)
-                except Exception as e:
-                    # Make sure to clean up even if an error occurs
-                    import os
+                finally:
+                    # Always clean up the temporary file
                     if os.path.exists(wrapper_path):
                         os.unlink(wrapper_path)
-                    raise e
             elif language == "java":
                 # Create a temporary Java file from the user code
                 import tempfile
