@@ -1,10 +1,24 @@
 from flask import Flask, request, jsonify, send_from_directory
+from flask_socketio import SocketIO, emit, join_room
 import json
 import os
 import subprocess
 import db  # Import the database module
+import pty
+import select
+import shlex
+import struct
+import fcntl
+import termios
+import signal
+from threading import Thread
 
 app = Flask(__name__, static_folder='static')
+app.config['SECRET_KEY'] = 'problem_generator_key'
+socketio = SocketIO(app, cors_allowed_origins="*")
+
+# Dictionary to track active terminal sessions
+terminals = {}
 
 @app.route('/')
 def serve_index():
@@ -237,5 +251,176 @@ def execute_command():
     except Exception as e:
         return jsonify({"error": f"Error executing command: {str(e)}"}), 500
 
+# Terminal class for real terminal functionality
+class Terminal:
+    def __init__(self, socket, sid):
+        self.socket = socket
+        self.sid = sid
+        self.fd = None
+        self.pid = None
+        self.process = None
+
+    def start(self, shell='/bin/bash'):
+        """Start a new terminal with the specified shell."""
+        # Create a new pseudo-terminal
+        self.pid, self.fd = pty.fork()
+        
+        if self.pid == 0:  # Child process
+            # Execute shell in child process
+            os.execvp(shell, [shell])
+        else:  # Parent process
+            # Set up a thread to read data from the terminal
+            Thread(target=self._read_output).start()
+            return True
+
+    def start_command(self, command):
+        """Start a specific command in a new terminal."""
+        # Create command parts
+        command_parts = shlex.split(command)
+        
+        # Create a new pseudo-terminal
+        self.pid, self.fd = pty.fork()
+        
+        if self.pid == 0:  # Child process
+            # Execute command in child process
+            os.execvp(command_parts[0], command_parts)
+        else:  # Parent process
+            # Set up a thread to read data from the terminal
+            Thread(target=self._read_output).start()
+            return True
+
+    def _read_output(self):
+        """Read output from the terminal and send it to the client."""
+        max_read_bytes = 1024 * 20
+        
+        while True:
+            try:
+                ready_to_read, _, _ = select.select([self.fd], [], [], 0.1)
+                if not ready_to_read:
+                    continue
+                    
+                output = os.read(self.fd, max_read_bytes).decode('utf-8', errors='replace')
+                if output:
+                    # Send output to the client
+                    self.socket.emit('terminal_output', {'output': output}, room=self.sid)
+                else:
+                    # EOF - process terminated
+                    self.socket.emit('terminal_exit', {}, room=self.sid)
+                    break
+            except OSError:
+                # Process exited or error occurred
+                self.socket.emit('terminal_exit', {}, room=self.sid)
+                break
+
+    def resize(self, rows, cols):
+        """Resize the terminal window."""
+        if self.fd:
+            # Create the window size structure
+            winsize = struct.pack("HHHH", rows, cols, 0, 0)
+            fcntl.ioctl(self.fd, termios.TIOCSWINSZ, winsize)
+
+    def write(self, data):
+        """Write data to the terminal."""
+        if self.fd:
+            os.write(self.fd, data.encode())
+
+    def terminate(self):
+        """Terminate the terminal process."""
+        if self.pid:
+            try:
+                os.kill(self.pid, signal.SIGTERM)
+            except OSError:
+                # Process already terminated
+                pass
+
+# Socket.IO event handlers for terminal
+@socketio.on('connect')
+def handle_connect():
+    print('Client connected', request.sid)
+
+@socketio.on('disconnect')
+def handle_disconnect():
+    print('Client disconnected', request.sid)
+    # Terminate any active terminal session for this client
+    if request.sid in terminals:
+        terminals[request.sid].terminate()
+        del terminals[request.sid]
+
+@socketio.on('terminal_init')
+def handle_terminal_init(data):
+    """Initialize a new terminal session."""
+    print('Terminal init requested by', request.sid)
+    
+    # Create a new terminal instance
+    term = Terminal(socketio, request.sid)
+    
+    # Start a bash shell or specified command
+    command = data.get('command', None)
+    if command:
+        success = term.start_command(command)
+    else:
+        success = term.start()
+        
+    if success:
+        # Store the terminal instance
+        terminals[request.sid] = term
+        emit('terminal_ready', {}, room=request.sid)
+    else:
+        emit('terminal_error', {'message': 'Failed to start terminal'}, room=request.sid)
+
+@socketio.on('terminal_input')
+def handle_terminal_input(data):
+    """Send input to the terminal."""
+    if request.sid in terminals:
+        terminals[request.sid].write(data.get('input', ''))
+
+@socketio.on('terminal_resize')
+def handle_terminal_resize(data):
+    """Resize the terminal."""
+    if request.sid in terminals:
+        rows = data.get('rows', 24)
+        cols = data.get('cols', 80)
+        terminals[request.sid].resize(rows, cols)
+
+@socketio.on('terminal_kill')
+def handle_terminal_kill():
+    """Kill the terminal session."""
+    if request.sid in terminals:
+        terminals[request.sid].terminate()
+        del terminals[request.sid]
+        emit('terminal_exit', {}, room=request.sid)
+
+@socketio.on('run_python_code')
+def handle_run_python_code(data):
+    """Run Python code in a dedicated terminal."""
+    import tempfile
+    
+    code = data.get('code', '')
+    if not code.strip():
+        emit('terminal_error', {'message': 'No code provided'}, room=request.sid)
+        return
+    
+    # Create a temporary file with the code
+    with tempfile.NamedTemporaryFile(suffix='.py', delete=False) as temp:
+        temp_path = temp.name
+        temp.write(code.encode('utf-8'))
+    
+    # Create a new terminal instance
+    if request.sid in terminals:
+        terminals[request.sid].terminate()
+    
+    term = Terminal(socketio, request.sid)
+    success = term.start_command(f"python3 {temp_path}")
+    
+    if success:
+        terminals[request.sid] = term
+        emit('terminal_ready', {}, room=request.sid)
+    else:
+        emit('terminal_error', {'message': 'Failed to start Python terminal'}, room=request.sid)
+        try:
+            os.unlink(temp_path)
+        except:
+            pass
+
 if __name__ == '__main__':
-    app.run(port=5000, debug=True)
+    socketio.run(app, debug=True)

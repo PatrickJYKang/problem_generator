@@ -1,428 +1,306 @@
-// Real Terminal Implementation for Problem Generator
-
+// Real Terminal Implementation using xterm.js and Socket.IO
 class Terminal {
   constructor() {
     // DOM elements
-    this.terminalContainer = document.getElementById('terminal-container');
-    this.terminalOutput = document.getElementById('terminal-output');
-    this.clearTerminalBtn = document.getElementById('clear-terminal-btn');
+    this.containerElement = document.getElementById('terminal-container');
+    this.xtermContainer = document.getElementById('xterm-container');
+    this.clearButton = document.getElementById('clear-terminal-btn');
     
     // Terminal state
     this.isRunningProgram = false;
-    this.canAcceptInput = false;
-    this.commandHistory = [];
-    this.historyIndex = -1;
-    this.currentInput = '';
-    this.cursorPosition = 0;
-    this.commandPrompt = '>';
-    this.waitingForInput = false;
-    
-    // Create cursor element - this will be moved as needed
-    this.cursor = document.createElement('span');
-    this.cursor.className = 'terminal-cursor';
-    this.cursor.style.display = 'none';
-    
-    // Create the current line display
-    this.currentLineElement = null;
-    
-    // Bind methods
-    this.handleKeyDown = this.handleKeyDown.bind(this);
-    this.clearTerminal = this.clearTerminal.bind(this);
-    this.appendOutput = this.appendOutput.bind(this);
-    this.executeCode = this.executeCode.bind(this);
-    this.processCommand = this.processCommand.bind(this);
-    this.startProgramRun = this.startProgramRun.bind(this);
-    this.endProgramRun = this.endProgramRun.bind(this);
-    this.renderCurrentInput = this.renderCurrentInput.bind(this);
-    this.sendInputToProgram = this.sendInputToProgram.bind(this);
-    this.checkThemeAndApply = this.checkThemeAndApply.bind(this);
-    
-    // Set up event listeners
-    document.addEventListener('keydown', this.handleKeyDown);
-    this.clearTerminalBtn.addEventListener('click', this.clearTerminal);
+    this.socket = null;
+    this.term = null;
+    this.fitAddon = null;
+    this.linksAddon = null;
     
     // Initialize terminal
     this.initialize();
   }
   
-  // Initialize terminal with welcome message
+  // Initialize terminal with all components
   initialize() {
+    // Initialize Socket.IO connection
+    this.initializeSocketConnection();
+    
+    // Initialize xterm.js terminal
+    this.initializeTerminal();
+    
+    // Set up event listeners
+    this.clearButton.addEventListener('click', () => this.clearTerminal());
+    
+    // Handle window resize
+    window.addEventListener('resize', () => this.fitTerminal());
+    
+    // Add theme change handler
+    this.setupThemeListener();
+  }
+  
+  // Initialize Socket.IO connection to the server
+  initializeSocketConnection() {
+    // Connect to the Socket.IO server
+    this.socket = io();
+    
+    // Socket.IO event handlers
+    this.socket.on('connect', () => {
+      console.log('Connected to terminal server');
+    });
+    
+    this.socket.on('disconnect', () => {
+      console.log('Disconnected from terminal server');
+      if (this.term) {
+        this.term.writeln('\r\n\x1b[1;31mDisconnected from terminal server\x1b[0m');
+      }
+    });
+    
+    this.socket.on('terminal_ready', () => {
+      console.log('Terminal session ready');
+    });
+    
+    this.socket.on('terminal_output', (data) => {
+      if (this.term) {
+        this.term.write(data.output);
+      }
+    });
+    
+    this.socket.on('terminal_exit', () => {
+      if (this.term) {
+        this.term.writeln('\r\n\x1b[1;33mTerminal session ended\x1b[0m');
+      }
+      this.isRunningProgram = false;
+    });
+    
+    this.socket.on('terminal_error', (data) => {
+      if (this.term) {
+        this.term.writeln(`\r\n\x1b[1;31mError: ${data.message}\x1b[0m`);
+      }
+    });
+  }
+  
+  // Initialize the xterm.js terminal
+  initializeTerminal() {
+    // Create xterm.js terminal instance
+    this.term = new Terminal({
+      cursorBlink: true,
+      fontSize: 14,
+      fontFamily: 'Menlo, Monaco, "Courier New", monospace',
+      rows: 24,
+      cols: 80,
+      scrollback: 1000,
+      theme: this.getCurrentThemeColors()
+    });
+    
+    // Create and load the FitAddon
+    this.fitAddon = new FitAddon.FitAddon();
+    this.term.loadAddon(this.fitAddon);
+    
+    // Create and load the WebLinksAddon
+    this.linksAddon = new WebLinksAddon.WebLinksAddon();
+    this.term.loadAddon(this.linksAddon);
+    
+    // Open the terminal in its container
+    this.term.open(this.xtermContainer);
+    
+    // Set up input handler - send keystrokes to the server
+    this.term.onData(data => {
+      if (this.socket && this.isRunningProgram) {
+        this.socket.emit('terminal_input', { input: data });
+      }
+    });
+    
+    // Set up resize handler
+    this.term.onResize(size => {
+      if (this.socket && this.isRunningProgram) {
+        this.socket.emit('terminal_resize', { 
+          cols: size.cols, 
+          rows: size.rows 
+        });
+      }
+    });
+    
+    // Initial fit
+    setTimeout(() => this.fitTerminal(), 100);
+    
     // Show welcome message
-    this.appendOutput('Welcome to Problem Generator Terminal', 'welcome-message');
-    this.appendOutput('This terminal only accepts input when running a program.', 'welcome-message');
-    this.appendOutput('The code editor will use this terminal for input/output.', 'welcome-message');
-    this.appendOutput('', 'empty-line');
-    
-    // Apply the current theme
-    this.checkThemeAndApply();
+    this.term.writeln('\x1b[1;34mWelcome to Problem Generator Terminal\x1b[0m');
+    this.term.writeln('This is a real terminal that allows input and output from your programs.');
+    this.term.writeln('Press the Run button to execute your code in this terminal.');
+    this.term.writeln('');
   }
   
-  // Handle all keyboard input to the terminal
-  handleKeyDown(event) {
-    // Only process keyboard input if we're accepting input (during program execution)
-    if (!this.canAcceptInput) return;
-    
-    // Prevent default for most keys when terminal is active
-    if ((event.key.length === 1 || 
-        event.key === 'Enter' || 
-        event.key === 'Backspace' || 
-        event.key === 'ArrowLeft' || 
-        event.key === 'ArrowRight' || 
-        event.key === 'ArrowUp' || 
-        event.key === 'ArrowDown') && 
-        this.isRunningProgram) {
-      event.preventDefault();
-    } else {
-      return; // Let other keys through
-    }
-    
-    // Handle Enter key
-    if (event.key === 'Enter') {
-      const input = this.currentInput;
-      
-      // Add a new line after the current input
-      this.appendOutput('', 'empty-line');
-      
-      // Add to history if not empty
-      if (input.trim()) {
-        this.commandHistory.unshift(input);
-        if (this.commandHistory.length > 50) {
-          this.commandHistory.pop();
+  // Make the terminal fit its container
+  fitTerminal() {
+    if (this.fitAddon) {
+      try {
+        this.fitAddon.fit();
+        
+        // Send new dimensions to server
+        if (this.socket && this.isRunningProgram) {
+          this.socket.emit('terminal_resize', { 
+            cols: this.term.cols, 
+            rows: this.term.rows 
+          });
         }
+      } catch (err) {
+        console.error('Error fitting terminal:', err);
       }
-      
-      // Reset input state
-      this.historyIndex = -1;
-      this.currentInput = '';
-      this.cursorPosition = 0;
-      
-      // Process the input for the running program
-      if (this.isRunningProgram) {
-        // In a real implementation, this would pass the input to the running program
-        // For now we'll just echo it back
-        this.sendInputToProgram(input);
-      }
-      
-      // Create a new line for new input
-      this.renderCurrentInput();
-      return;
     }
-    
-    // Handle Backspace
-    if (event.key === 'Backspace') {
-      if (this.cursorPosition > 0) {
-        this.currentInput = 
-          this.currentInput.substring(0, this.cursorPosition - 1) + 
-          this.currentInput.substring(this.cursorPosition);
-        this.cursorPosition--;
-        this.renderCurrentInput();
-      }
-      return;
-    }
-    
-    // Handle arrow keys
-    if (event.key === 'ArrowLeft') {
-      if (this.cursorPosition > 0) {
-        this.cursorPosition--;
-        this.renderCurrentInput();
-      }
-      return;
-    }
-    
-    if (event.key === 'ArrowRight') {
-      if (this.cursorPosition < this.currentInput.length) {
-        this.cursorPosition++;
-        this.renderCurrentInput();
-      }
-      return;
-    }
-    
-    if (event.key === 'ArrowUp') {
-      if (this.historyIndex < this.commandHistory.length - 1) {
-        this.historyIndex++;
-        this.currentInput = this.commandHistory[this.historyIndex];
-        this.cursorPosition = this.currentInput.length;
-        this.renderCurrentInput();
-      }
-      return;
-    }
-    
-    if (event.key === 'ArrowDown') {
-      if (this.historyIndex > 0) {
-        this.historyIndex--;
-        this.currentInput = this.commandHistory[this.historyIndex];
-      } else if (this.historyIndex === 0) {
-        this.historyIndex = -1;
-        this.currentInput = '';
-      }
-      this.cursorPosition = this.currentInput.length;
-      this.renderCurrentInput();
-      return;
-    }
-    
-    // Handle regular character input
-    if (event.key.length === 1) {
-      this.currentInput = 
-        this.currentInput.substring(0, this.cursorPosition) + 
-        event.key + 
-        this.currentInput.substring(this.cursorPosition);
-      this.cursorPosition++;
-      this.renderCurrentInput();
-    }
-  }
-  
-  // Render the current input line with proper cursor positioning
-  renderCurrentInput() {
-    // Remove previous line if it exists
-    if (this.currentLineElement) {
-      this.currentLineElement.remove();
-    }
-    
-    // Create new line
-    this.currentLineElement = document.createElement('div');
-    this.currentLineElement.className = 'terminal-input-display';
-    
-    // Add prompt
-    const promptSpan = document.createElement('span');
-    promptSpan.className = 'terminal-prompt';
-    promptSpan.textContent = this.commandPrompt + ' ';
-    this.currentLineElement.appendChild(promptSpan);
-    
-    // Add text before cursor
-    if (this.cursorPosition > 0) {
-      const beforeCursor = document.createElement('span');
-      beforeCursor.textContent = this.currentInput.substring(0, this.cursorPosition);
-      this.currentLineElement.appendChild(beforeCursor);
-    }
-    
-    // Add cursor
-    const cursor = document.createElement('span');
-    cursor.className = 'terminal-cursor';
-    this.currentLineElement.appendChild(cursor);
-    
-    // Add text after cursor
-    if (this.cursorPosition < this.currentInput.length) {
-      const afterCursor = document.createElement('span');
-      afterCursor.textContent = this.currentInput.substring(this.cursorPosition);
-      this.currentLineElement.appendChild(afterCursor);
-    }
-    
-    this.terminalOutput.appendChild(this.currentLineElement);
-    this.scrollToBottom();
   }
   
   // Clear the terminal output
   clearTerminal() {
-    this.terminalOutput.innerHTML = '';
-    
-    // Show welcome message again
-    this.appendOutput('Welcome to Problem Generator Terminal', 'welcome-message');
-    this.appendOutput('This terminal only accepts input when running a program.', 'welcome-message');
-    this.appendOutput('The code editor will use this terminal for input/output.', 'welcome-message');
-    this.appendOutput('', 'empty-line');
-    
-    // If we're currently running a program, show the input prompt
-    if (this.isRunningProgram) {
-      this.renderCurrentInput();
+    if (this.term) {
+      this.term.clear();
     }
   }
   
-  // Check the current theme and apply it to the terminal
-  checkThemeAndApply() {
-    const currentTheme = document.documentElement.getAttribute('data-theme') || 'light';
-    this.terminalContainer.setAttribute('data-theme', currentTheme);
+  // Get terminal colors based on the current theme
+  getCurrentThemeColors() {
+    const isDarkTheme = document.documentElement.getAttribute('data-theme') === 'dark';
+    
+    // Return appropriate terminal colors based on theme
+    return isDarkTheme ? {
+      background: '#1e1e1e',
+      foreground: '#f0f0f0',
+      cursor: '#f0f0f0',
+      cursorAccent: '#1e1e1e',
+      selection: 'rgba(255, 255, 255, 0.3)',
+      black: '#000000',
+      red: '#ff5555',
+      green: '#50fa7b',
+      yellow: '#f1fa8c',
+      blue: '#bd93f9',
+      magenta: '#ff79c6',
+      cyan: '#8be9fd',
+      white: '#bbbbbb',
+      brightBlack: '#555555',
+      brightRed: '#ff6e6e',
+      brightGreen: '#69ff94',
+      brightYellow: '#ffffa5',
+      brightBlue: '#d6acff',
+      brightMagenta: '#ff92df',
+      brightCyan: '#a4ffff',
+      brightWhite: '#ffffff'
+    } : {
+      background: '#f5f5f5',
+      foreground: '#333333',
+      cursor: '#333333',
+      cursorAccent: '#f5f5f5',
+      selection: 'rgba(0, 0, 0, 0.3)',
+      black: '#000000',
+      red: '#c91b00',
+      green: '#00c200',
+      yellow: '#c7c400',
+      blue: '#0225c7',
+      magenta: '#c930c7',
+      cyan: '#00c5c7',
+      white: '#c7c7c7',
+      brightBlack: '#676767',
+      brightRed: '#ff6d67',
+      brightGreen: '#5ff967',
+      brightYellow: '#fefb67',
+      brightBlue: '#6871ff',
+      brightMagenta: '#ff76ff',
+      brightCyan: '#5ffdff',
+      brightWhite: '#ffffff'
+    };
   }
-  
-  // Process a command (only used for internal commands during program execution)
-  processCommand(command) {
-    // For now, we just support the clear command
-    if (command.trim().toLowerCase() === 'clear') {
-      this.clearTerminal();
-      return true;
+
+  // Update terminal theme when dark/light mode changes
+  updateTheme() {
+    if (this.term) {
+      this.term.options.theme = this.getCurrentThemeColors();
+      this.term.refresh();
     }
-    return false;
   }
   
-  // Start a program execution
-  startProgramRun() {
-    this.isRunningProgram = true;
-    this.canAcceptInput = true;
-    this.appendOutput('Program is running. Terminal is now accepting input...', 'system-message');
-    this.currentInput = '';
-    this.cursorPosition = 0;
-    this.renderCurrentInput();
-    
-    // Focus the terminal
-    this.terminalContainer.focus();
-  }
-  
-  // End program execution
-  endProgramRun() {
-    this.isRunningProgram = false;
-    this.canAcceptInput = false;
-    this.appendOutput('Program execution completed. Terminal is now read-only.', 'system-message');
-    
-    // Remove the current input line
-    if (this.currentLineElement) {
-      this.currentLineElement.remove();
-      this.currentLineElement = null;
-    }
-  }
-  
-  // Send input to the running program
-  sendInputToProgram(input) {
-    const code = codeEditor.getValue();
-    const language = document.getElementById('language-select').value;
-    
-    // Display the user's input in the terminal
-    this.appendOutput(`${this.commandPrompt} ${input}`, 'user-input');
-    
-    // Set waiting flag
-    this.waitingForInput = true;
-    
-    // Send the input to the backend
-    fetch("/run_code", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ 
-        code, 
-        stdin: input, 
-        language 
-      })
-    })
-    .then(res => res.json())
-    .then(data => {
-      // Clear the waiting flag
-      this.waitingForInput = false;
-      
-      if (data.error) {
-        this.appendOutput(`Error: ${data.error}`, 'command-error');
-        this.endProgramRun();
-        return;
-      }
-      
-      // Display output
-      if (data.stdout && data.stdout.trim()) {
-        this.appendOutput(data.stdout, 'command-output');
-      }
-      
-      // Display errors
-      if (data.stderr && data.stderr.trim()) {
-        this.appendOutput(data.stderr, 'command-error');
-      }
-      
-      // If the program is waiting for input, continue accepting it
-      if (data.requires_input) {
-        if (data.prompt) {
-          this.appendOutput(data.prompt, 'input-prompt');
+  // Set up listener for theme changes
+  setupThemeListener() {
+    // Watch for theme attribute changes on the document element
+    const observer = new MutationObserver(mutations => {
+      mutations.forEach(mutation => {
+        if (mutation.attributeName === 'data-theme') {
+          this.updateTheme();
         }
-        // Keep the terminal in input mode
-        this.renderCurrentInput();
-      } else {
-        // Program is done
-        this.endProgramRun();
-      }
-    })
-    .catch(err => {
-      this.waitingForInput = false;
-      this.appendOutput(`Error: ${err.message || err}`, 'command-error');
-      this.endProgramRun();
+      });
     });
+    
+    observer.observe(document.documentElement, { attributes: true });
   }
   
-  // Execute the code in the editor - this is called by the run button in the UI
+  // Execute the code in the editor using a real terminal
   executeCode() {
     // Get code from CodeMirror editor
     const code = codeEditor.getValue();
     const language = document.getElementById('language-select').value;
     
     if (!code.trim()) {
-      this.appendOutput('No code to run!', 'command-error');
+      if (this.term) {
+        this.term.writeln('\r\n\x1b[1;31mNo code to run!\x1b[0m');
+      }
       return;
     }
     
-    // Clear any previous output first
+    // Clear terminal and show running message
     this.clearTerminal();
+    if (this.term) {
+      this.term.writeln(`\x1b[1;32mRunning ${language} code...\x1b[0m\r\n`);
+    }
     
-    // Check and apply theme before running
-    this.checkThemeAndApply();
+    // Set running state
+    this.isRunningProgram = true;
     
-    // Show what we're doing
-    this.appendOutput(`Running ${language} code...`, 'system-message');
+    // Kill any existing terminal session
+    if (this.socket) {
+      this.socket.emit('terminal_kill');
+    }
     
-    // Enable terminal input for this execution
-    this.startProgramRun();
-    
-    // Use the run_code endpoint
-    fetch("/run_code", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ 
-        code, 
-        stdin: "", // We'll handle stdin differently now - through real-time interaction 
-        language 
+    // Start a new terminal session with the code
+    if (language === 'python') {
+      this.socket.emit('run_python_code', { code });
+    } else {
+      // For other languages, we would need to implement handlers on the server
+      if (this.term) {
+        this.term.writeln(`\x1b[1;33mRunning ${language} code directly in terminal is not yet supported\x1b[0m`);
+      }
+      
+      // Fallback to the regular run_code endpoint
+      fetch("/run_code", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ 
+          code, 
+          stdin: "", 
+          language 
+        })
       })
-    })
-    .then(res => res.json())
-    .then(data => {
-      if (data.error) {
-        this.appendOutput(`Error: ${data.error}`, 'command-error');
-        this.endProgramRun();
-        return;
-      }
-      
-      // Display output
-      if (data.stdout && data.stdout.trim()) {
-        this.appendOutput(data.stdout, 'command-output');
-      }
-      
-      // Display errors
-      if (data.stderr && data.stderr.trim()) {
-        this.appendOutput(data.stderr, 'command-error');
-      }
-      
-      // If program requires input, keep terminal in input mode
-      if (data.requires_input) {
-        if (data.prompt) {
-          this.appendOutput(data.prompt, 'input-prompt');
+      .then(res => res.json())
+      .then(data => {
+        if (data.error) {
+          this.term.writeln(`\x1b[1;31mError: ${data.error}\x1b[0m`);
+          return;
         }
-        // Keep accepting input
-        this.renderCurrentInput();
-      } 
-      // Otherwise if we have no output at all, say so and end the program
-      else if ((!data.stdout || !data.stdout.trim()) && (!data.stderr || !data.stderr.trim())) {
-        this.appendOutput('(No output)', 'system-message');
-        this.endProgramRun();
-      }
-      // If we have some output but no input required, end the program
-      else {
-        this.endProgramRun();
-      }
-    })
-    .catch(err => {
-      this.appendOutput(`Error running code: ${err.message || err}`, 'command-error');
-      this.endProgramRun();
-    });
-  }
-  
-  // Add output to the terminal
-  appendOutput(text, className = '') {
-    const output = document.createElement('div');
-    output.className = className;
-    output.textContent = text;
-    this.terminalOutput.appendChild(output);
-    this.scrollToBottom();
-  }
-  
-  // Scroll to the bottom of the terminal
-  scrollToBottom() {
-    this.terminalOutput.scrollTop = this.terminalOutput.scrollHeight;
-  }
-  
-  // Set terminal lock state programmatically
-  setLock(locked) {
-    if (this.isLocked !== locked) {
-      this.toggleLock();
+        
+        // Display output
+        if (data.stdout && data.stdout.trim()) {
+          this.term.writeln(data.stdout);
+        }
+        
+        // Display errors
+        if (data.stderr && data.stderr.trim()) {
+          this.term.writeln(`\x1b[1;31m${data.stderr}\x1b[0m`);
+        }
+        
+        // If no output at all, say so
+        if ((!data.stdout || !data.stdout.trim()) && (!data.stderr || !data.stderr.trim())) {
+          this.term.writeln('(No output)');
+        }
+        
+        this.isRunningProgram = false;
+      })
+      .catch(err => {
+        this.term.writeln(`\x1b[1;31mError running code: ${err.message || err}\x1b[0m`);
+        this.isRunningProgram = false;
+      });
     }
   }
 }
@@ -431,26 +309,13 @@ class Terminal {
 function connectTerminalToRunButton() {
   const runBtn = document.getElementById('run-btn');
   if (runBtn && window.terminal) {
-    // Add the new listener that uses our terminal
     runBtn.addEventListener('click', () => {
       window.terminal.executeCode();
     });
   }
 }
 
-// Listen for theme changes and update terminal accordingly
-function setupThemeListener() {
-  // Watch for theme attribute changes on the document element
-  const observer = new MutationObserver(mutations => {
-    mutations.forEach(mutation => {
-      if (mutation.attributeName === 'data-theme' && window.terminal) {
-        window.terminal.checkThemeAndApply();
-      }
-    });
-  });
-  
-  observer.observe(document.documentElement, { attributes: true });
-}
+
 
 // Function to initialize the terminal once the page is loaded
 function initTerminal() {
@@ -461,9 +326,6 @@ function initTerminal() {
   
   // Connect it to the run button
   connectTerminalToRunButton();
-  
-  // Setup theme listener
-  setupThemeListener();
 }
 
 // Initialize terminal when DOM is loaded
