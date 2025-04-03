@@ -15,12 +15,12 @@ load_dotenv()
 
 # Get Dify API key from environment variables
 CHATBOT_API_KEY = os.getenv('DIFY_API_KEY', 'app-rDDSJ8nmFBq2bDxQ2j4oFQsw')
-# Correct API URL format for Dify - using the app-specific endpoint
-CHATBOT_API_URL = os.getenv('DIFY_API_URL', 'http://47.251.117.165/api/chat-messages')
 
-# Construct the complete API URL with the app ID
+# The app ID for the Dify chatbot
 APP_ID = 'd91beb8e-72c6-4aec-be40-6165f64d9222'
-CHATBOT_COMPLETE_URL = f"http://47.251.117.165/v1/apps/{APP_ID}/chat-messages"
+
+# The single, correct API URL for Dify
+CHATBOT_API_URL = f"http://47.251.117.165/app/{APP_ID}/api/chat-messages"
 
 # Debug logging for API requests
 import logging
@@ -69,8 +69,9 @@ def handle_chatbot_request():
                 'lesson': lesson,
             },
             'query': user_query,
-            'response_mode': 'streaming',
+            'response_mode': 'blocking',  # Use blocking instead of streaming for simplicity
             'conversation_id': conversation_id
+            # No need to include app_id in payload as it's in the URL
         }
 
         # Add problem to inputs if available
@@ -84,7 +85,7 @@ def handle_chatbot_request():
 
         # Make API request to Dify
         # The correct format for Dify API
-        logging.info(f"Sending request to: {CHATBOT_COMPLETE_URL}")
+        logging.info(f"Sending request to: {CHATBOT_API_URL}")
         logging.info(f"Headers: {headers}")
         logging.info(f"Payload: {json.dumps(payload)[:500]}..." if len(json.dumps(payload)) > 500 else f"Payload: {json.dumps(payload)}")
         
@@ -94,6 +95,7 @@ def handle_chatbot_request():
                 multipart_data = {
                     'query': (None, user_query),
                     'response_mode': (None, 'blocking'),  # Use blocking instead of streaming for simplicity
+                    # App ID is in the URL, not needed in the form data
                 }
                 
                 # Add inputs as separate fields
@@ -108,14 +110,14 @@ def handle_chatbot_request():
                 multipart_data.update(files)
                 
                 response = requests.post(
-                    CHATBOT_COMPLETE_URL,
+                    CHATBOT_API_URL,
                     headers=headers,
                     files=multipart_data
                 )
             else:
                 # When not sending files, we can send JSON directly
                 response = requests.post(
-                    CHATBOT_COMPLETE_URL,
+                    CHATBOT_API_URL,
                     headers=headers,
                     json=payload
                 )
@@ -133,16 +135,34 @@ def handle_chatbot_request():
         # Process response
         logging.info(f"Dify API response status: {response.status_code}")
         
+        # Log the response content for debugging
+        try:
+            response_text = response.text
+            logging.info(f"Response content (first 500 chars): {response_text[:500]}..." if len(response_text) > 500 else f"Response content: {response_text}")
+        except Exception as log_error:
+            logging.error(f"Error logging response: {str(log_error)}")
+        
         if response.status_code == 200:
             try:
                 response_data = response.json()
+                logging.info(f"Successfully parsed JSON response with keys: {list(response_data.keys())}")
                 return jsonify(response_data)
             except Exception as e:
                 logging.error(f"Error parsing JSON response: {str(e)}")
                 return jsonify({"error": "Failed to parse API response", "answer": "Sorry, there was an error communicating with the AI assistant. Please try again later."}), 500
         else:
             logging.error(f"Dify API error: {response.status_code} - {response.text}")
-            return jsonify({"error": f"API error", "answer": "Sorry, there was an error communicating with the AI assistant. Please try again later."}), 200  # Return 200 to client with error message
+            # Return a more specific error message if possible
+            error_message = "Sorry, there was an error communicating with the AI assistant. Please try again later."
+            try:
+                error_data = response.json()
+                if 'message' in error_data:
+                    logging.error(f"API error message: {error_data['message']}")
+                    error_message = f"API error: {error_data['message']}"
+            except:
+                pass
+            
+            return jsonify({"error": f"API error", "answer": error_message}), 200  # Return 200 to client with error message
 
     except Exception as e:
         import traceback
