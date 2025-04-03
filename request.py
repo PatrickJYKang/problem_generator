@@ -149,6 +149,24 @@ if __name__ == "__main__":
 
     course = sys.argv[1]
     lesson = sys.argv[2]
+    
+    # Check if language is specified as the fourth argument
+    programming_language = None
+    if len(sys.argv) > 3:
+        programming_language = sys.argv[3]
+    else:
+        # Set default language based on course
+        if "python" in course.lower():
+            programming_language = "python"
+        elif "java" in course.lower():
+            programming_language = "java"
+        elif "cpp" in course.lower() or "c++" in course.lower():
+            programming_language = "cpp"
+        else:
+            # Default to Python if course doesn't match any known language
+            programming_language = "python"
+            
+    debug_print(f"Programming Language: {programming_language}")
     user = "testuser"
     
     debug_print(f"Course: {course}, Lesson: {lesson}")
@@ -170,6 +188,7 @@ if __name__ == "__main__":
         inputs = {
             "Course": course,
             "CurrentLesson": lesson,
+            "Language": programming_language,
             "syllabus": {
                 "transfer_method": "local_file",
                 "upload_file_id": file_id,

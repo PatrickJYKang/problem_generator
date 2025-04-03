@@ -115,12 +115,18 @@ def generate():
     data = request.get_json()
     course = data.get("course", "learnpython.org")
     lesson = data.get("lesson", "")
+    # Get the language parameter, defaulting to None so request.py can set the appropriate default
+    language = data.get("language", None)
+    
     if not lesson:
         return jsonify({"error": "Lesson is required."}), 400
 
     try:
-        # Run the request.py subprocess to generate a problem
-        result = subprocess.run(["python3", "request.py", course, lesson], capture_output=True, text=True)
+        # Run the request.py subprocess to generate a problem, passing language as additional argument
+        cmd = ["python3", "request.py", course, lesson]
+        if language:
+            cmd.append(language)
+        result = subprocess.run(cmd, capture_output=True, text=True)
         
         # Check if there was an error in the subprocess
         if result.returncode != 0:

@@ -451,6 +451,19 @@ function setupEventListeners() {
   generateBtn.addEventListener("click", () => {
     const course = courseSelect.value;
     const lesson = lessonSelect.value;
+    
+    // Set the programming language based on the course
+    let language;
+    if (course.toLowerCase().includes('python')) {
+      language = 'python';
+    } else if (course.toLowerCase().includes('java')) {
+      language = 'java';
+    } else if (course.toLowerCase().includes('cpp') || course.toLowerCase().includes('c++')) {
+      language = 'cpp';
+    } else {
+      // Default to Python if course doesn't match any known language
+      language = 'python';
+    }
 
     if (!lesson) {
       alert("Please select the lesson you're currently learning.");
@@ -474,7 +487,7 @@ function setupEventListeners() {
     fetch("/generate", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ course, lesson })
+      body: JSON.stringify({ course, lesson, language })
     })
     .then(res => res.json())
     .then(data => {
