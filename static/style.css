@@ -80,10 +80,19 @@
   border-radius: 4px;
   cursor: pointer;
   transition: all 0.2s ease;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  overflow: hidden;
 }
 
 .problem-item:hover {
   background-color: var(--header-bg);
+}
+
+.problem-content {
+  flex: 1;
+  overflow: hidden;
 }
 
 .problem-title {
@@ -94,6 +103,47 @@
 .problem-meta {
   font-size: 0.9em;
   color: #888;
+}
+
+.delete-btn {
+  background: transparent;
+  color: #999;
+  border: none;
+  font-size: 16px;
+  padding: 4px 8px;
+  cursor: pointer;
+  border-radius: 4px;
+  margin-left: 10px;
+  visibility: hidden;
+  opacity: 0;
+  transition: all 0.2s ease;
+}
+
+.problem-item:hover .delete-btn {
+  visibility: visible;
+  opacity: 1;
+}
+
+.delete-btn:hover {
+  background-color: rgba(255, 0, 0, 0.1);
+  color: #c00;
+}
+
+/* Dark mode specific styling */
+[data-theme="dark"] .delete-btn:hover {
+  background-color: rgba(255, 120, 120, 0.1);
+  color: #aaa;
+}
+
+[data-theme="dark"] .problem-meta {
+  color: #888;
+}
+
+/* Deleting animation */
+.deleting {
+  opacity: 0.5;
+  background-color: rgba(255, 0, 0, 0.05);
+  transition: all 0.3s ease;
 }
 
 /* Theme toggle button */

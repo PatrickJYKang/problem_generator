@@ -71,18 +71,43 @@
   color: #777777;
 }
 
-/* Custom scrollbar styling for dark mode */
-[data-theme="dark"] ::-webkit-scrollbar-track {
-  background: #2a2a2a;
+/* Custom scrollbar styling for dark mode - more specific and important to override defaults */
+[data-theme="dark"] ::-webkit-scrollbar,
+[data-theme="dark"] *::-webkit-scrollbar {
+  width: 10px !important;
+  height: 10px !important;
 }
 
-[data-theme="dark"] ::-webkit-scrollbar-thumb {
-  background: #555555;
-  border-radius: 5px;
+[data-theme="dark"] ::-webkit-scrollbar-track,
+[data-theme="dark"] *::-webkit-scrollbar-track {
+  background: #2a2a2a !important;
 }
 
-[data-theme="dark"] ::-webkit-scrollbar-thumb:hover {
-  background: #666666;
+[data-theme="dark"] ::-webkit-scrollbar-thumb,
+[data-theme="dark"] *::-webkit-scrollbar-thumb {
+  background: #555555 !important;
+  border-radius: 5px !important;
+  border: none !important;
+}
+
+[data-theme="dark"] ::-webkit-scrollbar-thumb:hover,
+[data-theme="dark"] *::-webkit-scrollbar-thumb:hover {
+  background: #666666 !important;
+}
+
+/* Force scrollbar styling for CodeMirror and other specific elements */
+[data-theme="dark"] .CodeMirror-vscrollbar::-webkit-scrollbar-thumb,
+[data-theme="dark"] .CodeMirror-hscrollbar::-webkit-scrollbar-thumb,
+[data-theme="dark"] .modal-body::-webkit-scrollbar-thumb,
+[data-theme="dark"] .markdown::-webkit-scrollbar-thumb {
+  background: #555555 !important;
+}
+
+[data-theme="dark"] .CodeMirror-vscrollbar::-webkit-scrollbar-track,
+[data-theme="dark"] .CodeMirror-hscrollbar::-webkit-scrollbar-track,
+[data-theme="dark"] .modal-body::-webkit-scrollbar-track,
+[data-theme="dark"] .markdown::-webkit-scrollbar-track {
+  background: #2a2a2a !important;
 }
 
 /* Console container dark mode */

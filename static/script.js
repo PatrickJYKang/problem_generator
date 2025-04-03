@@ -125,7 +125,11 @@ function openHistoryModal() {
         
         const problemItem = document.createElement("div");
         problemItem.className = "problem-item";
-        problemItem.innerHTML = `
+        
+        // Create the content container (for everything except delete button)
+        const contentContainer = document.createElement("div");
+        contentContainer.className = "problem-content";
+        contentContainer.innerHTML = `
           <div class="problem-title">${problem.title}</div>
           <div class="problem-meta">
             ${problem.course} / ${problem.lesson} <br>
@@ -133,8 +137,26 @@ function openHistoryModal() {
           </div>
         `;
         
-        // Add click handler to load the problem
-        problemItem.addEventListener("click", () => loadProblem(problem.id));
+        // Add click handler to content container to load the problem
+        contentContainer.addEventListener("click", (e) => {
+          loadProblem(problem.id);
+        });
+        
+        // Create delete button
+        const deleteBtn = document.createElement("button");
+        deleteBtn.className = "delete-btn";
+        deleteBtn.innerHTML = "🗑️";
+        deleteBtn.title = "Delete this problem";
+        
+        // Add click handler to delete button
+        deleteBtn.addEventListener("click", (e) => {
+          e.stopPropagation(); // Prevent event bubbling to parent
+          deleteProblem(problem.id, problemItem);
+        });
+        
+        // Append elements to problem item
+        problemItem.appendChild(contentContainer);
+        problemItem.appendChild(deleteBtn);
         
         historyList.appendChild(problemItem);
       });
@@ -147,6 +169,53 @@ function openHistoryModal() {
 
 function closeHistoryModal() {
   historyModal.style.display = "none";
+}
+
+function deleteProblem(problemId, problemElement) {
+  // Confirm before deleting
+  if (!confirm(`Are you sure you want to delete this problem and all associated solutions?`)) {
+    return;
+  }
+  
+  // Show loading state
+  problemElement.classList.add("deleting");
+  
+  // Send delete request
+  fetch(`/problems/${problemId}`, {
+    method: "DELETE"
+  })
+  .then(res => res.json())
+  .then(data => {
+    if (data.success) {
+      // Remove the problem from the DOM with animation
+      problemElement.style.height = `${problemElement.offsetHeight}px`;
+      setTimeout(() => {
+        problemElement.style.height = "0";
+        problemElement.style.opacity = "0";
+        problemElement.style.padding = "0";
+        problemElement.style.margin = "0";
+        
+        // Remove element completely after animation
+        setTimeout(() => {
+          problemElement.remove();
+          
+          // If no problems left, show message
+          if (historyList.children.length === 0) {
+            historyList.innerHTML = "<p>No problems found.</p>";
+          }
+        }, 300);
+      }, 10);
+    } else {
+      // Show error
+      alert(`Error deleting problem: ${data.message}`);
+      problemElement.classList.remove("deleting");
+    }
+  })
+  .catch(err => {
+    console.error("Error deleting problem:", err);
+    alert("Error deleting problem. Please try again.");
+    problemElement.classList.remove("deleting");
+  });
 }
 
 function loadProblem(problemId) {

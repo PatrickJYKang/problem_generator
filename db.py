@@ -293,5 +293,62 @@ def get_solutions_for_problem(problem_id):
     conn.close()
     return solutions
 
+def delete_problem(problem_id):
+    """
+    Delete a problem and all its associated data (testcases and solutions).
+    
+    Args:
+        problem_id (int): ID of the problem to delete
+        
+    Returns:
+        bool: True if the problem was deleted successfully, False otherwise
+    """
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        
+        # Check if the problem exists
+        cursor.execute('SELECT id FROM problems WHERE id = ?', (problem_id,))
+        problem = cursor.fetchone()
+        
+        if not problem:
+            logger.warning(f"Attempted to delete non-existent problem ID: {problem_id}")
+            conn.close()
+            return False
+        
+        # Due to foreign key constraints, deleting the problem should cascade
+        # to delete associated testcases, but let's explicitly delete everything
+        # to ensure we don't leave orphaned records
+        
+        # Delete testcases
+        cursor.execute('DELETE FROM testcases WHERE problem_id = ?', (problem_id,))
+        testcases_deleted = cursor.rowcount
+        logger.info(f"Deleted {testcases_deleted} testcases for problem {problem_id}")
+        
+        # Delete solutions
+        cursor.execute('DELETE FROM solutions WHERE problem_id = ?', (problem_id,))
+        solutions_deleted = cursor.rowcount
+        logger.info(f"Deleted {solutions_deleted} solutions for problem {problem_id}")
+        
+        # Delete the problem itself
+        cursor.execute('DELETE FROM problems WHERE id = ?', (problem_id,))
+        problem_deleted = cursor.rowcount > 0
+        
+        conn.commit()
+        conn.close()
+        
+        if problem_deleted:
+            logger.info(f"Successfully deleted problem ID: {problem_id}")
+        else:
+            logger.warning(f"Failed to delete problem ID: {problem_id}")
+            
+        return problem_deleted
+    except Exception as e:
+        logger.error(f"Error deleting problem {problem_id}: {str(e)}")
+        logger.error(traceback.format_exc())
+        if 'conn' in locals():
+            conn.close()
+        return False
+
 # Initialize the database when this module is imported
 init_db()

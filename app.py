@@ -198,5 +198,18 @@ def get_solutions(problem_id):
         print(f"Error retrieving solutions: {str(e)}")
         return jsonify({"error": "Failed to retrieve solutions", "message": str(e)}), 500
 
+@app.route('/problems/<int:problem_id>', methods=['DELETE'])
+def delete_problem(problem_id):
+    """ Delete a problem and all associated data """
+    try:
+        # Call the database function to delete the problem
+        success = db.delete_problem(problem_id)
+        if success:
+            return jsonify({"success": True, "message": f"Problem {problem_id} deleted successfully"})
+        else:
+            return jsonify({"success": False, "message": "Problem not found or could not be deleted"}), 404
+    except Exception as e:
+        return jsonify({"success": False, "message": f"Error: {str(e)}"}), 500
+
 if __name__ == '__main__':
     app.run(port=5000, debug=True)
