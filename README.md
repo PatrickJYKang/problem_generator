@@ -6,9 +6,10 @@ A web application that dynamically generates coding problems based on your curre
 
 - **Dynamic Problem Generation**: Select your current lesson and get a problem tailored to your learning progress
 - **Interactive Code Editor**: Write and test your Python code directly in the browser
-- **Input/Output Testing**: Provide input to your programs and see the output in real-time
+- **Real Terminal Environment**: Execute code in a true interactive terminal with full input/output support
 - **Automatic Feedback**: Check your solutions against test cases
 - **Progressive Learning**: The app builds a custom syllabus based on your current lesson, including all previous lessons
+- **Intuitive Lesson Selection**: Easy-to-use dropdown menu organized by learning categories
 
 ## How It Works
 
@@ -20,9 +21,33 @@ A web application that dynamically generates coding problems based on your curre
 
 ## Technical Details
 
-- **Frontend**: HTML, CSS, JavaScript with CodeMirror for the code editor
-- **Backend**: Flask (Python) for serving content and handling API requests
+- **Frontend**: HTML, CSS, JavaScript with CodeMirror for the code editor and xterm.js for the terminal
+- **Backend**: Flask (Python) with Flask-SocketIO for real-time terminal communication
 - **Problem Generation**: Uses OpenAI models in Dify to generate problems based on the syllabus
+- **Terminal Implementation**: Full PTY-based terminal using Socket.IO for bidirectional communication
+- **Syllabus Management**: Dynamic syllabus generation based on the user's current lesson progress
+
+## Installation
+
+1. Clone the repository
+2. Install the required dependencies:
+   ```bash
+   pip install -r requirements.txt
+   ```
+3. Run the application:
+   ```bash
+   python app.py
+   ```
+
+## Deployment Notes
+
+When deploying to a production environment, ensure proper configuration of WebSocket support:
+
+- Use the eventlet worker with Gunicorn:
+  ```bash
+  gunicorn --worker-class eventlet -w 1 app:app
+  ```
+- Configure your web server to support WebSocket connections for the real terminal functionality
 
 ## Attribution
 

@@ -15,7 +15,16 @@ from threading import Thread
 
 app = Flask(__name__, static_folder='static')
 app.config['SECRET_KEY'] = 'problem_generator_key'
-socketio = SocketIO(app, cors_allowed_origins="*")
+
+# Configure SocketIO with better production settings
+socketio = SocketIO(
+    app,
+    cors_allowed_origins="*",
+    async_mode="eventlet",     # Use eventlet for best performance
+    ping_timeout=60,          # Increase timeout
+    ping_interval=25,         # Keep connections alive
+    max_http_buffer_size=10e6 # Increase buffer size
+)
 
 # Dictionary to track active terminal sessions
 terminals = {}
@@ -423,4 +432,9 @@ def handle_run_python_code(data):
             pass
 
 if __name__ == '__main__':
-    socketio.run(app, debug=True)
+    # Import eventlet for better Socket.IO performance
+    import eventlet
+    eventlet.monkey_patch()
+    
+    # Run with eventlet wsgi server
+    socketio.run(app, debug=True, host='0.0.0.0')

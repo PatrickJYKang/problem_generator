@@ -37,8 +37,14 @@ class Terminal {
   
   // Initialize Socket.IO connection to the server
   initializeSocketConnection() {
-    // Connect to the Socket.IO server
-    this.socket = io();
+    // Connect to the Socket.IO server with robust settings
+    this.socket = io({
+      reconnectionAttempts: 5,   // Number of reconnection attempts
+      reconnectionDelay: 1000,   // Start with 1s delay
+      reconnectionDelayMax: 5000, // Max 5s delay
+      timeout: 20000,           // Longer connection timeout
+      transports: ['websocket', 'polling'] // Try WebSocket first, fallback to polling
+    });
     
     // Socket.IO event handlers
     this.socket.on('connect', () => {
