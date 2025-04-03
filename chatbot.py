@@ -112,70 +112,73 @@ def handle_chatbot_request():
         # Create a list to store file paths for cleanup later
         file_paths = []
 
-        # Handle code upload if code is provided
-        if code:
-            # Create temporary file for code
-            temp_code = tempfile.NamedTemporaryFile(suffix='.txt', delete=False)
-            temp_code.write(code.encode('utf-8'))
-            temp_code.close()
-            file_paths.append(temp_code.name)
+        # Handle code upload - always provide at least a space if empty
+        code_content = code if code else " "  # Default to space if empty
+        
+        # Create temporary file for code
+        temp_code = tempfile.NamedTemporaryFile(suffix='.txt', delete=False)
+        temp_code.write(code_content.encode('utf-8'))
+        temp_code.close()
+        file_paths.append(temp_code.name)
             
-            # Upload the code file using proper multipart/form-data request
-            code_file_id = upload_file(temp_code.name, "code.txt", "end_user")
-            if code_file_id:
-                # Format Code (capitalized) properly as an object with transfer_method
-                payload['inputs']['Code'] = {
-                    'transfer_method': 'local_file',
-                    'upload_file_id': code_file_id,
-                    'type': 'document'
-                }
-                logging.info(f"Code file uploaded with ID: {code_file_id}")
-            else:
-                logging.error("Failed to upload code file")
+        # Upload the code file using proper multipart/form-data request
+        code_file_id = upload_file(temp_code.name, "code.txt", "end_user")
+        if code_file_id:
+            # Format Code (capitalized) properly as an object with transfer_method
+            payload['inputs']['Code'] = {
+                'transfer_method': 'local_file',
+                'upload_file_id': code_file_id,
+                'type': 'document'
+            }
+            logging.info(f"Code file uploaded with ID: {code_file_id}")
+        else:
+            logging.error("Failed to upload code file")
             
-        # Handle syllabus upload if provided
-        if syllabus:
-            # Create a temporary file for syllabus
-            temp_syllabus = tempfile.NamedTemporaryFile(suffix='.md', delete=False)
-            temp_syllabus.write(syllabus.encode('utf-8'))
-            temp_syllabus.close()
-            file_paths.append(temp_syllabus.name)
-            
-            # Upload the syllabus file using proper multipart/form-data request
-            syllabus_file_id = upload_file(temp_syllabus.name, "syllabus.md", "end_user")
-            if syllabus_file_id:
-                # Format Syllabus (capitalized) properly as an object with transfer_method
-                payload['inputs']['Syllabus'] = {
-                    'transfer_method': 'local_file',
-                    'upload_file_id': syllabus_file_id,
-                    'type': 'document'
-                }
-                logging.info(f"Syllabus file uploaded with ID: {syllabus_file_id}")
-            else:
-                logging.error("Failed to upload syllabus file")
+        # Handle syllabus upload - always provide at least a space if empty
+        syllabus_content = syllabus if syllabus else " "  # Default to space if empty
+        
+        # Create a temporary file for syllabus
+        temp_syllabus = tempfile.NamedTemporaryFile(suffix='.md', delete=False)
+        temp_syllabus.write(syllabus_content.encode('utf-8'))
+        temp_syllabus.close()
+        file_paths.append(temp_syllabus.name)
+        
+        # Upload the syllabus file using proper multipart/form-data request
+        syllabus_file_id = upload_file(temp_syllabus.name, "syllabus.md", "end_user")
+        if syllabus_file_id:
+            # Format Syllabus (capitalized) properly as an object with transfer_method
+            payload['inputs']['Syllabus'] = {
+                'transfer_method': 'local_file',
+                'upload_file_id': syllabus_file_id,
+                'type': 'document'
+            }
+            logging.info(f"Syllabus file uploaded with ID: {syllabus_file_id}")
+        else:
+            logging.error("Failed to upload syllabus file")
 
-        # Handle problem file upload if provided
-        if problem:
-            # Create a temporary file for the problem
-            temp_problem = tempfile.NamedTemporaryFile(suffix='.txt', delete=False)
-            temp_problem.write(problem.encode('utf-8'))
-            temp_problem.close()
-            file_paths.append(temp_problem.name)
-            
-            # Upload the problem file
-            problem_file_id = upload_file(temp_problem.name, "problem.txt", "end_user")
-            if problem_file_id:
-                # Format Problem (capitalized) properly with the correct transfer_method
-                payload['inputs']['Problem'] = {
-                    'transfer_method': 'local_file',
-                    'upload_file_id': problem_file_id,
-                    'type': 'document'
-                }
-                logging.info(f"Problem file uploaded with ID: {problem_file_id}")
-            else:
-                # Fallback to plaintext if file upload fails
-                logging.warning("Failed to upload problem file, using plaintext instead")
-                payload['inputs']['Problem'] = problem
+        # Handle problem file upload - always provide at least a space if empty
+        problem_content = problem if problem else " "  # Default to space if empty
+        
+        # Create a temporary file for the problem
+        temp_problem = tempfile.NamedTemporaryFile(suffix='.txt', delete=False)
+        temp_problem.write(problem_content.encode('utf-8'))
+        temp_problem.close()
+        file_paths.append(temp_problem.name)
+        
+        # Upload the problem file
+        problem_file_id = upload_file(temp_problem.name, "problem.txt", "end_user")
+        if problem_file_id:
+            # Format Problem (capitalized) properly with the correct transfer_method
+            payload['inputs']['Problem'] = {
+                'transfer_method': 'local_file',
+                'upload_file_id': problem_file_id,
+                'type': 'document'
+            }
+            logging.info(f"Problem file uploaded with ID: {problem_file_id}")
+        else:
+            # Fallback to plaintext if file upload fails
+            logging.warning("Failed to upload problem file, using plaintext instead")
+            payload['inputs']['Problem'] = problem_content
 
         # Set up headers for the API request
         # Make sure we're using the correct authorization format

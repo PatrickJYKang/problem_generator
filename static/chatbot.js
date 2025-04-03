@@ -109,57 +109,14 @@ function addBotMessage(message) {
     // Render markdown to HTML
     messageElement.innerHTML = marked.parse(message);
     
-    // Add special handling for code blocks
+    // Add special handling for code blocks without copy buttons
     setTimeout(() => {
       // Use setTimeout to ensure the DOM is fully rendered
       const codeBlocks = messageElement.querySelectorAll('pre code');
       codeBlocks.forEach(codeBlock => {
-        // Create a wrapper for the code block
-        const wrapper = document.createElement('div');
-        wrapper.className = 'code-block-wrapper';
-        
-        // Create a copy button for code blocks
-        const copyButton = document.createElement('button');
-        copyButton.className = 'copy-code-btn';
-        copyButton.textContent = 'Copy';
-        copyButton.addEventListener('click', function() {
-          // Get the text content of the code block
-          const codeText = codeBlock.textContent;
-          
-          // Use the clipboard API to copy the text
-          navigator.clipboard.writeText(codeText)
-            .then(() => {
-              // Update button text to indicate success
-              copyButton.textContent = 'Copied!';
-              setTimeout(() => { copyButton.textContent = 'Copy'; }, 2000);
-            })
-            .catch(err => {
-              console.error('Failed to copy code:', err);
-              // Fallback method for copying
-              const textarea = document.createElement('textarea');
-              textarea.value = codeText;
-              textarea.style.position = 'fixed';
-              document.body.appendChild(textarea);
-              textarea.select();
-              try {
-                document.execCommand('copy');
-                copyButton.textContent = 'Copied!';
-                setTimeout(() => { copyButton.textContent = 'Copy'; }, 2000);
-              } catch (e) {
-                console.error('Fallback copy method failed:', e);
-                copyButton.textContent = 'Error!';
-              }
-              document.body.removeChild(textarea);
-            });
-        });
-        
-        // Insert the wrapper and move the code block into it
-        if (codeBlock.parentNode) {
-          const preElement = codeBlock.parentNode;
-          preElement.parentNode.insertBefore(wrapper, preElement);
-          wrapper.appendChild(preElement);
-          wrapper.appendChild(copyButton);
-        }
+        // Apply any custom styling or formatting to code blocks
+        // No copy button since it wasn't working properly
+        codeBlock.classList.add('highlighted-code');
       });
     }, 0);
   } catch (error) {
