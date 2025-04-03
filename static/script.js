@@ -437,41 +437,13 @@ function setupEventListeners() {
     
     if (language === "python") {
       codeEditor.setOption("mode", "text/x-python");
-      
-      // Set default Python code if editor is empty
-      if (!codeEditor.getValue().trim()) {
-        codeEditor.setValue(
-`# Your Python code here`
-        );
-      }
+      // No default code template
     } else if (language === "java") {
       codeEditor.setOption("mode", "text/x-java");
-      
-      // Set default Java code if editor is empty
-      if (!codeEditor.getValue().trim()) {
-        codeEditor.setValue(
-`public class Main {
-    public static void main(String[] args) {
-        // Your Java code here
-    }
-}`
-        );
-      }
+      // No default code template
     } else if (language === "cpp") {
       codeEditor.setOption("mode", "text/x-c++src");
-      
-      // Set default C++ code if editor is empty
-      if (!codeEditor.getValue().trim()) {
-        codeEditor.setValue(
-`#include <iostream>
-using namespace std;
-
-int main() {
-    // Your C++ code here
-    return 0;
-}`
-        );
-      }
+      // No default code template
     }
   });
 
@@ -533,8 +505,21 @@ int main() {
       // Store test cases globally so they can be accessed later
       window.testcases = testcases;
 
+      // Show the check and retry buttons
       checkAnswerBtn.style.display = "inline-block";
       retryBtn.style.display = "inline-block";
+      
+      // Hide course and lesson selectors when a problem is shown
+      document.querySelector('label[for="course-select"]').style.display = 'none';
+      courseSelect.style.display = 'none';
+      document.querySelector('label[for="lesson-select"]').style.display = 'none';
+      lessonSelect.style.display = 'none';
+      document.querySelectorAll('br').forEach(br => {
+        if (br.nextElementSibling === courseSelect || br.nextElementSibling === lessonSelect ||
+            br.previousElementSibling === courseSelect || br.previousElementSibling === lessonSelect) {
+          br.style.display = 'none';
+        }
+      });
       
       // Make sure history button is enabled
       if (historyBtn) {
@@ -570,7 +555,17 @@ int main() {
     resultDiv.innerHTML = `<p>Your generated problem will appear here.</p>`;
     generateBtn.style.display = "inline-block";
     
-
+    // Show course and lesson selectors again
+    document.querySelector('label[for="course-select"]').style.display = 'block';
+    courseSelect.style.display = 'block';
+    document.querySelector('label[for="lesson-select"]').style.display = 'block';
+    lessonSelect.style.display = 'block';
+    document.querySelectorAll('br').forEach(br => {
+      if (br.nextElementSibling === courseSelect || br.nextElementSibling === lessonSelect ||
+          br.previousElementSibling === courseSelect || br.previousElementSibling === lessonSelect) {
+        br.style.display = 'inline';
+      }
+    });
     
     // Clear current problem ID
     currentProblemId = null;

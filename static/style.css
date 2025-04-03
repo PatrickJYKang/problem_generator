@@ -170,13 +170,13 @@
 
 /* CSS Variables for theming */
 :root {
-  /* Light theme (default) */
+  /* Light theme (default) - grayscale colors */
   --bg-color: #ffffff;
   --text-color: #333333;
   --border-color: #cccccc;
   --header-bg: #f0f0f0;
-  --button-bg: #4CAF50;
-  --button-hover-bg: #45a049;
+  --button-bg: #555555;
+  --button-hover-bg: #444444;
   --button-text: white;
   --input-bg: #ffffff;
   --code-bg: #f5f5f5;
@@ -186,16 +186,16 @@
   --scrollbar-track: #f1f1f1;
   --scrollbar-thumb: #c1c1c1;
   --scrollbar-thumb-hover: #a1a1a1;
-  --run-button-bg: #2196F3;
-  --run-button-hover-bg: #0b7dda;
+  --run-button-bg: #666666;
+  --run-button-hover-bg: #555555;
   --font-size-base: 16px; /* Base font size */
   --font-size-code: 15px; /* Code editor font size */
   --font-size-small: 14px; /* Small font size */
   --border-radius: 6px; /* Consistent border radius */
   --box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); /* Consistent shadow */
   --transition-speed: 0.2s; /* Standard transition speed */
-  --history-button-bg: #6200EA; /* History button background */
-  --history-button-hover-bg: #5000C8; /* History button hover */
+  --history-button-bg: #777777; /* History button background - grayscale */
+  --history-button-hover-bg: #666666; /* History button hover - grayscale */
 }
 
 /* Dark theme - greyscale only */
