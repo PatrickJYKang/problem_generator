@@ -18,6 +18,33 @@ class GitHubFetcher:
         
         # Create cache directory if it doesn't exist
         os.makedirs(self.cache_dir, exist_ok=True)
+        
+        # Define custom course structures for sites without index.json
+        self.custom_structures = {
+            "learn-cpp.org": {
+                "basics": {
+                    "Hello, World!": "Hello, World!",
+                    "Variables and Types": "Variables and Types",
+                    "Arrays": "Arrays",
+                    "Strings": "Strings",
+                    "if-else": "if-else",
+                    "For loops": "For loops",
+                    "While loops": "While loops",
+                    "Functions": "Functions"
+                },
+                "advanced": {
+                    "Pointers": "Pointers",
+                    "Structures": "Structures",
+                    "Function arguments by reference": "Function arguments by reference",
+                    "Dynamic allocation": "Dynamic allocation",
+                    "Recursion": "Recursion",
+                    "Linked lists": "Linked lists",
+                    "Binary trees": "Binary trees",
+                    "Function Pointers": "Function Pointers",
+                    "Template Metaprogramming": "Template Metaprogramming"
+                }
+            }
+        }
     
     def _get_cache_path(self, path):
         """Convert a repo path to a cache file path"""
@@ -144,6 +171,13 @@ class GitHubFetcher:
             The parsed index.json content for the language
         """
         print(f"Getting lessons for {language}/{lang}")
+        
+        # Check if we have a custom structure for this language
+        if language in self.custom_structures:
+            print(f"Using custom structure for {language}")
+            return self.custom_structures[language]
+        
+        # Otherwise try to fetch from GitHub
         path = f"tutorials/{language}/{lang}/index.json"
         
         try:
@@ -194,31 +228,49 @@ class GitHubFetcher:
         Returns:
             Path to a temporary file containing the concatenated markdown
         """
-        # Path to the index.json file
-        index_path = f"tutorials/{language}/{lang}/index.json"
+        print(f"Building syllabus for {lesson} in {language}/{lang}")
         
-        # Load the index.json file
-        try:
-            index = self.get_json_content(index_path)
-        except Exception as e:
-            print(f"Failed to load index.json: {str(e)}")
-            return None
-        
-        # Find all lessons in order (combine basics and advanced)
+        # Get all lessons in proper order
         all_lessons = []
-        for category in ["basics", "advanced"]:
-            if category in index:
-                all_lessons.extend(list(index[category].keys()))
+        lesson_data = None
+        
+        # Check if we have a custom structure for this language
+        if language in self.custom_structures:
+            print(f"Using custom lesson order for {language}")
+            lesson_data = self.custom_structures[language]
+            
+            # Build ordered list of lessons from the custom structure
+            for category in ["basics", "advanced"]:
+                if category in lesson_data:
+                    all_lessons.extend(list(lesson_data[category].keys()))
+        else:
+            # Try to load from index.json
+            try:
+                index_path = f"tutorials/{language}/{lang}/index.json"
+                lesson_data = self.get_json_content(index_path)
+                print(f"Successfully loaded index.json for {language}")
+                
+                # Build ordered list of lessons from index.json
+                for category in ["basics", "advanced"]:
+                    if category in lesson_data:
+                        all_lessons.extend(list(lesson_data[category].keys()))
+            except Exception as e:
+                print(f"Failed to load index.json: {str(e)}")
+                return None
+        
+        print(f"Lesson order: {all_lessons}")
         
         # Find the position of the current lesson
         try:
             lesson_index = all_lessons.index(lesson)
+            print(f"Found lesson '{lesson}' at position {lesson_index}")
         except ValueError:
-            print(f"Lesson '{lesson}' not found in index.json")
+            print(f"Lesson '{lesson}' not found in lesson list")
             return None
         
         # Get all lessons up to and including the current lesson
         lessons_to_include = all_lessons[:lesson_index + 1]
+        print(f"Including {len(lessons_to_include)} lessons in the syllabus")
         
         # Create a temporary file to store the concatenated markdown
         temp_file = tempfile.NamedTemporaryFile(mode='w+', delete=False, suffix='.md')
@@ -228,8 +280,10 @@ class GitHubFetcher:
             try:
                 welcome_content = self.get_file_content(f"tutorials/{language}/{lang}/Welcome.md")
                 temp_file.write(welcome_content + "\n\n")
+                print("Added Welcome.md to syllabus")
             except Exception:
                 # It's okay if Welcome.md doesn't exist
+                print("No Welcome.md found, skipping")
                 pass
             
             # Concatenate all markdown files in order
@@ -238,10 +292,19 @@ class GitHubFetcher:
                     md_content = self.get_file_content(f"tutorials/{language}/{lang}/{lesson_name}.md")
                     temp_file.write(f"# {lesson_name}\n\n")
                     temp_file.write(md_content + "\n\n")
-                except Exception:
-                    print(f"Markdown file for lesson '{lesson_name}' not found")
+                    print(f"Added lesson: {lesson_name}")
+                except Exception as e:
+                    print(f"Markdown file for lesson '{lesson_name}' not found: {str(e)}")
+                    
+                    # For custom courses like learn-cpp.org, create placeholder content
+                    if language in self.custom_structures:
+                        print(f"Creating placeholder content for {lesson_name}")
+                        temp_file.write(f"# {lesson_name}\n\n")
+                        temp_file.write(f"This is a placeholder for the {lesson_name} lesson.\n\n")
+                        temp_file.write(f"Please complete the coding challenge for {lesson_name}.\n\n")
             
             temp_file.close()
+            print(f"Successfully built syllabus at {temp_file.name}")
             return temp_file.name
         except Exception as e:
             print(f"Failed to build syllabus: {str(e)}")
