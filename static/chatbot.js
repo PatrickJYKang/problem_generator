@@ -30,6 +30,8 @@ document.addEventListener('DOMContentLoaded', () => {
 // Toggle chat window
 function toggleChatWindow() {
   chatWindow.classList.toggle('open');
+  document.body.classList.toggle('chat-open'); // Toggle body class for the push-in effect
+  
   if (chatWindow.classList.contains('open')) {
     chatInput.focus();
   }
@@ -108,30 +110,58 @@ function addBotMessage(message) {
     messageElement.innerHTML = marked.parse(message);
     
     // Add special handling for code blocks
-    const codeBlocks = messageElement.querySelectorAll('pre code');
-    codeBlocks.forEach(codeBlock => {
-      // Create a copy button for code blocks
-      const copyButton = document.createElement('button');
-      copyButton.className = 'copy-code-btn';
-      copyButton.innerText = 'Copy';
-      copyButton.onclick = function() {
-        navigator.clipboard.writeText(codeBlock.innerText)
-          .then(() => {
-            copyButton.innerText = 'Copied!';
-            setTimeout(() => { copyButton.innerText = 'Copy'; }, 2000);
-          })
-          .catch(err => {
-            console.error('Failed to copy code:', err);
-          });
-      };
-      
-      // Create a wrapper for the code block to position the button
-      const wrapper = document.createElement('div');
-      wrapper.className = 'code-block-wrapper';
-      codeBlock.parentNode.insertBefore(wrapper, codeBlock);
-      wrapper.appendChild(codeBlock);
-      wrapper.appendChild(copyButton);
-    });
+    setTimeout(() => {
+      // Use setTimeout to ensure the DOM is fully rendered
+      const codeBlocks = messageElement.querySelectorAll('pre code');
+      codeBlocks.forEach(codeBlock => {
+        // Create a wrapper for the code block
+        const wrapper = document.createElement('div');
+        wrapper.className = 'code-block-wrapper';
+        
+        // Create a copy button for code blocks
+        const copyButton = document.createElement('button');
+        copyButton.className = 'copy-code-btn';
+        copyButton.textContent = 'Copy';
+        copyButton.addEventListener('click', function() {
+          // Get the text content of the code block
+          const codeText = codeBlock.textContent;
+          
+          // Use the clipboard API to copy the text
+          navigator.clipboard.writeText(codeText)
+            .then(() => {
+              // Update button text to indicate success
+              copyButton.textContent = 'Copied!';
+              setTimeout(() => { copyButton.textContent = 'Copy'; }, 2000);
+            })
+            .catch(err => {
+              console.error('Failed to copy code:', err);
+              // Fallback method for copying
+              const textarea = document.createElement('textarea');
+              textarea.value = codeText;
+              textarea.style.position = 'fixed';
+              document.body.appendChild(textarea);
+              textarea.select();
+              try {
+                document.execCommand('copy');
+                copyButton.textContent = 'Copied!';
+                setTimeout(() => { copyButton.textContent = 'Copy'; }, 2000);
+              } catch (e) {
+                console.error('Fallback copy method failed:', e);
+                copyButton.textContent = 'Error!';
+              }
+              document.body.removeChild(textarea);
+            });
+        });
+        
+        // Insert the wrapper and move the code block into it
+        if (codeBlock.parentNode) {
+          const preElement = codeBlock.parentNode;
+          preElement.parentNode.insertBefore(wrapper, preElement);
+          wrapper.appendChild(preElement);
+          wrapper.appendChild(copyButton);
+        }
+      });
+    }, 0);
   } catch (error) {
     console.error('Error rendering markdown:', error);
     // Fallback to plain text if markdown parsing fails

@@ -25,8 +25,8 @@
 .chat-window {
   position: fixed;
   top: 0;
-  right: -400px;
-  width: 380px;
+  right: -450px; /* Increased from -400px to account for wider window */
+  width: 430px; /* Increased from 380px to make it wider */
   height: 100vh;
   background-color: white;
   border-left: 1px solid #cccccc;
@@ -34,11 +34,18 @@
   z-index: 1001;
   display: flex;
   flex-direction: column;
-  transition: right 0.3s ease;
+  transition: all 0.3s ease; /* Changed from 'right' to 'all' to animate both position and body margin */
 }
 
+/* Update the open state to push content instead of overlay */
 .chat-window.open {
   right: 0;
+}
+
+/* Add a class to the body when chat is open to push content */
+body.chat-open {
+  margin-right: 430px; /* Match the width of the chat window */
+  transition: margin-right 0.3s ease;
 }
 
 .chat-header {
@@ -221,9 +228,12 @@
   background-color: rgba(0, 0, 0, 0.05);
   border-radius: 3px;
   padding: 12px;
+  padding-top: 30px; /* Add padding to accommodate the copy button */
   overflow-x: auto;
   margin-bottom: 10px;
   position: relative;
+  box-sizing: border-box;
+  max-width: 100%;
 }
 
 .bot-message pre code {
@@ -233,16 +243,19 @@
   font-size: 0.9em;
   display: block;
   white-space: pre-wrap;
+  font-family: 'Courier New', Courier, monospace;
+  line-height: 1.4;
 }
 
 .code-block-wrapper {
   position: relative;
+  margin-bottom: 15px;
 }
 
 .copy-code-btn {
   position: absolute;
-  top: 5px;
-  right: 5px;
+  top: 8px;
+  right: 8px;
   background-color: #555555;
   color: white;
   border: none;
@@ -250,8 +263,9 @@
   padding: 4px 8px;
   font-size: 12px;
   cursor: pointer;
-  opacity: 0.7;
-  transition: opacity 0.2s;
+  opacity: 0.8;
+  transition: all 0.2s;
+  z-index: 10; /* Ensure button appears above code block */
 }
 
 .copy-code-btn:hover {
