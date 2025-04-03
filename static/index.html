@@ -8,6 +8,7 @@
   <!-- Correct path for CSS -->
   <link rel="stylesheet" href="/static/style.css" />
   <link rel="stylesheet" href="/static/dark-mode.css" />
+  <link rel="stylesheet" href="/static/chatbot.css" />
 
   <!-- CodeMirror (for code editor) -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/codemirror.min.css" />
@@ -106,6 +107,25 @@
     </a>
   </div>
 
+  <!-- Chatbot Button and Window -->
+  <div class="chat-button" id="chat-button">
+    <span>💬</span>
+  </div>
+
+  <div class="chat-window" id="chat-window">
+    <div class="chat-header">
+      <h3>AI Assistant</h3>
+      <button class="close-chat" id="close-chat">×</button>
+    </div>
+    <div class="chat-messages" id="chat-messages"></div>
+    <div class="chat-input">
+      <form class="chat-form" id="chat-form">
+        <input type="text" id="chat-input" placeholder="Ask about your problem or code..." autocomplete="off">
+        <button type="submit">Send</button>
+      </form>
+    </div>
+  </div>
+
   <!-- History Modal -->
   <div id="history-modal" class="modal" style="display: none;">
     <div class="modal-content">
@@ -121,5 +141,6 @@
 
   <!-- Include the external JavaScript file -->  
   <script src="/static/script.js"></script>
+  <script src="/static/chatbot.js"></script>
 </body>
 </html>

@@ -4,6 +4,14 @@ import os
 import subprocess
 import db  # Import the database module
 from github_utils import GitHubFetcher  # Import GitHub fetcher
+from dotenv import load_dotenv
+import chatbot  # Import the chatbot module
+
+# Load environment variables from .env file
+load_dotenv()
+
+# Get problem generator API key from environment variables
+PROBLEM_GENERATOR_API_KEY = os.getenv('PROBLEM_GENERATOR_API_KEY', 'app-NxALjP6yItovyBLW2UZJIxcJ')
 
 app = Flask(__name__, static_folder='static')
 
@@ -294,6 +302,12 @@ def delete_problem(problem_id):
             return jsonify({"success": False, "message": "Problem not found or could not be deleted"}), 404
     except Exception as e:
         return jsonify({"success": False, "message": f"Error: {str(e)}"}), 500
+
+@app.route('/chatbot', methods=['POST'])
+def chatbot_endpoint():
+    """ Handle chatbot requests through Dify API """
+    # This route now uses the dedicated chatbot module
+    return chatbot.handle_chatbot_request()
 
 if __name__ == '__main__':
     app.run(port=5000, debug=True)
