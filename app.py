@@ -198,5 +198,44 @@ def get_solutions(problem_id):
         print(f"Error retrieving solutions: {str(e)}")
         return jsonify({"error": "Failed to retrieve solutions", "message": str(e)}), 500
 
+@app.route("/execute_command", methods=["POST"])
+def execute_command():
+    """ Execute a shell command and return the output """
+    data = request.get_json()
+    command = data.get("command", "").strip()
+    cwd = data.get("cwd", None)  # Optional working directory
+    
+    if not command:
+        return jsonify({"error": "No command provided"}), 400
+    
+    # Safety checks - limit which commands can be executed
+    # This is important for security!
+    allowed_commands = ["python", "python3", "javac", "java", "g++", "ls", "cat", "echo"]
+    
+    # Check if the command starts with an allowed command
+    command_parts = command.split()
+    if not command_parts or command_parts[0] not in allowed_commands:
+        return jsonify({"error": f"Command not allowed: {command_parts[0]}"}), 403
+    
+    try:
+        # Execute the command and capture output
+        process = subprocess.run(
+            command_parts,
+            cwd=cwd,
+            capture_output=True,
+            text=True,
+            timeout=10  # Timeout to prevent long-running commands
+        )
+        
+        return jsonify({
+            "stdout": process.stdout,
+            "stderr": process.stderr,
+            "returncode": process.returncode
+        })
+    except subprocess.TimeoutExpired:
+        return jsonify({"error": "Command execution timed out"}), 408
+    except Exception as e:
+        return jsonify({"error": f"Error executing command: {str(e)}"}), 500
+
 if __name__ == '__main__':
     app.run(port=5000, debug=True)

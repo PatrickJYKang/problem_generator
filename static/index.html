@@ -8,6 +8,7 @@
   <!-- Correct path for CSS -->
   <link rel="stylesheet" href="/static/style.css" />
   <link rel="stylesheet" href="/static/dark-mode.css" />
+  <link rel="stylesheet" href="/static/terminal.css" />
 
   <!-- CodeMirror (for code editor) -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/codemirror.min.css" />
@@ -84,11 +85,26 @@
       </div>
 
       <div class="bottom-container">
-        <div class="input-container" id="input-container">
-          <h4>Enter Program Input:</h4>
-          <textarea id="input-editor" placeholder="Line-by-line input for your code..."></textarea>
+        <div class="terminal-container" id="terminal-container">
+          <div class="terminal-header">
+            <span>Terminal</span>
+            <div class="terminal-controls">
+              <button id="clear-terminal-btn" title="Clear Terminal">Clear</button>
+              <button id="lock-terminal-btn" title="Lock/Unlock Terminal">Lock</button>
+            </div>
+          </div>
+          <div class="terminal-output" id="terminal-output">
+            <div class="welcome-message">
+              <p>Welcome to Problem Generator Terminal</p>
+              <p>Use 'run' to execute your code or type allowed commands.</p>
+              <p>Allowed commands: python, python3, javac, java, g++, ls, cat, echo</p>
+            </div>
+          </div>
+          <div class="terminal-input-line">
+            <span class="terminal-prompt">$</span>
+            <input type="text" id="terminal-input" placeholder="Type a command..." />
+          </div>
         </div>
-        <div class="console-container" id="console" style="display: none;"></div>
       </div>
     </div>
   </div>
@@ -113,7 +129,8 @@
     </div>
   </div>
 
-  <!-- Include the external JavaScript file -->  
+  <!-- Include the external JavaScript files -->  
   <script src="/static/script.js"></script>
+  <script src="/static/terminal.js"></script>
 </body>
 </html>
