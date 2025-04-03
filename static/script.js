@@ -707,8 +707,7 @@ function setupEventListeners() {
                         <td style="color: ${tc.status === '✅' ? 'green' : 'red'}">${tc.status}</td>
                       </tr>`;
         if (tc.error) {
-          tableHTML += `<tr><td colspan="4"><button onclick="this.nextElementSibling.style.display='block'">Show Error</button>
-                        <pre style="display:none; color: red;">${tc.error}</pre></td></tr>`;
+          tableHTML += `<tr><td colspan="4"><pre style="color: red;">${tc.error}</pre></td></tr>`;
         }
       });
       tableHTML += "</table>";

@@ -48,12 +48,16 @@ import builtins
 import sys
 original_input = builtins.input
 
+# This completely replaces the input function to ensure prompts only go to stderr
 def input_wrapper(prompt=''):
+    # If there's a prompt, print it to stderr only
     if prompt:
         print(prompt, file=sys.stderr, end='')
         sys.stderr.flush()
-    return original_input()
+    # Get input from stdin without printing anything to stdout
+    return sys.stdin.readline().rstrip('\n')
 
+# Override the built-in input function
 builtins.input = input_wrapper
 
 # User code begins here
