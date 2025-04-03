@@ -88,10 +88,6 @@ For local development, run the application using Flask's built-in server:
 ```bash
 python app.py
 ```
-Or use the debug server for additional logging:
-```bash
-python debug_server.py
-```
 
 ### Production Deployment
 
@@ -208,13 +204,13 @@ For production environments, we recommend using Gunicorn as a WSGI server:
 - **static/**: Frontend assets (HTML, CSS, JavaScript)
 - **syllabi/**: Curriculum content organized by course and lesson
 
-## Customization
+## Customisation
 
-The application can be customized in several ways:
+The application can be customised in several ways:
 
 1. **Add New Languages**: Extend `run.py` and `check.py` with additional language support
 2. **Custom Courses**: Add new curriculum content to the syllabi directory
-3. **UI Customization**: Modify the CSS variables in `style.css` and `dark-mode.css`
+3. **UI Customisation**: Modify the CSS variables in `style.css` and `dark-mode.css`
 4. **Database Location**: Configure the database path in `db.py`
 
 ## Attribution
