@@ -26,6 +26,28 @@ let currentProblemId = null;
 // CodeMirror editor setup
 let codeEditor;
 
+// Sync the programming language with the selected course
+function syncLanguageWithCourse(course) {
+  // Map course names to their corresponding programming languages
+  const courseToLanguage = {
+    "learnpython.org": "python",
+    "learn-cpp.org": "cpp"
+  };
+  
+  // Get the appropriate language for the course
+  const language = courseToLanguage[course] || "python";
+  
+  // Update the language selector
+  if (languageSelect.value !== language) {
+    console.log(`Changing language from ${languageSelect.value} to ${language} based on course selection`);
+    languageSelect.value = language;
+    
+    // Trigger the change event to update the editor mode and template
+    const changeEvent = new Event('change');
+    languageSelect.dispatchEvent(changeEvent);
+  }
+}
+
 // Theme management
 function initializeTheme() {
   // Check for saved theme preference or use light mode as default
@@ -288,7 +310,20 @@ function loadLessons() {
   console.log(`Loading lessons for course: ${course}`);
   
   // Sync language selector with course
-  syncLanguageWithCourse(course);
+  if (typeof syncLanguageWithCourse === 'function') {
+    syncLanguageWithCourse(course);
+  } else {
+    // Fallback manual language selection based on course
+    if (course === "learn-cpp.org" && languageSelect.value !== "cpp") {
+      languageSelect.value = "cpp";
+      // Trigger change event
+      languageSelect.dispatchEvent(new Event('change'));
+    } else if (course === "learnpython.org" && languageSelect.value !== "python") {
+      languageSelect.value = "python";
+      // Trigger change event
+      languageSelect.dispatchEvent(new Event('change'));
+    }
+  }
   
   // Use our new endpoint that fetches from GitHub
   fetch(`/github/lessons?language=${course}&lang=${lang}`)
@@ -363,27 +398,7 @@ function setupEventListeners() {
     loadLessons();
   });
   
-  // Sync the programming language with the selected course
-  function syncLanguageWithCourse(course) {
-    // Map course names to their corresponding programming languages
-    const courseToLanguage = {
-      "learnpython.org": "python",
-      "learn-cpp.org": "cpp"
-    };
-    
-    // Get the appropriate language for the course
-    const language = courseToLanguage[course] || "python";
-    
-    // Update the language selector
-    if (languageSelect.value !== language) {
-      console.log(`Changing language from ${languageSelect.value} to ${language} based on course selection`);
-      languageSelect.value = language;
-      
-      // Trigger the change event to update the editor mode and template
-      const changeEvent = new Event('change');
-      languageSelect.dispatchEvent(changeEvent);
-    }
-  }
+
 
   // Theme toggle button
   themeToggleBtn.addEventListener("click", toggleTheme);

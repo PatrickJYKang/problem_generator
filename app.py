@@ -104,7 +104,7 @@ def get_lessons():
 def generate():
     """ Handles problem generation and extracts test cases """
     data = request.get_json()
-    course = data.get("course", "Learnpython.org")
+    course = data.get("course", "learnpython.org")
     lesson = data.get("lesson", "")
     if not lesson:
         return jsonify({"error": "Lesson is required."}), 400
