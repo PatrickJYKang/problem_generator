@@ -63,6 +63,11 @@
   margin-bottom: -3px;
 }
 
+.terminal-container[data-theme="light"] .terminal-cursor,
+[data-theme="light"] .terminal-container:not([data-theme="dark"]) .terminal-cursor {
+  background-color: #333;
+}
+
 @keyframes blink {
   0%, 100% { opacity: 1; }
   50% { opacity: 0; }
@@ -110,8 +115,17 @@
   height: 1.4em;
 }
 
-/* Light mode terminal */
-[data-theme="light"] .terminal-container {
+/* Theme handling for terminal */
+/* Dark mode is default */
+.terminal-container {
+  background-color: #1e1e1e;
+  color: #f0f0f0;
+  border-color: #555;
+}
+
+/* Light mode theme */
+.terminal-container[data-theme="light"], 
+[data-theme="light"] .terminal-container:not([data-theme="dark"]) {
   background-color: #f5f5f5;
   color: #333;
   border-color: #ccc;
@@ -122,12 +136,24 @@
   border-color: #ccc;
 }
 
-[data-theme="light"] .terminal-controls button {
+/* Control button styling for themes */
+.terminal-controls button {
+  background-color: #444;
+  color: #f0f0f0;
+}
+
+.terminal-controls button:hover {
+  background-color: #555;
+}
+
+.terminal-container[data-theme="light"] .terminal-controls button,
+[data-theme="light"] .terminal-container:not([data-theme="dark"]) .terminal-controls button {
   background-color: #d0d0d0;
   color: #333;
 }
 
-[data-theme="light"] .terminal-controls button:hover {
+.terminal-container[data-theme="light"] .terminal-controls button:hover,
+[data-theme="light"] .terminal-container:not([data-theme="dark"]) .terminal-controls button:hover {
   background-color: #c0c0c0;
 }
 
@@ -135,28 +161,56 @@
   background-color: #333;
 }
 
-[data-theme="light"] .terminal-prompt {
+.terminal-container[data-theme="light"] .terminal-prompt,
+[data-theme="light"] .terminal-container:not([data-theme="dark"]) .terminal-prompt {
   color: #2e7d32;
 }
 
-[data-theme="light"] .welcome-message {
+.terminal-container[data-theme="light"] .welcome-message,
+[data-theme="light"] .terminal-container:not([data-theme="dark"]) .welcome-message {
   color: #1976d2;
 }
 
-[data-theme="light"] .system-message {
+.terminal-container[data-theme="light"] .system-message,
+[data-theme="light"] .terminal-container:not([data-theme="dark"]) .system-message {
   color: #666;
 }
 
-[data-theme="light"] .command-text {
+.terminal-container[data-theme="light"] .command-text,
+[data-theme="light"] .terminal-container:not([data-theme="dark"]) .command-text {
   color: #333;
 }
 
-[data-theme="light"] .command-output {
+.terminal-container[data-theme="light"] .command-output,
+[data-theme="light"] .terminal-container:not([data-theme="dark"]) .command-output {
   color: #333;
 }
 
-[data-theme="light"] .command-error {
+.terminal-container[data-theme="light"] .command-error,
+[data-theme="light"] .terminal-container:not([data-theme="dark"]) .command-error {
   color: #d32f2f;
+}
+
+/* User input styling */
+.user-input {
+  color: #4caf50;
+  font-weight: bold;
+}
+
+.terminal-container[data-theme="light"] .user-input,
+[data-theme="light"] .terminal-container:not([data-theme="dark"]) .user-input {
+  color: #2e7d32;
+}
+
+/* Input prompt styling */
+.input-prompt {
+  color: #e91e63;
+  font-style: italic;
+}
+
+.terminal-container[data-theme="light"] .input-prompt,
+[data-theme="light"] .terminal-container:not([data-theme="dark"]) .input-prompt {
+  color: #c2185b;
 }
 
 [data-theme="light"] .terminal-header {

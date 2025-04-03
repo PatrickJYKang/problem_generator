@@ -80,8 +80,8 @@ document.addEventListener("DOMContentLoaded", function() {
   codeEditor.setSize(null, 400);
   
   // Set consistent initial heights for input boxes
-  inputContainer.style.minHeight = "150px";
-  inputEditor.style.height = "120px";
+  if (inputContainer) inputContainer.style.minHeight = "150px";
+  if (inputEditor) inputEditor.style.height = "120px";
 
   // Load lessons for the selected course
   loadLessons();

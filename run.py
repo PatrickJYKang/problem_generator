@@ -10,14 +10,50 @@ def run_code(code, stdin, language):
     if not code.strip():
         return jsonify({"error": "No code provided"}), 400
 
+    # Create a response object to track program state
+    result = {
+        "stdout": "",
+        "stderr": "",
+        "requires_input": False,  # Set to true if the program is waiting for input
+        "prompt": ""            # Any text the program displayed before waiting for input
+    }
+
     try:
         if language == "python":
-            # Run Python code
+            # For Python, create a temp file rather than using -c
+            # This provides better error messages with line numbers
+            with tempfile.NamedTemporaryFile(suffix=".py", delete=False) as temp:
+                temp_path = temp.name
+                temp.write(code.encode('utf-8'))
+                
+            # Run the python file
             process = subprocess.run(
-                ["python3", "-c", code], 
+                ["python3", temp_path], 
                 input=stdin,
-                capture_output=True, text=True, timeout=5
+                capture_output=True, text=True, timeout=10
             )
+            
+            # Check if the program might be waiting for input
+            # Look for common input patterns in the output
+            output = process.stdout
+            if output and not stdin and process.returncode == 0:
+                # Common input prompts that might indicate waiting for input
+                input_patterns = [
+                    'input(', 'raw_input(', 
+                    '= input', '= raw_input',
+                    'Enter ', 'enter ', 'input:',
+                    'Please ', 'please ',
+                    '?'
+                ]
+                
+                # If the output ends with a potential input prompt
+                last_line = output.strip().split('\n')[-1] if '\n' in output else output.strip()
+                if any(pattern in last_line for pattern in input_patterns) and not last_line.endswith(':'):
+                    result["requires_input"] = True
+                    result["prompt"] = last_line
+            
+            # Clean up the temp file
+            os.unlink(temp_path)
         elif language == "java":
             # For Java, we need to create temporary files
             # Create a temporary directory
@@ -88,15 +124,17 @@ def run_code(code, stdin, language):
         else:
             return jsonify({"error": f"Unsupported language: {language}"}), 400
 
-        return jsonify({
-            "stdout": process.stdout.strip(),
-            "stderr": process.stderr.strip()
-        })
+        # Set result values
+        result["stdout"] = process.stdout.strip()
+        result["stderr"] = process.stderr.strip()
+        return jsonify(result)
 
     except subprocess.TimeoutExpired:
-        return jsonify({"error": "Execution timed out"}), 500
+        result["stderr"] = "Execution timed out. Your program took too long to run."
+        return jsonify(result)
     except Exception as e:
-        return jsonify({"error": str(e)}), 500
+        result["stderr"] = f"Error: {str(e)}"
+        return jsonify(result)
 
 # This is still used to run the Flask app
 if __name__ == "__main__":
