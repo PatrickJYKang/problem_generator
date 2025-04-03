@@ -107,7 +107,22 @@ async function fetchSyllabus(course, lesson) {
   if (!course || !lesson) return '';
   
   try {
-    // Try to fetch index.json first to understand lesson structure
+    console.log(`Fetching syllabus for ${course}/${lesson}`);
+    
+    // Just fetch the current lesson to keep the payload smaller
+    try {
+      const lessonResponse = await fetch(`/syllabi/${course}/en/${lesson}.md`);
+      if (lessonResponse.ok) {
+        const lessonText = await lessonResponse.text();
+        return `## ${lesson}\n${lessonText}`;
+      } else {
+        console.warn(`Couldn't fetch lesson ${lesson}, trying to get index`);
+      }
+    } catch (error) {
+      console.error(`Error fetching specific lesson ${lesson}:`, error);
+    }
+    
+    // If we couldn't get the specific lesson, try the index approach
     const response = await fetch(`/syllabi/${course}/en/index.json`);
     if (!response.ok) {
       throw new Error('Failed to fetch index.json');
@@ -115,25 +130,24 @@ async function fetchSyllabus(course, lesson) {
     
     const indexData = await response.json();
     let syllabusContent = '';
+    let foundLesson = false;
     
-    // Simplified approach to get all lessons up to the current one
+    // Only get the current lesson from the index
     for (const category in indexData) {
-      if (typeof indexData[category] === 'object') {
+      if (typeof indexData[category] === 'object' && !foundLesson) {
         for (const lessonKey in indexData[category]) {
-          // Fetch content for this lesson
-          try {
-            const lessonResponse = await fetch(`/syllabi/${course}/en/${lessonKey}.md`);
-            if (lessonResponse.ok) {
-              const lessonText = await lessonResponse.text();
-              syllabusContent += `## ${lessonKey}\n${lessonText}\n\n`;
-            }
-          } catch (error) {
-            console.error(`Error fetching lesson ${lessonKey}:`, error);
-          }
-          
-          // If we've reached the current lesson, stop fetching more
           if (lessonKey === lesson) {
-            break;
+            foundLesson = true;
+            try {
+              const lessonResponse = await fetch(`/syllabi/${course}/en/${lessonKey}.md`);
+              if (lessonResponse.ok) {
+                const lessonText = await lessonResponse.text();
+                syllabusContent = `## ${lessonKey}\n${lessonText}`;
+                break;
+              }
+            } catch (error) {
+              console.error(`Error fetching lesson ${lessonKey}:`, error);
+            }
           }
         }
       }
@@ -149,6 +163,17 @@ async function fetchSyllabus(course, lesson) {
 // Send chat request to backend
 async function sendChatRequest(query, course, lesson, problem, code, syllabus) {
   try {
+    console.log('Sending chat request with:', { query, course, lesson });
+    
+    // Limit the size of code and syllabus to prevent payload issues
+    if (code && code.length > 50000) {
+      code = code.substring(0, 50000) + '\n... (truncated for size)'; 
+    }
+    
+    if (syllabus && syllabus.length > 50000) {
+      syllabus = syllabus.substring(0, 50000) + '\n... (truncated for size)';
+    }
+    
     const response = await fetch('/chatbot', {
       method: 'POST',
       headers: {
@@ -165,11 +190,19 @@ async function sendChatRequest(query, course, lesson, problem, code, syllabus) {
       })
     });
 
-    if (!response.ok) {
-      throw new Error(`HTTP error ${response.status}`);
-    }
-
     const data = await response.json();
+    console.log('Chat response received:', data);
+    
+    // Handle error returned with 200 status (our custom error format)
+    if (data.error) {
+      console.warn('API returned error:', data.error);
+      if (data.answer) {
+        addBotMessage(data.answer);
+      } else {
+        addBotMessage("Sorry, there was an error communicating with the AI assistant. Please try again later.");
+      }
+      return;
+    }
     
     // Save conversation ID for continuity
     if (data.conversation_id) {
@@ -179,6 +212,9 @@ async function sendChatRequest(query, course, lesson, problem, code, syllabus) {
     // Display bot response
     if (data.answer) {
       addBotMessage(data.answer);
+    } else if (data.id) {
+      // Handle Dify streaming response format
+      addBotMessage(data.text || "I received your message and am processing it.");
     } else {
       addBotMessage("I'm sorry, I couldn't process your request at this time.");
     }
