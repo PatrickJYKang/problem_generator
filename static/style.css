@@ -194,8 +194,6 @@
   --border-radius: 6px; /* Consistent border radius */
   --box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); /* Consistent shadow */
   --transition-speed: 0.2s; /* Standard transition speed */
-  --history-button-bg: #777777; /* History button background - grayscale */
-  --history-button-hover-bg: #666666; /* History button hover - grayscale */
 }
 
 /* Dark theme - greyscale only */
@@ -415,21 +413,21 @@ body, html {
     transform: none;
   }
   
-  /* History button specific styling */
+  /* History button styling - using same style as other buttons */
   #history-btn {
-    background-color: var(--history-button-bg);
+    background-color: var(--button-bg);
     padding: 10px 16px;
     font-weight: 500;
     display: flex;
     align-items: center;
     justify-content: center;
-    margin: 10px 0;
+    margin: 10px auto;
     width: auto;
     min-width: 180px;
   }
   
   #history-btn:hover {
-    background-color: var(--history-button-hover-bg);
+    background-color: var(--button-hover-bg);
   }
   
   /* No emoji or icon needed */
