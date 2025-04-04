@@ -85,9 +85,15 @@ function toggleTheme() {
 
 // Initialize the editor when the DOM is loaded
 document.addEventListener("DOMContentLoaded", function() {
-  // Get current theme to determine initial CodeMirror theme
-  const currentTheme = document.documentElement.getAttribute('data-theme') || 'light';
+  // Get current theme directly from localStorage which is more reliable than data-theme attribute
+  const storedTheme = localStorage.getItem('theme');
+  const currentTheme = storedTheme || 'light';
   const cmTheme = currentTheme === 'dark' ? 'material-darker' : 'default';
+  
+  console.log(`Theme from localStorage: ${storedTheme}, Using theme: ${currentTheme}`);
+  
+  // Ensure the theme attribute is set correctly in case it's not
+  document.documentElement.setAttribute('data-theme', currentTheme);
   
   // Initialize CodeMirror with appropriate theme based on current mode
   codeEditor = CodeMirror.fromTextArea(document.getElementById("code-editor"), {
@@ -104,7 +110,25 @@ document.addEventListener("DOMContentLoaded", function() {
     }
   });
   
-  console.log(`Initialized CodeMirror with theme: ${cmTheme} based on page theme: ${currentTheme}`);
+  console.log(`Initialized CodeMirror with theme: ${cmTheme} based on theme: ${currentTheme}`);
+  
+  // For dark mode, force theme application in a more robust way
+  if (currentTheme === 'dark') {
+    // Use a longer delay and multiple attempts to ensure the theme is applied
+    setTimeout(() => {
+      codeEditor.setOption('theme', 'default');
+      console.log('Forcing theme reset to default first');
+      
+      setTimeout(() => {
+        codeEditor.setOption('theme', 'material-darker');
+        console.log('Applied material-darker theme');
+        
+        // Force a refresh of the editor
+        codeEditor.refresh();
+        console.log('Refreshed CodeMirror instance');
+      }, 100);
+    }, 100);
+  }
 
   // Set initial height
   codeEditor.setSize(null, 400);
