@@ -78,17 +78,22 @@ function toggleTheme() {
   
   // Update CodeMirror theme if editor is initialized
   if (codeEditor) {
-    codeEditor.setOption('theme', newTheme === 'dark' ? 'darcula' : 'default');
+    codeEditor.setOption('theme', newTheme === 'dark' ? 'material-darker' : 'default');
+    console.log(`Theme changed to: ${newTheme}, CodeMirror theme: ${newTheme === 'dark' ? 'material-darker' : 'default'}`);
   }
 }
 
 // Initialize the editor when the DOM is loaded
 document.addEventListener("DOMContentLoaded", function() {
-  // Initialize CodeMirror
+  // Get current theme to determine initial CodeMirror theme
+  const currentTheme = document.documentElement.getAttribute('data-theme') || 'light';
+  const cmTheme = currentTheme === 'dark' ? 'material-darker' : 'default';
+  
+  // Initialize CodeMirror with appropriate theme based on current mode
   codeEditor = CodeMirror.fromTextArea(document.getElementById("code-editor"), {
     lineNumbers: true,
     mode: "text/x-python",
-    theme: "default",
+    theme: cmTheme,
     indentUnit: 4,
     indentWithTabs: false,
     lineWrapping: true,
@@ -98,6 +103,8 @@ document.addEventListener("DOMContentLoaded", function() {
       }
     }
   });
+  
+  console.log(`Initialized CodeMirror with theme: ${cmTheme} based on page theme: ${currentTheme}`);
 
   // Set initial height
   codeEditor.setSize(null, 400);
@@ -711,13 +718,13 @@ function setupEventListeners() {
       }
 
       let tableHTML = `<h2>Test Case Results</h2><table border="1">
-                      <tr><th>Input</th><th>Expected Output</th><th>Your Output</th><th>Status</th></tr>`;
+                      <tr><th>Input</th><th>Expected Output</th><th>Your Output</th><th style="text-align: center;">Status</th></tr>`;
       data.results.forEach(tc => {
         tableHTML += `<tr>
                         <td><pre>${tc.input}</pre></td>
                         <td><pre>${tc.expected_output}</pre></td>
                         <td><pre>${tc.user_output}</pre></td>
-                        <td style="color: ${tc.status === '✅' ? 'green' : 'red'}">${tc.status}</td>
+                        <td style="color: ${tc.status === '✅' ? 'green' : 'red'}; text-align: center; font-size: 1.2em;">${tc.status}</td>
                       </tr>`;
         // No longer displaying error messages
       });
