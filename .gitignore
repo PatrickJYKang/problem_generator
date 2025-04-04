@@ -3,4 +3,4 @@ __pycache__/
 .env
 *.log
 deploy_instructions.md
-data/
+data/*

@@ -273,6 +273,18 @@ function deleteProblem(problemId, problemElement) {
 }
 
 function loadProblem(problemId) {
+  // Check if code editor has content before loading a different problem
+  if (codeEditor && codeEditor.getValue().trim() !== "") {
+    if (!confirm("Loading a problem will clear your current code. Are you sure you want to continue?")) {
+      // User canceled, don't load the problem
+      closeHistoryModal();
+      return;
+    }
+    // Clear the code editor and reset chat
+    codeEditor.setValue("");
+    resetChatConversation();
+  }
+  
   // Close the modal
   closeHistoryModal();
   
@@ -300,12 +312,67 @@ function loadProblem(problemId) {
       // Use the testcases from the database for this problem
       window.testcases = problem.testcases || [];
       
+      // Set the course and lesson values
+      if (problem.course) {
+        courseSelect.value = problem.course;
+        // Trigger lesson loading
+        loadLessons(false); // Pass false to avoid clearing code since we already did that
+        
+        // If lesson is available, set it after lessons are loaded
+        if (problem.lesson) {
+          setTimeout(() => {
+            lessonSelect.value = problem.lesson;
+          }, 500); // Small delay to ensure lessons are loaded
+        }
+      }
+      
+      // Set the programming language based on problem language
+      // Try to detect language from solutions or course name
+      let detectedLanguage = null;
+      
+      // First try to determine from course name
+      if (problem.course && problem.course.toLowerCase().includes('python')) {
+        detectedLanguage = 'python';
+      } else if (problem.course && problem.course.toLowerCase().includes('java')) {
+        detectedLanguage = 'java';
+      } else if (problem.course && (problem.course.toLowerCase().includes('cpp') || problem.course.toLowerCase().includes('c++'))) {
+        detectedLanguage = 'cpp';
+      }
+      
+      // Set the language in the dropdown if detected
+      if (detectedLanguage && languageSelect) {
+        languageSelect.value = detectedLanguage;
+        
+        // Update editor mode according to the language
+        if (codeEditor) {
+          if (detectedLanguage === 'python') {
+            codeEditor.setOption("mode", "text/x-python");
+          } else if (detectedLanguage === 'java') {
+            codeEditor.setOption("mode", "text/x-java");
+          } else if (detectedLanguage === 'cpp') {
+            codeEditor.setOption("mode", "text/x-c++src");
+          }
+        }
+      }
+      
       // Clear any previous results and hide console
       resultsDiv.innerHTML = "";
       if (consoleDiv.style.display !== "none") {
         consoleDiv.style.display = "none";
         inputContainer.style.display = "block";
       }
+      
+      // Hide course and lesson selectors when a problem is shown
+      document.querySelector('label[for="course-select"]').style.display = 'none';
+      courseSelect.style.display = 'none';
+      document.querySelector('label[for="lesson-select"]').style.display = 'none';
+      lessonSelect.style.display = 'none';
+      document.querySelectorAll('br').forEach(br => {
+        if (br.nextElementSibling === courseSelect || br.nextElementSibling === lessonSelect ||
+            br.previousElementSibling === courseSelect || br.previousElementSibling === lessonSelect) {
+          br.style.display = 'none';
+        }
+      });
       
       // Show check answer and retry buttons
       checkAnswerBtn.style.display = "inline-block";
@@ -335,9 +402,30 @@ function checkForProblems() {
 }
 
 // Load lessons based on the selected course
-function loadLessons() {
+function loadLessons(skipClearCodeCheck = true) {
   const course = courseSelect.value || "learnpython.org";
   const lang = "en"; // Default language is English
+  
+  // If we need to check for code clearing and editor has content
+  if (!skipClearCodeCheck && codeEditor && codeEditor.getValue().trim() !== "") {
+    if (!confirm("Changing lessons will clear your code. Are you sure you want to continue?")) {
+      // Reset the selection to the previous value
+      setTimeout(() => {
+        // Restore previous course selection
+        const prevCourse = localStorage.getItem('prevCourse') || "learnpython.org";
+        courseSelect.value = prevCourse;
+      }, 0);
+      return; // Don't load lessons if user cancels
+    }
+    // Clear the code editor
+    codeEditor.setValue("");
+    
+    // Also reset chat conversation
+    resetChatConversation();
+  }
+  
+  // Store the current course for future reference
+  localStorage.setItem('prevCourse', course);
   
   console.log(`Loading lessons for course: ${course}`);
   
@@ -437,6 +525,26 @@ function loadLessons() {
 function setupEventListeners() {
   // Course select change handler
   courseSelect.addEventListener("change", function() {
+    // Check if code editor has content before changing course
+    if (codeEditor && codeEditor.getValue().trim() !== "") {
+      if (!confirm("Changing the course will clear your code editor. Are you sure you want to continue?")) {
+        // Reset the selection to the previous value
+        setTimeout(() => {
+          const prevCourse = localStorage.getItem('prevCourse') || "learnpython.org";
+          courseSelect.value = prevCourse;
+        }, 0);
+        return;
+      }
+      // Clear the code editor
+      codeEditor.setValue("");
+      
+      // Also reset chat conversation
+      resetChatConversation();
+    }
+    
+    // Store the current course for future reference
+    localStorage.setItem('prevCourse', courseSelect.value);
+    
     // Reload lessons when course changes
     loadLessons();
   });
@@ -480,6 +588,18 @@ function setupEventListeners() {
 
   // Handle Generate Problem
   generateBtn.addEventListener("click", () => {
+    // Check if code editor has content before generating a new problem
+    if (codeEditor && codeEditor.getValue().trim() !== "") {
+      if (!confirm("Generating a new problem will clear your code. Are you sure you want to continue?")) {
+        return; // Don't proceed if user cancels
+      }
+      // Clear the code editor
+      codeEditor.setValue("");
+      
+      // Also reset chat conversation
+      resetChatConversation();
+    }
+    
     const course = courseSelect.value;
     const lesson = lessonSelect.value;
     
@@ -586,6 +706,18 @@ function setupEventListeners() {
 
   // Handle Retry - Goes back to input stage
   retryBtn.addEventListener("click", () => {
+    // Check if code editor has content before returning
+    if (codeEditor && codeEditor.getValue().trim() !== "") {
+      if (!confirm("Returning to the problem selection will clear your code. Are you sure you want to continue?")) {
+        return; // Don't proceed if user cancels
+      }
+      // Clear the code editor
+      codeEditor.setValue("");
+      
+      // Also reset chat conversation
+      resetChatConversation();
+    }
+    
     checkAnswerBtn.style.display = "none";
     retryBtn.style.display = "none";
     resultsDiv.innerHTML = "";  // Clear test case results
@@ -771,4 +903,15 @@ function setupEventListeners() {
       resultsDiv.innerHTML = `<p style="color: red;">Error checking answer.</p>`;
     });
   });
+}
+
+// Function to reset the chat conversation
+function resetChatConversation() {
+  // Reset conversation ID and clear messages
+  if (window.resetChat && typeof window.resetChat === 'function') {
+    window.resetChat();
+    console.log('Chat conversation reset');
+  } else {
+    console.log('resetChat function not available');
+  }
 }

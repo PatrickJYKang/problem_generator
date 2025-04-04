@@ -25,6 +25,9 @@ document.addEventListener('DOMContentLoaded', () => {
   setTimeout(() => {
     addBotMessage("Hello! I'm your AI assistant. How can I help you with your coding problem?");
   }, 1000);
+  
+  // Expose the reset function globally
+  window.resetChat = resetChatConversation;
 });
 
 // Toggle chat window
@@ -190,6 +193,29 @@ async function fetchSyllabus(course, lesson) {
     console.error('Error fetching syllabus:', error);
     return '';
   }
+}
+
+// Reset chat conversation
+function resetChatConversation() {
+  // Reset the conversation ID
+  conversationId = null;
+  
+  // Clear all messages except the initial greeting
+  if (chatMessages) {
+    // Keep only the first message (greeting) if it exists
+    const messages = chatMessages.querySelectorAll('.message');
+    if (messages.length > 1) {
+      // Remove all but the first message
+      for (let i = messages.length - 1; i > 0; i--) {
+        messages[i].remove();
+      }
+    } else if (messages.length === 0) {
+      // If no messages, add a greeting
+      addBotMessage("Hello! I'm your AI assistant. How can I help you with your coding problem?");
+    }
+  }
+  
+  console.log('Chat conversation has been reset');
 }
 
 // Send chat request to backend
