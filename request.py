@@ -173,7 +173,8 @@ if __name__ == "__main__":
     
     # Build a dynamic syllabus based on the current lesson
     debug_print("Building dynamic syllabus...")
-    file_path = build_syllabus(lesson)
+    debug_print(f"Using course '{course}' as the language parameter for syllabus")
+    file_path = build_syllabus(lesson, language=course)
     if not file_path:
         error_msg = {"error": "Failed to build syllabus"}
         print(json.dumps(error_msg))

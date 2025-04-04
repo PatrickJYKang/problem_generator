@@ -363,6 +363,7 @@ class GitHubFetcher:
             Path to a temporary file containing the concatenated markdown
         """
         print(f"Building syllabus for {lesson} in {language}/{lang}")
+        print(f"Repository path: tutorials/{language}/{lang}/")
         
         # Get all lessons in proper order
         all_lessons = []
@@ -376,7 +377,13 @@ class GitHubFetcher:
             # Build ordered list of lessons from the custom structure
             for category in ["basics", "advanced"]:
                 if category in lesson_data:
-                    all_lessons.extend(list(lesson_data[category].keys()))
+                    category_lessons = lesson_data[category]
+                    if "_order" in category_lessons:
+                        # Use the explicit order if available
+                        all_lessons.extend([l for l in category_lessons["_order"] if l in category_lessons])
+                    else:
+                        # Otherwise just use the keys except internal _order
+                        all_lessons.extend([k for k in category_lessons.keys() if k != "_order"])
         else:
             # Try to load from index.json
             try:
@@ -387,12 +394,10 @@ class GitHubFetcher:
                 # Build ordered list of lessons from index.json
                 for category in ["basics", "advanced"]:
                     if category in lesson_data:
-                        all_lessons.extend(list(lesson_data[category].keys()))
+                        all_lessons.extend([k for k in lesson_data[category].keys() if k != "_order"])
             except Exception as e:
                 print(f"Failed to load index.json: {str(e)}")
                 return None
-        
-        print(f"Lesson order: {all_lessons}")
         
         # Find the position of the current lesson
         try:
@@ -412,26 +417,120 @@ class GitHubFetcher:
         try:
             # Add a welcome message at the beginning if it exists
             try:
-                welcome_content = self.get_file_content(f"tutorials/{language}/{lang}/Welcome.md")
+                welcome_path = f"tutorials/{language}/{lang}/Welcome.md"
+                print(f"Trying to fetch welcome file: {welcome_path}")
+                welcome_content = self.get_file_content(welcome_path)
                 temp_file.write(welcome_content + "\n\n")
-                print("Added Welcome.md to syllabus")
-            except Exception:
+                print(f"Added Welcome.md to syllabus for {language}")
+            except Exception as e:
                 # It's okay if Welcome.md doesn't exist
-                print("No Welcome.md found, skipping")
-                pass
+                print(f"No Welcome.md found for {language}, skipping")
             
             # Concatenate all markdown files in order
             for lesson_name in lessons_to_include:
+                # Skip internal keys used for ordering
+                if lesson_name == '_order':
+                    continue
+                    
                 try:
-                    md_content = self.get_file_content(f"tutorials/{language}/{lang}/{lesson_name}.md")
+                    # For C++ and Java we need to handle file paths differently
+                    if language == "learn-cpp.org":
+                        # C++ lesson names exactly as they appear in the GitHub repo
+                        cpp_file_map = {
+                            "Hello, World!": "Hello, World!",
+                            "Variables and Types": "Variables and Types",
+                            "Arrays": "Arrays",
+                            "Strings": "Strings",
+                            "if-else": "if-else",
+                            "For loops": "For loops",
+                            "While loops": "While loops",
+                            "Functions": "Functions",
+                            "Pointers": "Pointers",
+                            "Structures": "Structures",
+                            "Function arguments by reference": "Function arguments by reference",
+                            "Dynamic allocation": "Dynamic allocation",
+                            "Recursion": "Recursion",
+                            "Linked lists": "Linked lists",
+                            "Binary trees": "Binary trees",
+                            "Function Pointers": "Function Pointers"
+                        }
+                        
+                        if lesson_name in cpp_file_map:
+                            file_name = cpp_file_map[lesson_name]
+                        else:
+                            # Try to normalize the name if not in the map
+                            file_name = lesson_name.replace(' ', '_').replace('-', '_')
+                    
+                    elif language == "learnjavaonline.org":
+                        # Java lesson names exactly as they appear in the GitHub repo
+                        java_file_map = {
+                            "Hello World": "Hello, World!",
+                            "Variables and Types": "Variables and Types",
+                            "Conditionals": "Conditionals",
+                            "Arrays": "Arrays",
+                            "Loops": "Loops",
+                            "Functions": "Functions",
+                            "Objects": "Objects",
+                            "Compiling and Running with Arguments": "Compiling and Running with Arguments",
+                            "Abstract Classes": "Abstract Classes",
+                            "Interfaces": "Interfaces",
+                            "Try and Catch": "Try and Catch",
+                            "Using Generics": "Using Generics"
+                        }
+                        
+                        if lesson_name in java_file_map:
+                            file_name = java_file_map[lesson_name]
+                        else:
+                            # Try to normalize the name if not in the map
+                            file_name = lesson_name.replace(' ', '_')
+                    else:
+                        # For Python, use the original name with URL encoding
+                        file_name = lesson_name.replace(' ', '%20')
+                    
+                    # Try the primary file path first
+                    # Properly URL encode the file name for the request
+                    url_encoded_name = file_name.replace(' ', '%20').replace(',', '%2C').replace('!', '%21')
+                    file_path = f"tutorials/{language}/{lang}/{url_encoded_name}.md"
+                    print(f"Trying to fetch: {file_path}")
+                    md_content = self.get_file_content(file_path)
                     temp_file.write(f"# {lesson_name}\n\n")
                     temp_file.write(md_content + "\n\n")
                     print(f"Added lesson: {lesson_name}")
+                    
                 except Exception as e:
                     print(f"Markdown file for lesson '{lesson_name}' not found: {str(e)}")
                     
-                    # For custom courses like learn-cpp.org, create placeholder content
-                    if language in self.custom_structures:
+                    # Try alternate names if the direct path doesn't work
+                    found = False
+                    
+                    # Only do this for C++ and Java which have inconsistent file naming
+                    if language in ["learn-cpp.org", "learnjavaonline.org"]:
+                        # Try a few alternative formats
+                        alt_names = []
+                        # Try with underscores
+                        alt_names.append(lesson_name.replace(' ', '_'))
+                        # Try with hyphens
+                        alt_names.append(lesson_name.replace(' ', '-'))
+                        # Try with no punctuation
+                        alt_names.append(''.join(c if c.isalnum() or c.isspace() else '_' for c in lesson_name).replace(' ', '_'))
+                        
+                        for alt_name in alt_names:
+                            try:
+                                # Properly URL encode the alternate name
+                                url_encoded_alt = alt_name.replace(' ', '%20').replace(',', '%2C').replace('!', '%21')
+                                alt_path = f"tutorials/{language}/{lang}/{url_encoded_alt}.md"
+                                print(f"Trying alternate name: {alt_path}")
+                                md_content = self.get_file_content(alt_path)
+                                temp_file.write(f"# {lesson_name}\n\n")
+                                temp_file.write(md_content + "\n\n")
+                                print(f"Added lesson with alternate name: {alt_name}")
+                                found = True
+                                break
+                            except Exception:
+                                pass  # Continue to next alternative
+                    
+                    if not found and language in self.custom_structures:
+                        # For custom courses, create placeholder content
                         print(f"Creating placeholder content for {lesson_name}")
                         temp_file.write(f"# {lesson_name}\n\n")
                         temp_file.write(f"This is a placeholder for the {lesson_name} lesson.\n\n")
@@ -440,6 +539,7 @@ class GitHubFetcher:
             temp_file.close()
             print(f"Successfully built syllabus at {temp_file.name}")
             return temp_file.name
+            
         except Exception as e:
             print(f"Failed to build syllabus: {str(e)}")
             if os.path.exists(temp_file.name):
