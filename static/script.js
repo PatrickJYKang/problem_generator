@@ -873,6 +873,10 @@ function setupEventListeners() {
         return;
       }
 
+      // Count the number of passing tests
+      let passingTests = 0;
+      const totalTests = data.results.length;
+      
       let tableHTML = `<h2>Test Case Results</h2><table border="1" style="width: 100%; table-layout: fixed;">
                       <tr>
                         <th style="width: 20%;">Input</th>
@@ -881,17 +885,34 @@ function setupEventListeners() {
                         <th style="width: 10%; text-align: center;">Status</th>
                       </tr>`;
       data.results.forEach(tc => {
-        tableHTML += `<tr>
+        const isPassing = tc.status === '✅';
+        if (isPassing) passingTests++;
+        
+        // Add background color to the entire row based on test result
+        const rowColor = isPassing 
+          ? 'background-color: rgba(0, 255, 0, 0.1);' // Light green for passing
+          : 'background-color: rgba(255, 0, 0, 0.1);'; // Light red for failing
+          
+        tableHTML += `<tr style="${rowColor}">
                         <td style="word-wrap: break-word; overflow-wrap: break-word;"><pre style="white-space: pre-wrap; word-wrap: break-word; max-width: 100%;">${tc.input}</pre></td>
                         <td style="word-wrap: break-word; overflow-wrap: break-word;"><pre style="white-space: pre-wrap; word-wrap: break-word; max-width: 100%;">${tc.expected_output}</pre></td>
                         <td style="word-wrap: break-word; overflow-wrap: break-word;"><pre style="white-space: pre-wrap; word-wrap: break-word; max-width: 100%;">${tc.user_output}</pre></td>
-                        <td style="color: ${tc.status === '✅' ? 'green' : 'red'}; text-align: center; font-size: 1.2em;">${tc.status}</td>
+                        <td style="color: ${isPassing ? 'green' : 'red'}; text-align: center; font-size: 1.2em;">${tc.status}</td>
                       </tr>`;
-        // No longer displaying error messages
       });
       tableHTML += "</table>";
+      
+      // Add a summary of the test results
+      tableHTML += `<p style="text-align: center; margin-top: 10px;">
+                      <strong>${passingTests} of ${totalTests} tests passing</strong>
+                    </p>`;
 
       resultsDiv.innerHTML = tableHTML;  // Now results are stored correctly
+      
+      // If all tests pass, show confetti!
+      if (passingTests === totalTests && totalTests > 0) {
+        showConfetti();
+      }
     })
     .catch(err => {
       // Clear loading animation
@@ -914,4 +935,117 @@ function resetChatConversation() {
   } else {
     console.log('resetChat function not available');
   }
+}
+
+// Function to show confetti animation when all tests pass
+function showConfetti() {
+  // Create confetti container
+  const confettiContainer = document.createElement('div');
+  confettiContainer.style.cssText = `
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 9999;
+    overflow: hidden;
+  `;
+  document.body.appendChild(confettiContainer);
+  
+  // Create confetti pieces
+  const colors = ['#ff0000', '#00ff00', '#0000ff', '#ffff00', '#ff00ff', '#00ffff'];
+  const totalPieces = 150;
+  
+  for (let i = 0; i < totalPieces; i++) {
+    const piece = document.createElement('div');
+    
+    // Random properties for each piece
+    const color = colors[Math.floor(Math.random() * colors.length)];
+    const size = Math.random() * 10 + 5; // 5-15px
+    const startPositionLeft = Math.random() * 100; // 0-100%
+    const startOpacity = 0.8;
+    const endPositionTop = 95 + Math.random() * 5; // 95-100%
+    const endPositionLeft = startPositionLeft + Math.random() * 20 - 10; // +/- 10% from start
+    const rotateStart = Math.random() * 360; // 0-360 degrees
+    const rotateEnd = rotateStart + Math.random() * 360; // additional 0-360 degrees
+    const duration = 3000 + Math.random() * 2000; // 3-5 seconds
+    const delay = Math.random() * 1500; // 0-1.5 seconds
+    
+    // Configure the piece
+    piece.style.cssText = `
+      position: absolute;
+      width: ${size}px;
+      height: ${size}px;
+      background-color: ${color};
+      top: -5%;
+      left: ${startPositionLeft}%;
+      opacity: ${startOpacity};
+      transform: rotate(${rotateStart}deg);
+      transition: top ${duration}ms ease-out, left ${duration}ms ease-out, transform ${duration}ms ease-out, opacity ${duration}ms ease-out;
+      transition-delay: ${delay}ms;
+      pointer-events: none;
+    `;
+    
+    confettiContainer.appendChild(piece);
+    
+    // Trigger the animation after a small delay
+    setTimeout(() => {
+      piece.style.top = `${endPositionTop}%`;
+      piece.style.left = `${endPositionLeft}%`;
+      piece.style.transform = `rotate(${rotateEnd}deg)`;
+      piece.style.opacity = '0';
+    }, 50);
+    
+    // Remove the piece after animation is done
+    setTimeout(() => {
+      piece.remove();
+      // Remove container once all pieces are gone
+      if (i === totalPieces - 1) {
+        setTimeout(() => {
+          confettiContainer.remove();
+        }, duration + delay + 100);
+      }
+    }, duration + delay + 100);
+  }
+  
+  // Show a success message
+  const successMessage = document.createElement('div');
+  successMessage.textContent = 'All Tests Passed! 🎉';
+  successMessage.style.cssText = `
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: rgba(0, 200, 0, 0.7);
+    color: white;
+    padding: 15px 30px;
+    border-radius: 10px;
+    font-size: 24px;
+    font-weight: bold;
+    z-index: 10000;
+    animation: successFadeOut 2.5s forwards;
+    text-align: center;
+    white-space: nowrap;
+  `;
+  
+  // Add keyframes for fading out
+  const style = document.createElement('style');
+  style.innerHTML = `
+    @keyframes successFadeOut {
+      0% { opacity: 0; transform: translate(-50%, -50%) scale(0.8); }
+      20% { opacity: 1; transform: translate(-50%, -50%) scale(1.1); }
+      30% { transform: translate(-50%, -50%) scale(1); }
+      70% { opacity: 1; }
+      100% { opacity: 0; }
+    }
+  `;
+  document.head.appendChild(style);
+  document.body.appendChild(successMessage);
+  
+  // Remove the success message after animation
+  setTimeout(() => {
+    successMessage.remove();
+    style.remove();
+  }, 2500);
 }
