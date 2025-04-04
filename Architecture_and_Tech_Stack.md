@@ -45,10 +45,10 @@ flowchart TB
         DifyAPI["Dify API\nChat AI"]
     end
     
-    %% Using better contrasting colors for readability
-    classDef clientNodes fill:#d4f1f9,stroke:#333,stroke-width:1px;
-    classDef serverNodes fill:#ffe6cc,stroke:#333,stroke-width:1px;
-    classDef externalNodes fill:#d5e8d4,stroke:#333,stroke-width:1px;
+    %% Using colors optimized for dark mode readability
+    classDef clientNodes fill:#5762d5,stroke:#fff,stroke-width:1px,color:#fff;
+    classDef serverNodes fill:#d5654b,stroke:#fff,stroke-width:1px,color:#fff;
+    classDef externalNodes fill:#2d9d5c,stroke:#fff,stroke-width:1px,color:#fff;
     
     class ProblemDisplay,CodeEditor,TestResults,JavaScript,API,Chat clientNodes;
     class AppPy,GitHubUtils,RunPy,DbPy,GitHubAPI,Checker serverNodes;
@@ -88,9 +88,9 @@ flowchart LR
     C --> E["API Request\nto Backend"]
     E --> F["Problem Saved\nto Database"]
     
-    %% Using clearer colors with better contrast
-    classDef userActions fill:#dae8fc,stroke:#6c8ebf,stroke-width:1px;
-    classDef systemActions fill:#d5e8d4,stroke:#82b366,stroke-width:1px;
+    %% Using colors optimized for dark mode readability
+    classDef userActions fill:#5b6abf,stroke:#fff,stroke-width:1px,color:#fff;
+    classDef systemActions fill:#458b55,stroke:#fff,stroke-width:1px,color:#fff;
     
     class A,B,C,D userActions;
     class E,F systemActions;
@@ -106,9 +106,9 @@ flowchart LR
     C --> E["Code Sent\nfor Testing"]
     E --> F["Test Results\n& Solution\nSaved"]
     
-    %% Using clearer colors with better contrast
-    classDef userActions fill:#dae8fc,stroke:#6c8ebf,stroke-width:1px;
-    classDef systemActions fill:#d5e8d4,stroke:#82b366,stroke-width:1px;
+    %% Using colors optimized for dark mode readability
+    classDef userActions fill:#5b6abf,stroke:#fff,stroke-width:1px,color:#fff;
+    classDef systemActions fill:#458b55,stroke:#fff,stroke-width:1px,color:#fff;
     
     class A,B,C,D userActions;
     class E,F systemActions;
@@ -124,9 +124,9 @@ flowchart LR
     D --> E["Dify API\nRequest"]
     E --> C
     
-    %% Using clearer colors with better contrast
-    classDef userActions fill:#dae8fc,stroke:#6c8ebf,stroke-width:1px;
-    classDef systemActions fill:#d5e8d4,stroke:#82b366,stroke-width:1px;
+    %% Using colors optimized for dark mode readability
+    classDef userActions fill:#5b6abf,stroke:#fff,stroke-width:1px,color:#fff;
+    classDef systemActions fill:#458b55,stroke:#fff,stroke-width:1px,color:#fff;
     
     class A,B,C userActions;
     class D,E systemActions;
