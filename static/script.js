@@ -741,13 +741,18 @@ function setupEventListeners() {
         return;
       }
 
-      let tableHTML = `<h2>Test Case Results</h2><table border="1">
-                      <tr><th>Input</th><th>Expected Output</th><th>Your Output</th><th style="text-align: center;">Status</th></tr>`;
+      let tableHTML = `<h2>Test Case Results</h2><table border="1" style="width: 100%; table-layout: fixed;">
+                      <tr>
+                        <th style="width: 20%;">Input</th>
+                        <th style="width: 30%;">Expected Output</th>
+                        <th style="width: 30%;">Your Output</th>
+                        <th style="width: 10%; text-align: center;">Status</th>
+                      </tr>`;
       data.results.forEach(tc => {
         tableHTML += `<tr>
-                        <td><pre>${tc.input}</pre></td>
-                        <td><pre>${tc.expected_output}</pre></td>
-                        <td><pre>${tc.user_output}</pre></td>
+                        <td style="word-wrap: break-word; overflow-wrap: break-word;"><pre style="white-space: pre-wrap; word-wrap: break-word; max-width: 100%;">${tc.input}</pre></td>
+                        <td style="word-wrap: break-word; overflow-wrap: break-word;"><pre style="white-space: pre-wrap; word-wrap: break-word; max-width: 100%;">${tc.expected_output}</pre></td>
+                        <td style="word-wrap: break-word; overflow-wrap: break-word;"><pre style="white-space: pre-wrap; word-wrap: break-word; max-width: 100%;">${tc.user_output}</pre></td>
                         <td style="color: ${tc.status === '✅' ? 'green' : 'red'}; text-align: center; font-size: 1.2em;">${tc.status}</td>
                       </tr>`;
         // No longer displaying error messages
