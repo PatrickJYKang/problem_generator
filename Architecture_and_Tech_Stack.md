@@ -2,55 +2,56 @@
 
 ## System Architecture
 
-```
-┌─────────────────────────────────────────────────────────────────┐
-│                      Client (Web Browser)                        │
-│                                                                  │
-│  ┌──────────────────┐   ┌────────────────┐   ┌───────────────┐  │
-│  │  Problem Display │   │   Code Editor  │   │ Test Results  │  │
-│  │    (HTML/CSS)    │   │   (CodeMirror) │   │  (HTML/CSS)   │  │
-│  └─────────┬────────┘   └───────┬────────┘   └───────┬───────┘  │
-│            │                    │                    │          │
-│            └────────────┬───────┴─────────┬──────────┘          │
-│                         │                 │                      │
-│                 ┌───────┴─────────┐       │                      │
-│                 │    JavaScript   │       │                      │
-│                 │   (script.js)   │       │                      │
-│                 └───────┬─────────┘       │                      │
-│                         │                 │                      │
-│                ┌────────┴──────────┐ ┌────┴────────────┐         │
-│                │ Problem Generator │ │AI Assistant Chat│         │
-│                │   (REST API)      │ │   (chatbot.js)  │         │
-│                └────────┬──────────┘ └────┬────────────┘         │
-└──────────────────────────┼─────────────────┼──────────────────────┘
-                           │                 │
-                           ▼                 ▼
-┌────────────────────────────────────────────────────────────────────┐
-│                        Server (Flask)                               │
-│                                                                     │
-│ ┌────────────────┐ ┌────────────────┐ ┌───────────────┐ ┌─────────┐│
-│ │  app.py        │ │  github_utils  │ │    run.py     │ │  db.py  ││
-│ │ (Main Server)  │ │(GitHub Fetcher)│ │ (Code Runner) │ │(SQLite) ││
-│ └───────┬────────┘ └───────┬────────┘ └───────┬───────┘ └────┬────┘│
-│         │                  │                  │              │     │
-│         └──────────────────┼──────────────────┼──────────────┘     │
-│                            │                  │                     │
-│                            ▼                  ▼                     │
-│                   ┌─────────────────┐  ┌──────────────────┐        │
-│                   │   GitHub API    │  │  Problem Checker │        │
-│                   │(Fetch Syllabus) │  │   (check.py)     │        │
-│                   └─────────────────┘  └──────────────────┘        │
-└────────────────────────────────────────────────────────────────────┘
-                            │                   │
-                            ▼                   │
-┌─────────────────────────────────────────┐     │
-│      External Resources                  │     │
-│                                          │     │
-│  ┌────────────────┐  ┌────────────────┐  │     │
-│  │  GitHub Repo   │  │    Dify API    │◄─┼─────┘
-│  │  (Syllabus)    │  │  (Chat AI)     │  │
-│  └────────────────┘  └────────────────┘  │
-└─────────────────────────────────────────┘
+```mermaid
+flowchart TB
+    subgraph Client["Client (Web Browser)"]
+        ProblemDisplay["Problem Display\nHTML/CSS"] 
+        CodeEditor["Code Editor\nCodeMirror"] 
+        TestResults["Test Results\nHTML/CSS"]
+        JavaScript["JavaScript\nscript.js"]
+        API["Problem Generator\nREST API"]
+        Chat["AI Assistant Chat\nchatbot.js"]
+        
+        ProblemDisplay --> JavaScript
+        CodeEditor --> JavaScript
+        TestResults --> JavaScript
+        JavaScript --> API
+        JavaScript --> Chat
+    end
+    
+    API --> Server
+    Chat --> Server
+    
+    subgraph Server["Server (Flask)"]
+        AppPy["app.py\nMain Server"]
+        GitHubUtils["github_utils.py\nGitHub Fetcher"]
+        RunPy["run.py\nCode Runner"]
+        DbPy["db.py\nSQLite"]
+        GitHubAPI["GitHub API\nFetch Syllabus"]
+        Checker["Problem Checker\ncheck.py"]
+        
+        AppPy --> GitHubUtils
+        AppPy --> RunPy
+        AppPy --> DbPy
+        GitHubUtils --> GitHubAPI
+        RunPy --> Checker
+    end
+    
+    GitHubAPI --> External
+    Checker --> DifyAPI
+    
+    subgraph External["External Resources"]
+        GitHubRepo["GitHub Repo\nSyllabus"]
+        DifyAPI["Dify API\nChat AI"]
+    end
+    
+    classDef clientNodes fill:#f9f9f9,stroke:#333,stroke-width:1px;
+    classDef serverNodes fill:#e6f3ff,stroke:#333,stroke-width:1px;
+    classDef externalNodes fill:#f0fff0,stroke:#333,stroke-width:1px;
+    
+    class ProblemDisplay,CodeEditor,TestResults,JavaScript,API,Chat clientNodes;
+    class AppPy,GitHubUtils,RunPy,DbPy,GitHubAPI,Checker serverNodes;
+    class GitHubRepo,DifyAPI externalNodes;
 ```
 
 ## Tech Stack Overview
@@ -78,95 +79,87 @@
 
 ### 1. Problem Generation Flow
 
-```
-┌───────────┐     ┌───────────┐     ┌───────────────┐     ┌───────────┐
-│  Select   │     │  Select   │     │  Click        │     │ Problem   │
-│  Course   │────►│  Lesson   │────►│  Generate     │────►│ Displayed │
-└───────────┘     └───────────┘     └───────────────┘     └───────────┘
-                                           │
-                                           ▼
-                                    ┌───────────────┐
-                                    │  API Request  │
-                                    │  to Backend   │
-                                    └───────┬───────┘
-                                           │
-                                           ▼
-                                    ┌───────────────┐
-                                    │ Problem Saved │
-                                    │  to Database  │
-                                    └───────────────┘
+```mermaid
+flowchart LR
+    A["Select\nCourse"] --> B["Select\nLesson"]
+    B --> C["Click\nGenerate"]
+    C --> D["Problem\nDisplayed"]
+    C --> E["API Request\nto Backend"]
+    E --> F["Problem Saved\nto Database"]
+    
+    classDef userActions fill:#f5f5ff,stroke:#333,stroke-width:1px;
+    classDef systemActions fill:#f0f8ff,stroke:#333,stroke-width:1px;
+    
+    class A,B,C,D userActions;
+    class E,F systemActions;
 ```
 
 ### 2. Code Checking Flow
 
-```
-┌───────────┐     ┌───────────┐     ┌───────────────┐     ┌───────────┐
-│  Write    │     │  Select   │     │  Click Check  │     │ Results   │
-│  Code     │────►│  Language │────►│  Answer       │────►│ Displayed │
-└───────────┘     └───────────┘     └───────────────┘     └───────────┘
-                                           │
-                                           ▼
-                                    ┌───────────────┐
-                                    │  Code Sent    │
-                                    │  for Testing  │
-                                    └───────┬───────┘
-                                           │
-                                           ▼
-                                    ┌───────────────┐
-                                    │ Test Results  │
-                                    │ & Solution    │
-                                    │  Saved        │
-                                    └───────────────┘
+```mermaid
+flowchart LR
+    A["Write\nCode"] --> B["Select\nLanguage"]
+    B --> C["Click Check\nAnswer"]
+    C --> D["Results\nDisplayed"]
+    C --> E["Code Sent\nfor Testing"]
+    E --> F["Test Results\n& Solution\nSaved"]
+    
+    classDef userActions fill:#f5f5ff,stroke:#333,stroke-width:1px;
+    classDef systemActions fill:#f0f8ff,stroke:#333,stroke-width:1px;
+    
+    class A,B,C,D userActions;
+    class E,F systemActions;
 ```
 
 ### 3. Chat Assistant Flow
 
-```
-┌───────────┐     ┌───────────────────┐     ┌───────────┐
-│  Open     │     │  Send Message     │     │ Response  │
-│  Chat     │────►│  with Question    │────►│ Generated │
-└───────────┘     └───────────────────┘     └───────────┘
-                          │
-                          ▼
-                   ┌───────────────┐
-                   │  Context      │
-                   │  Gathered     │
-                   └───────┬───────┘
-                          │
-                          ▼
-                   ┌───────────────┐
-                   │  Dify API     │
-                   │  Request      │
-                   └───────────────┘
+```mermaid
+flowchart LR
+    A["Open\nChat"] --> B["Send Message\nwith Question"]
+    B --> C["Response\nGenerated"]
+    B --> D["Context\nGathered"]
+    D --> E["Dify API\nRequest"]
+    E --> C
+    
+    classDef userActions fill:#f5f5ff,stroke:#333,stroke-width:1px;
+    classDef systemActions fill:#f0f8ff,stroke:#333,stroke-width:1px;
+    
+    class A,B,C userActions;
+    class D,E systemActions;
 ```
 
 ## Database Schema
 
-```
-┌────────────────────┐       ┌────────────────────┐
-│      problems      │       │      testcases     │
-├────────────────────┤       ├────────────────────┤
-│ id (PK)            │       │ id (PK)            │
-│ title              │       │ problem_id (FK)    │
-│ problem_text       │       │ input              │
-│ course             │◄──────┤ expected_output    │
-│ lesson             │       │                    │
-│ created_at         │       │                    │
-└────────────────────┘       └────────────────────┘
-         │
-         │
-         ▼
-┌────────────────────┐
-│     solutions      │
-├────────────────────┤
-│ id (PK)            │
-│ problem_id (FK)    │
-│ language           │
-│ code               │
-│ passed_testcases   │
-│ total_testcases    │
-│ submitted_at       │
-└────────────────────┘
+```mermaid
+erDiagram
+    problems ||--o{ testcases : has
+    problems ||--o{ solutions : has
+    
+    problems {
+        int id PK
+        string title
+        text problem_text
+        string course
+        string lesson
+        datetime created_at
+    }
+    
+    testcases {
+        int id PK
+        int problem_id FK
+        text input
+        text expected_output
+    }
+    
+    solutions {
+        int id PK
+        int problem_id FK
+        string language
+        text code
+        int passed_testcases
+        int total_testcases
+        datetime submitted_at
+    }
 ```
 
 ## Programming Languages Support
