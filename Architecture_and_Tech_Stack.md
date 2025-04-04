@@ -45,9 +45,10 @@ flowchart TB
         DifyAPI["Dify API\nChat AI"]
     end
     
-    classDef clientNodes fill:#f9f9f9,stroke:#333,stroke-width:1px;
-    classDef serverNodes fill:#e6f3ff,stroke:#333,stroke-width:1px;
-    classDef externalNodes fill:#f0fff0,stroke:#333,stroke-width:1px;
+    %% Using better contrasting colors for readability
+    classDef clientNodes fill:#d4f1f9,stroke:#333,stroke-width:1px;
+    classDef serverNodes fill:#ffe6cc,stroke:#333,stroke-width:1px;
+    classDef externalNodes fill:#d5e8d4,stroke:#333,stroke-width:1px;
     
     class ProblemDisplay,CodeEditor,TestResults,JavaScript,API,Chat clientNodes;
     class AppPy,GitHubUtils,RunPy,DbPy,GitHubAPI,Checker serverNodes;
@@ -87,8 +88,9 @@ flowchart LR
     C --> E["API Request\nto Backend"]
     E --> F["Problem Saved\nto Database"]
     
-    classDef userActions fill:#f5f5ff,stroke:#333,stroke-width:1px;
-    classDef systemActions fill:#f0f8ff,stroke:#333,stroke-width:1px;
+    %% Using clearer colors with better contrast
+    classDef userActions fill:#dae8fc,stroke:#6c8ebf,stroke-width:1px;
+    classDef systemActions fill:#d5e8d4,stroke:#82b366,stroke-width:1px;
     
     class A,B,C,D userActions;
     class E,F systemActions;
@@ -104,8 +106,9 @@ flowchart LR
     C --> E["Code Sent\nfor Testing"]
     E --> F["Test Results\n& Solution\nSaved"]
     
-    classDef userActions fill:#f5f5ff,stroke:#333,stroke-width:1px;
-    classDef systemActions fill:#f0f8ff,stroke:#333,stroke-width:1px;
+    %% Using clearer colors with better contrast
+    classDef userActions fill:#dae8fc,stroke:#6c8ebf,stroke-width:1px;
+    classDef systemActions fill:#d5e8d4,stroke:#82b366,stroke-width:1px;
     
     class A,B,C,D userActions;
     class E,F systemActions;
@@ -121,8 +124,9 @@ flowchart LR
     D --> E["Dify API\nRequest"]
     E --> C
     
-    classDef userActions fill:#f5f5ff,stroke:#333,stroke-width:1px;
-    classDef systemActions fill:#f0f8ff,stroke:#333,stroke-width:1px;
+    %% Using clearer colors with better contrast
+    classDef userActions fill:#dae8fc,stroke:#6c8ebf,stroke-width:1px;
+    classDef systemActions fill:#d5e8d4,stroke:#82b366,stroke-width:1px;
     
     class A,B,C userActions;
     class D,E systemActions;
