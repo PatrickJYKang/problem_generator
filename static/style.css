@@ -223,13 +223,25 @@ body, html {
   
   /* Main Header styles */
   .main-header {
-    background: var(--main-header-bg);
+    background-color: var(--main-header-bg);
     color: var(--main-header-text);
     padding: 0.8rem 1.5rem;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
     position: sticky;
     top: 0;
     z-index: 100;
+  }
+  
+  .version-tag {
+    font-size: 0.6em;
+    background-color: var(--accent-color);
+    color: white;
+    padding: 0.2rem 0.5rem;
+    border-radius: 12px;
+    margin-left: 8px;
+    vertical-align: middle;
+    display: inline-block;
+    font-weight: normal;
   }
   
   .header-container {

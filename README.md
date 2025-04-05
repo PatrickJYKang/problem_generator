@@ -1,6 +1,9 @@
-# Problem Generator
+# Problem Generator (indev 0.1)
 
 A web application that dynamically generates coding problems based on your current learning progress. This tool helps you practice and reinforce your programming skills with targeted exercises that match your knowledge level.
+
+[![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](LICENSE)
+[![Version](https://img.shields.io/badge/version-indev%200.1-orange.svg)](docs/CHANGELOG.md)
 
 ## Features
 
@@ -198,11 +201,15 @@ For production environments, using Gunicorn as a WSGI server is recommended:
 
 - **app.py**: Main Flask application with route handlers
 - **db.py**: Database interaction module for storing and retrieving problems
-- **run.py**: Handles code execution for different programming languages
-- **check.py**: Validates code against test cases with detailed feedback
+- **github_utils.py**: Handles fetching content from GitHub repositories
+- **chatbot.py**: Interfaces with the Dify API for chatbot functionality
 - **request.py**: Interfaces with external API for problem generation
 - **static/**: Frontend assets (HTML, CSS, JavaScript)
 - **syllabi/**: Curriculum content organized by course and lesson
+- **docs/**: Project documentation
+  - **Architecture_and_Tech_Stack.md**: Overview of the application architecture
+  - **CHANGELOG.md**: Version history and changes
+  - **DeveloperReference.md**: Comprehensive technical reference
 
 ## Customisation
 
