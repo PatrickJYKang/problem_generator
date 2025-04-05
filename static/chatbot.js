@@ -6,7 +6,6 @@
   let chatMessages;
   let chatForm;
   let chatInput;
-  let closeChat;
   let chatSubmitBtn;
   let conversationId = null; // To maintain conversation history with Dify API
 
@@ -20,7 +19,6 @@
     chatMessages = document.getElementById('chat-messages');
     chatForm = document.getElementById('chat-form');
     chatInput = document.getElementById('chat-input');
-    closeChat = document.getElementById('close-chat');
     chatSubmitBtn = document.getElementById('chat-submit-btn');
     
     console.log('Chat elements found:', {
@@ -29,17 +27,12 @@
       chatMessages: !!chatMessages,
       chatForm: !!chatForm,
       chatInput: !!chatInput,
-      closeChat: !!closeChat,
       chatSubmitBtn: !!chatSubmitBtn
     });
 
     // Setup event listeners
     if (chatButton) {
       chatButton.addEventListener('click', toggleChatWindow);
-    }
-    
-    if (closeChat) {
-      closeChat.addEventListener('click', toggleChatWindow);
     }
     
     if (chatSubmitBtn) {
