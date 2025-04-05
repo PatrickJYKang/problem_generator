@@ -92,7 +92,7 @@ python app.py
 ### Production Deployment
 
 #### Using Gunicorn (Recommended)
-For production environments, we recommend using Gunicorn as a WSGI server:
+For production environments, using Gunicorn as a WSGI server is recommended:
 
 1. Install Gunicorn:
    ```bash
