@@ -1,37 +1,76 @@
-// Chatbot functionality
-let chatWindow;
-let chatButton;
-let chatMessages;
-let chatForm;
-let chatInput;
-let closeChat;
-let conversationId = null; // To maintain conversation history with Dify API
+// Chatbot functionality - Using an IIFE to avoid global variable conflicts
+(function() {
+  // Private variables encapsulated in this function scope
+  let chatWindow;
+  let chatButton;
+  let chatMessages;
+  let chatForm;
+  let chatInput;
+  let closeChat;
+  let chatSubmitBtn;
+  let conversationId = null; // To maintain conversation history with Dify API
 
-// Initialize the chatbot
-document.addEventListener('DOMContentLoaded', () => {
-  chatWindow = document.getElementById('chat-window');
-  chatButton = document.getElementById('chat-button');
-  chatMessages = document.getElementById('chat-messages');
-  chatForm = document.getElementById('chat-form');
-  chatInput = document.getElementById('chat-input');
-  closeChat = document.getElementById('close-chat');
+  // Initialize the chatbot when the document is ready
+  document.addEventListener('DOMContentLoaded', function() {
+    console.log('Initializing chatbot...');
+    
+    // Get all the DOM elements
+    chatWindow = document.getElementById('chat-window');
+    chatButton = document.getElementById('chat-button');
+    chatMessages = document.getElementById('chat-messages');
+    chatForm = document.getElementById('chat-form');
+    chatInput = document.getElementById('chat-input');
+    closeChat = document.getElementById('close-chat');
+    chatSubmitBtn = document.getElementById('chat-submit-btn');
+    
+    console.log('Chat elements found:', {
+      chatWindow: !!chatWindow,
+      chatButton: !!chatButton,
+      chatMessages: !!chatMessages,
+      chatForm: !!chatForm,
+      chatInput: !!chatInput,
+      closeChat: !!closeChat,
+      chatSubmitBtn: !!chatSubmitBtn
+    });
 
-  // Event listeners
-  chatButton.addEventListener('click', toggleChatWindow);
-  closeChat.addEventListener('click', toggleChatWindow);
-  chatForm.addEventListener('submit', handleChatSubmit);
+    // Setup event listeners
+    if (chatButton) {
+      chatButton.addEventListener('click', toggleChatWindow);
+    }
+    
+    if (closeChat) {
+      closeChat.addEventListener('click', toggleChatWindow);
+    }
+    
+    if (chatSubmitBtn) {
+      console.log('Adding click handler to send button');
+      chatSubmitBtn.addEventListener('click', function() {
+        console.log('Send button clicked!');
+        handleChatSubmit();
+      });
+    }
+    
+    if (chatInput) {
+      chatInput.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          console.log('Enter key pressed in chat input');
+          handleChatSubmit();
+        }
+      });
+    }
 
-  // Add initial greeting message
-  setTimeout(() => {
-    addBotMessage("Hello! I'm your AI assistant. How can I help you with your coding problem?");
-  }, 1000);
-  
-  // Expose the reset function globally
-  window.resetChat = resetChatConversation;
-});
+    // Add initial greeting message
+    setTimeout(function() {
+      addBotMessage("Hello! I'm your AI assistant. How can I help you with your coding problem?");
+    }, 1000);
+    
+    // Expose the reset function globally
+    window.resetChat = resetChatConversation;
+  });
 
-// Toggle chat window
-function toggleChatWindow() {
+  // Toggle chat window
+  function toggleChatWindow() {
   chatWindow.classList.toggle('open');
   document.body.classList.toggle('chat-open'); // Toggle body class for the push-in effect
   
@@ -40,11 +79,12 @@ function toggleChatWindow() {
   }
 }
 
-// Handle chat form submission
-function handleChatSubmit(e) {
-  e.preventDefault();
+  // Handle chat form submission
+  function handleChatSubmit(e) {
+  if (e) e.preventDefault(); // Ensure this always runs
+  console.log('Chat form submitted, preventing default behavior');
   const message = chatInput.value.trim();
-  if (!message) return;
+  if (!message) return false;
 
   // Add user message to chat
   addUserMessage(message);
@@ -78,8 +118,8 @@ function handleChatSubmit(e) {
     });
 }
 
-// Add user message to chat window
-function addUserMessage(message) {
+  // Add user message to chat window
+  function addUserMessage(message) {
   const messageElement = document.createElement('div');
   messageElement.className = 'message user-message';
   messageElement.textContent = message;
@@ -87,8 +127,8 @@ function addUserMessage(message) {
   scrollToBottom();
 }
 
-// Add bot message to chat window with markdown support
-function addBotMessage(message) {
+  // Add bot message to chat window with markdown support
+  function addBotMessage(message) {
   // Remove typing indicator if present
   const typingIndicator = document.querySelector('.typing-indicator');
   if (typingIndicator) {
@@ -132,13 +172,13 @@ function addBotMessage(message) {
   scrollToBottom();
 }
 
-// Helper function to scroll chat to bottom
-function scrollToBottom() {
+  // Helper function to scroll chat to bottom
+  function scrollToBottom() {
   chatMessages.scrollTop = chatMessages.scrollHeight;
 }
 
-// Fetch syllabus for the current lesson (simplified approach)
-async function fetchSyllabus(course, lesson) {
+  // Fetch syllabus for the current lesson (simplified approach)
+  async function fetchSyllabus(course, lesson) {
   if (!course || !lesson) return '';
   
   try {
@@ -195,8 +235,8 @@ async function fetchSyllabus(course, lesson) {
   }
 }
 
-// Reset chat conversation
-function resetChatConversation() {
+  // Reset chat conversation
+  function resetChatConversation() {
   // Reset the conversation ID
   conversationId = null;
   
@@ -218,8 +258,8 @@ function resetChatConversation() {
   console.log('Chat conversation has been reset');
 }
 
-// Send chat request to backend
-async function sendChatRequest(query, course, lesson, problem, code, syllabus) {
+  // Send chat request to backend
+  async function sendChatRequest(query, course, lesson, problem, code, syllabus) {
   try {
     console.log('Sending chat request with:', { query, course, lesson });
     
@@ -287,3 +327,6 @@ async function sendChatRequest(query, course, lesson, problem, code, syllabus) {
     addBotMessage("Sorry, there was an error communicating with the AI assistant. Please try again later.");
   }
 }
+
+// Close the IIFE
+})();

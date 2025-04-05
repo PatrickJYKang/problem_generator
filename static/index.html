@@ -137,9 +137,9 @@
     </div>
     <div class="chat-messages" id="chat-messages"></div>
     <div class="chat-input">
-      <form class="chat-form" id="chat-form">
+      <form class="chat-form" id="chat-form" onsubmit="event.preventDefault(); handleChatSubmit(event); return false;">
         <input type="text" id="chat-input" placeholder="Ask about your problem or code..." autocomplete="off">
-        <button type="submit">Send</button>
+        <button type="button" id="chat-submit-btn">Send</button>
       </form>
     </div>
   </div>
