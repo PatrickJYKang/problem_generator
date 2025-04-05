@@ -24,53 +24,74 @@
   <script src="https://cdn.jsdelivr.net/npm/marked@5.0.2/marked.min.js"></script>
 </head>
 <body>
+  <!-- Main Header -->
+  <header class="main-header">
+    <div class="header-container">
+      <div class="logo">
+        <h1>Problem Generator</h1>
+      </div>
+      <div class="header-controls">
+        <button id="history-btn" title="View Problem History">
+          <span class="header-icon">📋</span> History
+        </button>
+        <button id="chat-toggle-btn" title="Toggle AI Assistant">
+          <span class="header-icon">💬</span> Assistant
+        </button>
+        <button id="theme-toggle-btn" title="Toggle Dark/Light Mode">
+          <span id="theme-icon">🌙</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
   <div class="container">
     <!-- Left Side: Problem Generator -->
     <div class="markdown">
-      <div style="display: flex; justify-content: space-between; align-items: center;">
-        <h1 id="title">Problem Generator</h1> <!-- Title updates dynamically -->
-        <div class="theme-toggle">
-          <button id="theme-toggle-btn" title="Toggle Dark/Light Mode">
-            <span id="theme-icon">🌙</span>
-          </button>
+      <!-- Course & Lesson Selection Module -->
+      <div class="module selection-module" id="selection-module">
+        <h2 class="module-title">Lesson Selection</h2>
+        <div class="module-content">
+          <div class="form-group">
+            <label for="course-select"><strong>Programming Course:</strong></label>
+            <select id="course-select" class="full-width">
+              <option value="" disabled selected>--Select--</option>
+              <option value="learnpython.org">Learn Python</option>
+              <option value="learn-cpp.org">Learn C++</option>
+              <option value="learnjavaonline.org">Learn Java</option>
+            </select>
+          </div>
+          
+          <div class="form-group">
+            <label for="lesson-select"><strong>Current Lesson:</strong></label>
+            <select id="lesson-select" class="full-width">
+              <option value="" disabled selected>Select your current lesson...</option>
+              <!-- Lessons will be populated via JavaScript -->
+            </select>
+          </div>
+          
+          <div class="form-group text-center">
+            <button id="generate-btn" class="primary-button">Generate Problem</button>
+          </div>
         </div>
       </div>
-
-      <!-- Course Selection -->
-      <label for="course-select"><strong>Course:</strong></label>
-      <br>
-      <select id="course-select">
-        <option value="learnpython.org">Learn Python</option>
-        <option value="learn-cpp.org">Learn C++</option>
-        <option value="learnjavaonline.org">Learn Java</option>
-      </select>
-
-      <br><br> <!-- Line Break to Separate Fields -->
-
-      <!-- Lesson Input (now a dropdown) -->
-      <label for="lesson-select"><strong>Current Lesson:</strong></label>
-      <br>
-      <select id="lesson-select">
-        <option value="" disabled selected>Select your current lesson...</option>
-        <!-- Lessons will be populated via JavaScript -->
-      </select>
-
-      <br><br>
-
-      <!-- Generate Button -->
-      <div style="display: flex; gap: 10px; margin-bottom: 15px;">
-        <button id="generate-btn">Generate Problem</button>
-      </div>
-
-      <div id="result">
-        <p>Your generated problem will appear here.</p>
-      </div>
       
-      <button id="check-answer-btn" style="display: none;">Check Answer</button>
-      <button id="retry-btn" style="display: none;">Return</button> <!-- Changed from Retry to Return -->
-
-      <!-- 🚀 Added this missing div for results -->
-      <div id="results"></div>
+      <!-- Problem Display Module -->
+      <div class="module problem-module">
+        <h2 class="module-title" id="title">Problem</h2>
+        <div class="module-content">
+          <div id="result" class="problem-content">
+            <p>Your generated problem will appear here.</p>
+          </div>
+          
+          <div class="action-buttons">
+            <button id="check-answer-btn" style="display: none;">Check Answer</button>
+            <button id="retry-btn" style="display: none;">Return</button>
+          </div>
+          
+          <!-- Test Results Section -->
+          <div id="results" class="results-section"></div>
+        </div>
+      </div>
     </div>
 
     <!-- Right Side: Code Environment -->
@@ -96,10 +117,7 @@
         <div class="console-container" id="console" style="display: none;"></div>
       </div>
       
-      <!-- Fixed position history button -->
-      <div style="margin-top: 20px; text-align: center;">
-        <button id="history-btn" disabled>Problem History</button>
-      </div>
+      <!-- History button removed as it's now in the header -->
     </div>
   </div>
 
@@ -110,10 +128,7 @@
     </a>
   </div>
 
-  <!-- Chatbot Button and Window -->
-  <div class="chat-button" id="chat-button">
-    <span>💬</span>
-  </div>
+  <!-- Removed floating chat button since it's now in the header -->
 
   <div class="chat-window" id="chat-window">
     <div class="chat-header">

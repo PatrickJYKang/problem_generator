@@ -19,6 +19,10 @@ const historyBtn     = document.getElementById("history-btn");
 const historyModal   = document.getElementById("history-modal");
 const historyList    = document.getElementById("history-list");
 const closeModalBtn  = document.getElementById("close-modal");
+const chatButton     = document.getElementById("chat-button");
+const chatToggleBtn  = document.getElementById("chat-toggle-btn");
+const chatWindow     = document.getElementById("chat-window");
+const closeChat      = document.getElementById("close-chat");
 
 // Global state
 let currentProblemId = null;
@@ -183,10 +187,20 @@ function openHistoryModal() {
         // Create the content container (for everything except delete button)
         const contentContainer = document.createElement("div");
         contentContainer.className = "problem-content";
+        // Format language with proper capitalization
+        let languageDisplay = problem.language || '';
+        if (languageDisplay) {
+          if (languageDisplay === 'cpp') {
+            languageDisplay = 'C++';
+          } else {
+            languageDisplay = languageDisplay.charAt(0).toUpperCase() + languageDisplay.slice(1);
+          }
+        }
+        
         contentContainer.innerHTML = `
           <div class="problem-title">${problem.title}</div>
           <div class="problem-meta">
-            ${problem.course} / ${problem.lesson} <br>
+            ${problem.course} / ${problem.lesson} ${languageDisplay ? '| ' + languageDisplay : ''} <br>
             Created: ${formattedDate}
           </div>
         `;
@@ -378,6 +392,10 @@ function loadProblem(problemId) {
       checkAnswerBtn.style.display = "inline-block";
       retryBtn.style.display = "inline-block";
       generateBtn.style.display = "none";
+      
+      // Hide the selection module when problem is loaded
+      const selectionModule = document.getElementById('selection-module');
+      if (selectionModule) selectionModule.classList.add('hidden');
     })
     .catch(err => {
       console.error("Error loading problem:", err);
@@ -549,10 +567,18 @@ function setupEventListeners() {
     loadLessons();
   });
   
-
-
   // Theme toggle button
   themeToggleBtn.addEventListener("click", toggleTheme);
+  
+  // Chat toggle button in header
+  if (chatToggleBtn) {
+    chatToggleBtn.addEventListener("click", toggleChatWindow);
+  }
+  
+  // Close chat button functionality
+  if (closeChat) {
+    closeChat.addEventListener("click", toggleChatWindow);
+  }
   
   // History button and modal functionality
   if (historyBtn) {
@@ -689,6 +715,10 @@ function setupEventListeners() {
       if (historyBtn) {
         historyBtn.disabled = false;
       }
+      
+      // Hide the selection module when problem is loaded
+      const selectionModule = document.getElementById('selection-module');
+      if (selectionModule) selectionModule.classList.add('hidden');
     })
     .catch(err => {
       // Clear the loading interval
@@ -699,8 +729,6 @@ function setupEventListeners() {
       
       // Show generate button again on error
       generateBtn.style.display = "inline-block";
-      
-
     });
   });
 
@@ -924,6 +952,19 @@ function setupEventListeners() {
       resultsDiv.innerHTML = `<p style="color: red;">Error checking answer.</p>`;
     });
   });
+}
+
+// Function to toggle the chat window visibility
+function toggleChatWindow() {
+  // Toggle the 'open' class instead of manipulating display style directly
+  chatWindow.classList.toggle('open');
+  document.body.classList.toggle('chat-open'); // Toggle body class for the push-in effect
+  
+  // Focus the chat input if window is open
+  if (chatWindow.classList.contains('open')) {
+    const chatInput = document.getElementById('chat-input');
+    if (chatInput) chatInput.focus();
+  }
 }
 
 // Function to reset the chat conversation

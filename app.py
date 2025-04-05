@@ -230,9 +230,20 @@ def check_code_endpoint():
     """ Endpoint that checks user code against test cases """
     data = request.get_json()
     user_code = data.get("code", "").strip()
-    language = data.get("language", "python")
+    client_language = data.get("language", "python")  # Language from the client (editor)
     testcases = data.get("testcases", [])
     problem_id = data.get("problem_id", None)
+    
+    # When problem_id is provided, we should use the language from the problem
+    language = client_language  # Default to language from client
+    if problem_id:
+        try:
+            problem = db.get_problem_by_id(problem_id)
+            if problem and problem.get('language'):
+                language = problem['language']
+                print(f"Using language '{language}' from problem instead of '{client_language}' from editor")
+        except Exception as e:
+            print(f"Error fetching problem language: {str(e)}")
     
     # Import the check_code function from check.py
     from check import check_code

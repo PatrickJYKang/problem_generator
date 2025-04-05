@@ -66,6 +66,14 @@ def init_db():
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )
         ''')
+        
+        # Check if the language column exists, and add it if not
+        cursor.execute("PRAGMA table_info(problems)")
+        columns = [column[1] for column in cursor.fetchall()]
+        
+        if 'language' not in columns:
+            logger.info("Adding 'language' column to problems table")
+            cursor.execute('ALTER TABLE problems ADD COLUMN language TEXT')
 
         # Create testcases table
         cursor.execute('''
@@ -105,7 +113,7 @@ def init_db():
         if 'conn' in locals():
             conn.close()
 
-def store_problem(title, problem_text, course, lesson, testcases):
+def store_problem(title, problem_text, course, lesson, testcases, language=None):
     """
     Store a newly generated problem and its testcases.
     
@@ -115,6 +123,7 @@ def store_problem(title, problem_text, course, lesson, testcases):
         course (str): Course identifier
         lesson (str): Lesson identifier
         testcases (list): List of testcase objects with input/expected_output fields
+        language (str, optional): Programming language for the problem. If None, determined from course.
         
     Returns:
         int: ID of the inserted problem
@@ -127,10 +136,21 @@ def store_problem(title, problem_text, course, lesson, testcases):
         conn = get_db_connection()
         cursor = conn.cursor()
         
+        # Determine language based on course if not provided
+        if not language:
+            if 'python' in course.lower():
+                language = 'python'
+            elif 'java' in course.lower():
+                language = 'java'
+            elif 'cpp' in course.lower() or 'c++' in course.lower():
+                language = 'cpp'
+            else:
+                language = 'python'  # Default to Python if we can't determine
+        
         # Insert the problem
         cursor.execute(
-            'INSERT INTO problems (title, problem_text, course, lesson) VALUES (?, ?, ?, ?)',
-            (title, problem_text, course, lesson)
+            'INSERT INTO problems (title, problem_text, course, lesson, language) VALUES (?, ?, ?, ?, ?)',
+            (title, problem_text, course, lesson, language)
         )
         problem_id = cursor.lastrowid
         logger.info(f"Inserted problem with ID: {problem_id}")
@@ -240,7 +260,7 @@ def get_problems(limit=50):
     cursor = conn.cursor()
     
     cursor.execute(
-        'SELECT id, title, course, lesson, created_at FROM problems ORDER BY created_at DESC LIMIT ?',
+        'SELECT id, title, course, lesson, language, created_at FROM problems ORDER BY created_at DESC LIMIT ?',
         (limit,)
     )
     problems = [dict(p) for p in cursor.fetchall()]
@@ -350,5 +370,55 @@ def delete_problem(problem_id):
             conn.close()
         return False
 
+def populate_language_column():
+    """
+    One-time function to populate the language column in the problems table
+    based on the course value for each problem.
+    """
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        
+        # Get all problems without a language set
+        cursor.execute('SELECT id, course FROM problems WHERE language IS NULL')
+        problems = cursor.fetchall()
+        
+        updates = 0
+        for problem in problems:
+            problem_id = problem['id']
+            course = problem['course']
+            
+            # Determine language based on course
+            language = None
+            if 'python' in course.lower():
+                language = 'python'
+            elif 'java' in course.lower():
+                language = 'java'
+            elif 'cpp' in course.lower() or 'c++' in course.lower():
+                language = 'cpp'
+            else:
+                language = 'python'  # Default to python
+            
+            # Update the problem with the determined language
+            cursor.execute(
+                'UPDATE problems SET language = ? WHERE id = ?',
+                (language, problem_id)
+            )
+            updates += 1
+        
+        conn.commit()
+        conn.close()
+        logger.info(f"Updated language for {updates} problems")
+        return updates
+    except Exception as e:
+        logger.error(f"Error populating language column: {str(e)}")
+        logger.error(traceback.format_exc())
+        if 'conn' in locals():
+            conn.close()
+        return 0
+
 # Initialize the database when this module is imported
 init_db()
+
+# Now run the populate function to fill in language data for existing records
+populate_language_column()
