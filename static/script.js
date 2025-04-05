@@ -82,8 +82,14 @@ function toggleTheme() {
   
   // Update CodeMirror theme if editor is initialized
   if (codeEditor) {
-    codeEditor.setOption('theme', newTheme === 'dark' ? 'material-darker' : 'default');
-    console.log(`Theme changed to: ${newTheme}, CodeMirror theme: ${newTheme === 'dark' ? 'material-darker' : 'default'}`);
+    // Force theme refresh by setting to default first, then to the desired theme
+    if (newTheme === 'dark') {
+      codeEditor.setOption('theme', 'default');
+      setTimeout(() => codeEditor.setOption('theme', 'darcula'), 10);
+    } else {
+      codeEditor.setOption('theme', 'default');
+    }
+    console.log(`Theme changed to: ${newTheme}, CodeMirror theme: ${newTheme === 'dark' ? 'darcula' : 'default'}`);
   }
 }
 
@@ -92,12 +98,18 @@ document.addEventListener("DOMContentLoaded", function() {
   // Get current theme directly from localStorage which is more reliable than data-theme attribute
   const storedTheme = localStorage.getItem('theme');
   const currentTheme = storedTheme || 'light';
-  const cmTheme = currentTheme === 'dark' ? 'material-darker' : 'default';
+  const cmTheme = currentTheme === 'dark' ? 'darcula' : 'default';
   
   console.log(`Theme from localStorage: ${storedTheme}, Using theme: ${currentTheme}`);
   
   // Ensure the theme attribute is set correctly in case it's not
   document.documentElement.setAttribute('data-theme', currentTheme);
+  
+  // Force a theme redraw by quickly toggling and toggling back if we're in dark mode
+  if (currentTheme === 'dark') {
+    document.documentElement.setAttribute('data-theme', 'light');
+    setTimeout(() => document.documentElement.setAttribute('data-theme', 'dark'), 5);
+  }
   
   // Initialize CodeMirror with appropriate theme based on current mode
   codeEditor = CodeMirror.fromTextArea(document.getElementById("code-editor"), {
@@ -124,8 +136,8 @@ document.addEventListener("DOMContentLoaded", function() {
       console.log('Forcing theme reset to default first');
       
       setTimeout(() => {
-        codeEditor.setOption('theme', 'material-darker');
-        console.log('Applied material-darker theme');
+        codeEditor.setOption('theme', 'darcula');
+        console.log('Applied darcula theme');
         
         // Force a refresh of the editor
         codeEditor.refresh();
