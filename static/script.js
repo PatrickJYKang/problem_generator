@@ -759,6 +759,10 @@ function setupEventListeners() {
     resultDiv.innerHTML = `<p>Your generated problem will appear here.</p>`;
     generateBtn.style.display = "inline-block";
     
+    // Show the selection module again
+    const selectionModule = document.getElementById('selection-module');
+    if (selectionModule) selectionModule.classList.remove('hidden');
+    
     // Show course and lesson selectors again
     document.querySelector('label[for="course-select"]').style.display = 'block';
     courseSelect.style.display = 'block';
