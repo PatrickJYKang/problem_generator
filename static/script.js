@@ -82,14 +82,15 @@ function toggleTheme() {
   
   // Update CodeMirror theme if editor is initialized
   if (codeEditor) {
-    // Force theme refresh by setting to default first, then to the desired theme
+    // Force theme refresh by applying the appropriate theme with a small delay
     if (newTheme === 'dark') {
-      codeEditor.setOption('theme', 'default');
+      codeEditor.setOption('theme', 'idea');
       setTimeout(() => codeEditor.setOption('theme', 'darcula'), 10);
     } else {
-      codeEditor.setOption('theme', 'default');
+      codeEditor.setOption('theme', 'darcula');
+      setTimeout(() => codeEditor.setOption('theme', 'idea'), 10);
     }
-    console.log(`Theme changed to: ${newTheme}, CodeMirror theme: ${newTheme === 'dark' ? 'darcula' : 'default'}`);
+    console.log(`Theme changed to: ${newTheme}, CodeMirror theme: ${newTheme === 'dark' ? 'darcula' : 'idea'}`);
   }
 }
 
@@ -98,7 +99,7 @@ document.addEventListener("DOMContentLoaded", function() {
   // Get current theme directly from localStorage which is more reliable than data-theme attribute
   const storedTheme = localStorage.getItem('theme');
   const currentTheme = storedTheme || 'light';
-  const cmTheme = currentTheme === 'dark' ? 'darcula' : 'default';
+  const cmTheme = currentTheme === 'dark' ? 'darcula' : 'idea';
   
   console.log(`Theme from localStorage: ${storedTheme}, Using theme: ${currentTheme}`);
   
@@ -132,8 +133,8 @@ document.addEventListener("DOMContentLoaded", function() {
   if (currentTheme === 'dark') {
     // Use a longer delay and multiple attempts to ensure the theme is applied
     setTimeout(() => {
-      codeEditor.setOption('theme', 'default');
-      console.log('Forcing theme reset to default first');
+      codeEditor.setOption('theme', 'idea');
+      console.log('Forcing theme reset to idea first');
       
       setTimeout(() => {
         codeEditor.setOption('theme', 'darcula');
