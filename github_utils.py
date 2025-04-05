@@ -138,30 +138,54 @@ class GitHubFetcher:
         print(f"Fetching file content for path: {path}")
         cache_path = self._get_cache_path(path)
         
-        # Check if we have a valid cached version
-        if use_cache and self._is_cache_valid(cache_path):
-            print(f"Using cached content for {path}")
-            try:
+        # ALWAYS check cache first, regardless of use_cache setting
+        # This helps prevent rate limiting issues
+        try:
+            if os.path.exists(cache_path):
                 with open(cache_path, 'r', encoding='utf-8') as f:
-                    return f.read()
-            except Exception as e:
-                print(f"Error reading from cache: {str(e)}")
-                # Continue to fetch from GitHub if cache read fails
+                    cached_content = f.read()
+                    print(f"Using cached content for {path}")
+                    # Only return cached content if use_cache is True or if the cache is valid
+                    if use_cache or self._is_cache_valid(cache_path):
+                        return cached_content
+                    else:
+                        print("Cache exists but expired and use_cache=False. Will try to refresh.")
+        except Exception as e:
+            print(f"Error reading cache: {str(e)}")
+            # Continue to fetch from GitHub if cache read fails
         
         # Fetch from GitHub
-        url = f"{self.raw_base_url}/{path}"
-        print(f"Fetching from GitHub URL: {url}")
-        
         try:
-            response = requests.get(url, timeout=10)
+            url = f"{self.raw_base_url}/{path}"
+            print(f"Fetching from URL: {url}")
             
-            if response.status_code != 200:
-                print(f"GitHub API error: Status {response.status_code}, Response: {response.text}")
-                raise Exception(f"Failed to fetch file from GitHub: {url}, Status: {response.status_code}")
+            # Add User-Agent header to be more GitHub-friendly
+            headers = {
+                'User-Agent': 'Problem-Generator-App/1.0',
+            }
+            
+            response = requests.get(url, headers=headers)
+            
+            # Check for rate limit error
+            if response.status_code == 403:
+                print("GitHub API rate limit exceeded. Using fallback or cached content.")
+                # Check if we have ANY cached content, even if expired
+                if os.path.exists(cache_path):
+                    try:
+                        with open(cache_path, 'r', encoding='utf-8') as f:
+                            print(f"Using expired cached content for {path} due to rate limit")
+                            return f.read()
+                    except Exception as cached_e:
+                        print(f"Error reading cache after rate limit: {str(cached_e)}")
+                
+                # If we get here, we have no cache and hit rate limit
+                raise Exception("GitHub API rate limit exceeded and no cache available")
+            
+            response.raise_for_status()  # Raise exception for other 4XX/5XX responses
             
             content = response.text
             
-            # Save to cache
+            # Cache the content
             try:
                 with open(cache_path, 'w', encoding='utf-8') as f:
                     f.write(content)
@@ -174,6 +198,16 @@ class GitHubFetcher:
         
         except requests.RequestException as e:
             print(f"Request exception when fetching {url}: {str(e)}")
+            
+            # Last resort: try to use cached content even if expired
+            if os.path.exists(cache_path):
+                try:
+                    with open(cache_path, 'r', encoding='utf-8') as f:
+                        print(f"Using expired cached content after request error")
+                        return f.read()
+                except Exception as cached_e:
+                    print(f"Error reading cache after request error: {str(cached_e)}")
+            
             raise Exception(f"Network error when fetching from GitHub: {str(e)}")
     
     def list_directory(self, path):
