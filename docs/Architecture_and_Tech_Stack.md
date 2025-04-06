@@ -3,6 +3,7 @@
 ## System Architecture
 
 ```mermaid
+%%{init: {'theme': 'dark'}}%%
 flowchart TB
     subgraph Client["Client (Web Browser)"]
         ProblemDisplay["Problem Display\nHTML/CSS"] 
@@ -29,6 +30,24 @@ flowchart TB
         DbPy["db.py\nSQLite"]
         GitHubAPI["GitHub API\nFetch Syllabus"]
         Checker["Problem Checker\ncheck.py"]
+        
+        style AppPy fill:#22543D,stroke:#9AE6B4,color:#F0FFF4
+        style GitHubUtils fill:#22543D,stroke:#9AE6B4,color:#F0FFF4
+        style RunPy fill:#22543D,stroke:#9AE6B4,color:#F0FFF4
+        style DbPy fill:#22543D,stroke:#9AE6B4,color:#F0FFF4
+        style GitHubAPI fill:#553C9A,stroke:#B794F4,color:#FAF5FF
+        style Checker fill:#22543D,stroke:#9AE6B4,color:#F0FFF4
+    end
+    
+    style Client fill:#1A365D,stroke:#4299E1,color:#EBF8FF
+    style Server fill:#1C4532,stroke:#68D391,color:#F0FFF4
+    
+    style ProblemDisplay fill:#2C5282,stroke:#90CDF4,color:#EBF8FF
+    style CodeEditor fill:#2C5282,stroke:#90CDF4,color:#EBF8FF
+    style TestResults fill:#2C5282,stroke:#90CDF4,color:#EBF8FF
+    style JavaScript fill:#2C5282,stroke:#90CDF4,color:#EBF8FF
+    style API fill:#2C5282,stroke:#90CDF4,color:#EBF8FF
+    style Chat fill:#2C5282,stroke:#90CDF4,color:#EBF8FF
         
         AppPy --> GitHubUtils
         AppPy --> RunPy
@@ -81,6 +100,7 @@ flowchart TB
 ### 1. Problem Generation Flow
 
 ```mermaid
+%%{init: {'theme': 'dark'}}%%
 flowchart LR
     A["Select\nCourse"] --> B["Select\nLesson"]
     B --> C["Click\nGenerate"]
@@ -89,8 +109,8 @@ flowchart LR
     E --> F["Problem Saved\nto Database"]
     
     %% Using colors optimized for dark mode readability
-    classDef userActions fill:#5b6abf,stroke:#fff,stroke-width:1px,color:#fff;
-    classDef systemActions fill:#458b55,stroke:#fff,stroke-width:1px,color:#fff;
+    classDef userActions fill:#2C5282,stroke:#90CDF4,stroke-width:1px,color:#EBF8FF;
+    classDef systemActions fill:#22543D,stroke:#9AE6B4,stroke-width:1px,color:#F0FFF4;
     
     class A,B,C,D userActions;
     class E,F systemActions;
@@ -99,6 +119,7 @@ flowchart LR
 ### 2. Code Checking Flow
 
 ```mermaid
+%%{init: {'theme': 'dark'}}%%
 flowchart LR
     A["Write\nCode"] --> B["Select\nLanguage"]
     B --> C["Click Check\nAnswer"]
@@ -107,8 +128,8 @@ flowchart LR
     E --> F["Test Results\n& Solution\nSaved"]
     
     %% Using colors optimized for dark mode readability
-    classDef userActions fill:#5b6abf,stroke:#fff,stroke-width:1px,color:#fff;
-    classDef systemActions fill:#458b55,stroke:#fff,stroke-width:1px,color:#fff;
+    classDef userActions fill:#2C5282,stroke:#90CDF4,stroke-width:1px,color:#EBF8FF;
+    classDef systemActions fill:#22543D,stroke:#9AE6B4,stroke-width:1px,color:#F0FFF4;
     
     class A,B,C,D userActions;
     class E,F systemActions;
@@ -117,6 +138,7 @@ flowchart LR
 ### 3. Chat Assistant Flow
 
 ```mermaid
+%%{init: {'theme': 'dark'}}%%
 flowchart LR
     A["Open\nChat"] --> B["Send Message\nwith Question"]
     B --> C["Response\nGenerated"]

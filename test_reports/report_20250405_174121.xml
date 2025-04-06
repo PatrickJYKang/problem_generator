@@ -1,0 +1,1445 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites><testsuite name="pytest" errors="0" failures="17" skipped="0" tests="47" time="6.945" timestamp="2025-04-05T17:41:22.617636-07:00" hostname="Mac.lan"><testcase classname="tests.unit.test_basic" name="test_addition" time="0.005" /><testcase classname="tests.unit.test_basic" name="test_string_methods" time="0.008" /><testcase classname="tests.unit.test_db_operations.TestDatabaseOperations" name="test_db_connection" time="0.010" /><testcase classname="tests.unit.test_db_operations.TestDatabaseOperations" name="test_problem_storage" time="0.015" /><testcase classname="tests.unit.test_db_operations.TestDatabaseOperations" name="test_multi_language_support" time="0.002" /><testcase classname="tests.unit.test_github_utils.TestGitHubFetcher" name="test_init_creates_cache_dir" time="0.003" /><testcase classname="tests.unit.test_github_utils.TestGitHubFetcher" name="test_get_cache_path" time="0.002" /><testcase classname="tests.unit.test_github_utils.TestGitHubFetcher" name="test_is_cache_valid_expired" time="0.005" /><testcase classname="tests.unit.test_github_utils.TestGitHubFetcher" name="test_is_cache_valid_fresh" time="0.006" /><testcase classname="tests.unit.test_github_utils.TestGitHubFetcher" name="test_get_file_content_api_success" time="0.004"><failure message="AssertionError: assert '' == 'Hello World'&#10;  &#10;  - Hello World">self = &lt;tests.unit.test_github_utils.TestGitHubFetcher object at 0x1038e3290&gt;, mock_get = &lt;MagicMock name='get' id='4355101600'&gt;, fetcher = &lt;github_utils.GitHubFetcher object at 0x103959760&gt;
+
+    @patch('requests.get')
+    def test_get_file_content_api_success(self, mock_get, fetcher):
+        """Test successful API request for file content"""
+        # Setup mock response
+        mock_response = MagicMock()
+        mock_response.status_code = 200
+        mock_response.json.return_value = {"content": "SGVsbG8gV29ybGQ=", "encoding": "base64"}  # "Hello World" in base64
+        mock_get.return_value = mock_response
+    
+        # Execute
+        content = fetcher.get_file_content("path/to/file.md", use_cache=False)
+    
+        # Verify
+&gt;       assert content == "Hello World"
+E       AssertionError: assert '' == 'Hello World'
+E         
+E         - Hello World
+
+tests/unit/test_github_utils.py:94: AssertionError</failure></testcase><testcase classname="tests.unit.test_github_utils.TestGitHubFetcher" name="test_get_file_content_raw_fallback" time="0.004"><failure message="AssertionError: assert '' == 'Hello World'&#10;  &#10;  - Hello World">self = &lt;tests.unit.test_github_utils.TestGitHubFetcher object at 0x1038e3440&gt;, mock_get = &lt;MagicMock name='get' id='4355479344'&gt;, fetcher = &lt;github_utils.GitHubFetcher object at 0x1039b5970&gt;
+
+    @patch('requests.get')
+    def test_get_file_content_raw_fallback(self, mock_get, fetcher):
+        """Test fallback to raw content when API fails"""
+        # Setup mock responses
+        api_response = MagicMock()
+        api_response.status_code = 403  # API rate limited
+    
+        raw_response = MagicMock()
+        raw_response.status_code = 200
+        raw_response.text = "Hello World"
+    
+        mock_get.side_effect = [api_response, raw_response]
+    
+        # Execute
+        content = fetcher.get_file_content("path/to/file.md", use_cache=False)
+    
+        # Verify
+&gt;       assert content == "Hello World"
+E       AssertionError: assert '' == 'Hello World'
+E         
+E         - Hello World
+
+tests/unit/test_github_utils.py:115: AssertionError</failure></testcase><testcase classname="tests.unit.test_github_utils.TestGitHubFetcher" name="test_get_file_content_uses_cache" time="0.012" /><testcase classname="tests.unit.test_github_utils.TestGitHubFetcher" name="test_list_directory" time="0.005" /><testcase classname="tests.unit.test_github_utils.TestGitHubFetcher" name="test_get_json_content" time="0.006"><failure message="json.decoder.JSONDecodeError: Expecting value: line 1 column 1 (char 0)">self = &lt;tests.unit.test_github_utils.TestGitHubFetcher object at 0x1038e3b30&gt;, mock_get = &lt;MagicMock name='get' id='4355935264'&gt;, fetcher = &lt;github_utils.GitHubFetcher object at 0x10395bbc0&gt;
+
+    @patch('requests.get')
+    def test_get_json_content(self, mock_get, fetcher):
+        """Test retrieving and parsing JSON content"""
+        # Setup mock response
+        mock_response = MagicMock()
+        mock_response.status_code = 200
+        mock_response.json.return_value = {"content": "eyJrZXkiOiAidmFsdWUifQ==", "encoding": "base64"}  # {"key": "value"} in base64
+        mock_get.return_value = mock_response
+    
+        # Execute
+&gt;       json_data = fetcher.get_json_content("path/to/file.json", use_cache=False)
+
+tests/unit/test_github_utils.py:175: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+github_utils.py:257: in get_json_content
+    return json.loads(content)
+/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/json/__init__.py:346: in loads
+    return _default_decoder.decode(s)
+/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/json/decoder.py:337: in decode
+    obj, end = self.raw_decode(s, idx=_w(s, 0).end())
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = &lt;json.decoder.JSONDecoder object at 0x1015836e0&gt;, s = '', idx = 0
+
+    def raw_decode(self, s, idx=0):
+        """Decode a JSON document from ``s`` (a ``str`` beginning with
+        a JSON document) and return a 2-tuple of the Python
+        representation and the index in ``s`` where the document ended.
+    
+        This can be used to decode a JSON document from a string that may
+        have extraneous data at the end.
+    
+        """
+        try:
+            obj, end = self.scan_once(s, idx)
+        except StopIteration as err:
+&gt;           raise JSONDecodeError("Expecting value", s, err.value) from None
+E           json.decoder.JSONDecodeError: Expecting value: line 1 column 1 (char 0)
+
+/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/json/decoder.py:355: JSONDecodeError</failure></testcase><testcase classname="tests.unit.test_github_utils.TestGitHubFetcher" name="test_get_lessons_with_index_json" time="0.006"><failure message="AssertionError: assert 'welcome' in {'advanced': {'Classes and Objects': 'Classes and Objects', 'Functions': 'Functions', '_order': ['Functions', 'Classes and Objects']}}">self = &lt;tests.unit.test_github_utils.TestGitHubFetcher object at 0x1038e3d40&gt;, mock_get_json = &lt;MagicMock name='get_json_content' id='4355835616'&gt;
+fetcher = &lt;github_utils.GitHubFetcher object at 0x103a0c3b0&gt;
+
+    @patch.object(GitHubFetcher, 'get_json_content')
+    def test_get_lessons_with_index_json(self, mock_get_json, fetcher):
+        """Test getting lessons when index.json exists"""
+        # Setup mock response
+        mock_get_json.return_value = {
+            "welcome": {
+                "Hello, World!": "Hello, World!",
+                "Variables and Types": "Variables and Types"
+            },
+            "advanced": {
+                "Functions": "Functions",
+                "Classes and Objects": "Classes and Objects"
+            }
+        }
+    
+        # Execute
+        lessons = fetcher.get_lessons("learnpython.org", "en")
+    
+        # Verify
+&gt;       assert "welcome" in lessons
+E       AssertionError: assert 'welcome' in {'advanced': {'Classes and Objects': 'Classes and Objects', 'Functions': 'Functions', '_order': ['Functions', 'Classes and Objects']}}
+
+tests/unit/test_github_utils.py:200: AssertionError</failure></testcase><testcase classname="tests.unit.test_github_utils.TestGitHubFetcher" name="test_get_lessons_fallback_to_custom_structure" time="0.005"><failure message="AssertionError: Expected 'get_json_content' to have been called once. Called 0 times.">self = &lt;MagicMock name='get_json_content' id='4355422640'&gt;
+
+    def assert_called_once(self):
+        """assert that the mock was called only once.
+        """
+        if not self.call_count == 1:
+            msg = ("Expected '%s' to have been called once. Called %s times.%s"
+                   % (self._mock_name or 'mock',
+                      self.call_count,
+                      self._calls_repr()))
+&gt;           raise AssertionError(msg)
+E           AssertionError: Expected 'get_json_content' to have been called once. Called 0 times.
+
+/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/unittest/mock.py:923: AssertionError
+
+During handling of the above exception, another exception occurred:
+
+self = &lt;tests.unit.test_github_utils.TestGitHubFetcher object at 0x1038e3fb0&gt;, mock_get_json = &lt;MagicMock name='get_json_content' id='4355422640'&gt;
+fetcher = &lt;github_utils.GitHubFetcher object at 0x1039a68d0&gt;
+
+    @patch.object(GitHubFetcher, 'get_json_content')
+    def test_get_lessons_fallback_to_custom_structure(self, mock_get_json, fetcher):
+        """Test falling back to custom structure when index.json fails"""
+        # Setup mock response to fail
+        mock_get_json.side_effect = Exception("File not found")
+    
+        # Execute with a language that has a custom structure
+        lessons = fetcher.get_lessons("learn-cpp.org", "en")
+    
+        # Verify
+        assert "basics" in lessons
+        assert "advanced" in lessons
+        assert "Hello, World!" in lessons["basics"]
+        assert "Pointers" in lessons["advanced"]
+&gt;       mock_get_json.assert_called_once()
+E       AssertionError: Expected 'get_json_content' to have been called once. Called 0 times.
+
+tests/unit/test_github_utils.py:220: AssertionError</failure></testcase><testcase classname="tests.unit.test_github_utils.TestGitHubFetcher" name="test_build_syllabus" time="0.005"><failure message="assert None is not None">self = &lt;tests.unit.test_github_utils.TestGitHubFetcher object at 0x1039a40b0&gt;, mock_get_file = &lt;MagicMock name='get_file_content' id='4355485440'&gt;
+fetcher = &lt;github_utils.GitHubFetcher object at 0x1039b7080&gt;
+
+    @patch.object(GitHubFetcher, 'get_file_content')
+    def test_build_syllabus(self, mock_get_file, fetcher):
+        """Test building a syllabus from markdown files"""
+        # Setup mock responses for multiple files
+        mock_get_file.side_effect = [
+            "Content of Hello World",
+            "Content of Variables",
+            "Content of Loops"
+        ]
+    
+        # Mock the get_lessons method
+        with patch.object(fetcher, 'get_lessons', return_value={
+            "basics": {
+                "_order": ["Hello World", "Variables", "Loops", "Functions"],
+                "Hello World": "Hello World",
+                "Variables": "Variables",
+                "Loops": "Loops",
+                "Functions": "Functions"
+            }
+        }):
+            # Execute - build syllabus up to "Loops"
+            syllabus_path = fetcher.build_syllabus("Loops", "learnpython.org", "en")
+    
+            # Verify
+&gt;           assert syllabus_path is not None
+E           assert None is not None
+
+tests/unit/test_github_utils.py:246: AssertionError</failure></testcase><testcase classname="tests.unit.test_language_capabilities.TestLanguageCapabilities" name="test_language_templates[python-def solution():\n    pass\n\n# Your code here\n-Python code execution]" time="0.004" /><testcase classname="tests.unit.test_language_capabilities.TestLanguageCapabilities" name="test_language_templates[java-public class Main {\n    public static void main(String[] args) {\n        // Your code here\n    }\n}-Java code execution]" time="0.004" /><testcase classname="tests.unit.test_language_capabilities.TestLanguageCapabilities" name="test_language_templates[cpp-#include &lt;iostream&gt;\n\nint main() {\n    // Your code here\n    return 0;\n}-C++ code execution]" time="0.004" /><testcase classname="tests.unit.test_language_capabilities.TestLanguageCapabilities" name="test_language_execution_commands[python-None-python]" time="0.004" /><testcase classname="tests.unit.test_language_capabilities.TestLanguageCapabilities" name="test_language_execution_commands[java-javac-java]" time="0.003" /><testcase classname="tests.unit.test_language_capabilities.TestLanguageCapabilities" name="test_language_execution_commands[cpp-g++-None]" time="0.004" /><testcase classname="tests.unit.test_language_capabilities.TestLanguageCapabilities" name="test_language_file_properties[python-.py-None]" time="0.004" /><testcase classname="tests.unit.test_language_capabilities.TestLanguageCapabilities" name="test_language_file_properties[java-.java-Main]" time="0.004" /><testcase classname="tests.unit.test_language_capabilities.TestLanguageCapabilities" name="test_language_file_properties[cpp-.cpp-None]" time="0.002" /><testcase classname="tests.unit.test_language_capabilities.TestLanguageCapabilities" name="test_multi_language_test_cases" time="0.004" /><testcase classname="tests.unit.test_language_support.TestLanguageSupport" name="test_code_execution[python-print(1 + 2)-3\n]" time="0.009"><failure message="KeyError: 'output'">self = &lt;tests.unit.test_language_support.TestLanguageSupport object at 0x1039a6b10&gt;, language = 'python', code = 'print(1 + 2)', expected = '3\n'
+
+    @pytest.mark.parametrize("language,code,expected", [
+        ("python", "print(1 + 2)", "3\n"),
+        ("python", "print('Hello, World!')", "Hello, World!\n"),
+        ("python", "a = 10\nb = 20\nprint(a + b)", "30\n"),
+        ("java", """
+        public class Main {
+            public static void main(String[] args) {
+                System.out.println(1 + 2);
+            }
+        }
+        """, "3\n"),
+        ("java", """
+        public class Main {
+            public static void main(String[] args) {
+                System.out.println("Hello, World!");
+            }
+        }
+        """, "Hello, World!\n"),
+        ("cpp", """
+        #include &lt;iostream&gt;
+        int main() {
+            std::cout &lt;&lt; (1 + 2) &lt;&lt; std::endl;
+            return 0;
+        }
+        """, "3\n"),
+        ("cpp", """
+        #include &lt;iostream&gt;
+        int main() {
+            std::cout &lt;&lt; "Hello, World!" &lt;&lt; std::endl;
+            return 0;
+        }
+        """, "Hello, World!\n"),
+    ])
+    def test_code_execution(self, language, code, expected):
+        """Test code execution with various inputs across different languages"""
+        # Import here to avoid import errors if the module doesn't exist
+        try:
+            from run import run_code
+        except ImportError:
+            # Skip test if run module doesn't exist
+            pytest.skip("run module not available")
+    
+        # Create a Flask application context for testing
+        app = flask.Flask(__name__)
+    
+        # For Java and C++, we need to mock file creation
+        if language in ["java", "cpp"]:
+            with patch('tempfile.NamedTemporaryFile') as mock_temp_file, \
+                 patch('subprocess.run') as mock_run, \
+                 app.app_context():
+    
+                # Configure mock for file
+                mock_file = MagicMock()
+                if language == "java":
+                    mock_file.name = "Main.java"
+                else:  # C++
+                    mock_file.name = "main.cpp"
+                mock_temp_file.return_value.__enter__.return_value = mock_file
+    
+                # For compiled languages, we need to mock compilation and execution
+                compile_process = MagicMock()
+                compile_process.returncode = 0  # Successful compilation
+                compile_process.stderr = b''
+    
+                run_process = MagicMock()
+                run_process.stdout = expected.encode('utf-8')
+                run_process.stderr = b''
+                run_process.returncode = 0
+    
+                # Set up the side effect to return different results for compile and run
+                mock_run.side_effect = [compile_process, run_process]
+    
+                # Run the code with Flask app context - it would normally return a tuple (jsonify result, status code)
+                # Our app.app_context() patch makes it return just the dictionary
+                result = run_code(code, "", language)
+    
+                # Verify compile and run commands were called
+                assert mock_run.call_count == 2
+    
+                # Check if the proper commands were used
+                if language == "java":
+                    compile_cmd = mock_run.call_args_list[0][0][0]
+                    run_cmd = mock_run.call_args_list[1][0][0]
+                    assert "javac" in compile_cmd[0].lower()
+                    assert "java" in run_cmd[0].lower()
+                elif language == "cpp":
+                    compile_cmd = mock_run.call_args_list[0][0][0]
+                    assert any(x in compile_cmd[0].lower() for x in ["g++", "clang++"])
+        else:  # Python doesn't need compilation
+            with patch('subprocess.run') as mock_run, \
+                 app.app_context():
+                # Configure the mock to return our expected output
+                mock_process = MagicMock()
+                mock_process.stdout = expected.encode('utf-8')
+                mock_process.stderr = b''
+                mock_process.returncode = 0
+                mock_run.return_value = mock_process
+    
+                # Run the code with Flask app context
+                result = run_code(code, "", language)
+    
+                # Verify python was used
+                cmd_args = mock_run.call_args[0][0]
+                assert "python" in cmd_args[0].lower()
+    
+        # Check if result is a tuple (jsonify result, status_code) or a dictionary
+        if isinstance(result, tuple):
+            # When not using app_context, run_code returns (jsonify result, status_code)
+&gt;           assert result[0].get_json()["output"] == expected.strip()
+E           KeyError: 'output'
+
+tests/unit/test_language_support.py:125: KeyError</failure></testcase><testcase classname="tests.unit.test_language_support.TestLanguageSupport" name="test_code_execution[python-print('Hello, World!')-Hello, World!\n]" time="0.007"><failure message="KeyError: 'output'">self = &lt;tests.unit.test_language_support.TestLanguageSupport object at 0x1039a6cf0&gt;, language = 'python', code = "print('Hello, World!')", expected = 'Hello, World!\n'
+
+    @pytest.mark.parametrize("language,code,expected", [
+        ("python", "print(1 + 2)", "3\n"),
+        ("python", "print('Hello, World!')", "Hello, World!\n"),
+        ("python", "a = 10\nb = 20\nprint(a + b)", "30\n"),
+        ("java", """
+        public class Main {
+            public static void main(String[] args) {
+                System.out.println(1 + 2);
+            }
+        }
+        """, "3\n"),
+        ("java", """
+        public class Main {
+            public static void main(String[] args) {
+                System.out.println("Hello, World!");
+            }
+        }
+        """, "Hello, World!\n"),
+        ("cpp", """
+        #include &lt;iostream&gt;
+        int main() {
+            std::cout &lt;&lt; (1 + 2) &lt;&lt; std::endl;
+            return 0;
+        }
+        """, "3\n"),
+        ("cpp", """
+        #include &lt;iostream&gt;
+        int main() {
+            std::cout &lt;&lt; "Hello, World!" &lt;&lt; std::endl;
+            return 0;
+        }
+        """, "Hello, World!\n"),
+    ])
+    def test_code_execution(self, language, code, expected):
+        """Test code execution with various inputs across different languages"""
+        # Import here to avoid import errors if the module doesn't exist
+        try:
+            from run import run_code
+        except ImportError:
+            # Skip test if run module doesn't exist
+            pytest.skip("run module not available")
+    
+        # Create a Flask application context for testing
+        app = flask.Flask(__name__)
+    
+        # For Java and C++, we need to mock file creation
+        if language in ["java", "cpp"]:
+            with patch('tempfile.NamedTemporaryFile') as mock_temp_file, \
+                 patch('subprocess.run') as mock_run, \
+                 app.app_context():
+    
+                # Configure mock for file
+                mock_file = MagicMock()
+                if language == "java":
+                    mock_file.name = "Main.java"
+                else:  # C++
+                    mock_file.name = "main.cpp"
+                mock_temp_file.return_value.__enter__.return_value = mock_file
+    
+                # For compiled languages, we need to mock compilation and execution
+                compile_process = MagicMock()
+                compile_process.returncode = 0  # Successful compilation
+                compile_process.stderr = b''
+    
+                run_process = MagicMock()
+                run_process.stdout = expected.encode('utf-8')
+                run_process.stderr = b''
+                run_process.returncode = 0
+    
+                # Set up the side effect to return different results for compile and run
+                mock_run.side_effect = [compile_process, run_process]
+    
+                # Run the code with Flask app context - it would normally return a tuple (jsonify result, status code)
+                # Our app.app_context() patch makes it return just the dictionary
+                result = run_code(code, "", language)
+    
+                # Verify compile and run commands were called
+                assert mock_run.call_count == 2
+    
+                # Check if the proper commands were used
+                if language == "java":
+                    compile_cmd = mock_run.call_args_list[0][0][0]
+                    run_cmd = mock_run.call_args_list[1][0][0]
+                    assert "javac" in compile_cmd[0].lower()
+                    assert "java" in run_cmd[0].lower()
+                elif language == "cpp":
+                    compile_cmd = mock_run.call_args_list[0][0][0]
+                    assert any(x in compile_cmd[0].lower() for x in ["g++", "clang++"])
+        else:  # Python doesn't need compilation
+            with patch('subprocess.run') as mock_run, \
+                 app.app_context():
+                # Configure the mock to return our expected output
+                mock_process = MagicMock()
+                mock_process.stdout = expected.encode('utf-8')
+                mock_process.stderr = b''
+                mock_process.returncode = 0
+                mock_run.return_value = mock_process
+    
+                # Run the code with Flask app context
+                result = run_code(code, "", language)
+    
+                # Verify python was used
+                cmd_args = mock_run.call_args[0][0]
+                assert "python" in cmd_args[0].lower()
+    
+        # Check if result is a tuple (jsonify result, status_code) or a dictionary
+        if isinstance(result, tuple):
+            # When not using app_context, run_code returns (jsonify result, status_code)
+&gt;           assert result[0].get_json()["output"] == expected.strip()
+E           KeyError: 'output'
+
+tests/unit/test_language_support.py:125: KeyError</failure></testcase><testcase classname="tests.unit.test_language_support.TestLanguageSupport" name="test_code_execution[python-a = 10\nb = 20\nprint(a + b)-30\n]" time="0.006"><failure message="KeyError: 'output'">self = &lt;tests.unit.test_language_support.TestLanguageSupport object at 0x1039a6ba0&gt;, language = 'python', code = 'a = 10\nb = 20\nprint(a + b)', expected = '30\n'
+
+    @pytest.mark.parametrize("language,code,expected", [
+        ("python", "print(1 + 2)", "3\n"),
+        ("python", "print('Hello, World!')", "Hello, World!\n"),
+        ("python", "a = 10\nb = 20\nprint(a + b)", "30\n"),
+        ("java", """
+        public class Main {
+            public static void main(String[] args) {
+                System.out.println(1 + 2);
+            }
+        }
+        """, "3\n"),
+        ("java", """
+        public class Main {
+            public static void main(String[] args) {
+                System.out.println("Hello, World!");
+            }
+        }
+        """, "Hello, World!\n"),
+        ("cpp", """
+        #include &lt;iostream&gt;
+        int main() {
+            std::cout &lt;&lt; (1 + 2) &lt;&lt; std::endl;
+            return 0;
+        }
+        """, "3\n"),
+        ("cpp", """
+        #include &lt;iostream&gt;
+        int main() {
+            std::cout &lt;&lt; "Hello, World!" &lt;&lt; std::endl;
+            return 0;
+        }
+        """, "Hello, World!\n"),
+    ])
+    def test_code_execution(self, language, code, expected):
+        """Test code execution with various inputs across different languages"""
+        # Import here to avoid import errors if the module doesn't exist
+        try:
+            from run import run_code
+        except ImportError:
+            # Skip test if run module doesn't exist
+            pytest.skip("run module not available")
+    
+        # Create a Flask application context for testing
+        app = flask.Flask(__name__)
+    
+        # For Java and C++, we need to mock file creation
+        if language in ["java", "cpp"]:
+            with patch('tempfile.NamedTemporaryFile') as mock_temp_file, \
+                 patch('subprocess.run') as mock_run, \
+                 app.app_context():
+    
+                # Configure mock for file
+                mock_file = MagicMock()
+                if language == "java":
+                    mock_file.name = "Main.java"
+                else:  # C++
+                    mock_file.name = "main.cpp"
+                mock_temp_file.return_value.__enter__.return_value = mock_file
+    
+                # For compiled languages, we need to mock compilation and execution
+                compile_process = MagicMock()
+                compile_process.returncode = 0  # Successful compilation
+                compile_process.stderr = b''
+    
+                run_process = MagicMock()
+                run_process.stdout = expected.encode('utf-8')
+                run_process.stderr = b''
+                run_process.returncode = 0
+    
+                # Set up the side effect to return different results for compile and run
+                mock_run.side_effect = [compile_process, run_process]
+    
+                # Run the code with Flask app context - it would normally return a tuple (jsonify result, status code)
+                # Our app.app_context() patch makes it return just the dictionary
+                result = run_code(code, "", language)
+    
+                # Verify compile and run commands were called
+                assert mock_run.call_count == 2
+    
+                # Check if the proper commands were used
+                if language == "java":
+                    compile_cmd = mock_run.call_args_list[0][0][0]
+                    run_cmd = mock_run.call_args_list[1][0][0]
+                    assert "javac" in compile_cmd[0].lower()
+                    assert "java" in run_cmd[0].lower()
+                elif language == "cpp":
+                    compile_cmd = mock_run.call_args_list[0][0][0]
+                    assert any(x in compile_cmd[0].lower() for x in ["g++", "clang++"])
+        else:  # Python doesn't need compilation
+            with patch('subprocess.run') as mock_run, \
+                 app.app_context():
+                # Configure the mock to return our expected output
+                mock_process = MagicMock()
+                mock_process.stdout = expected.encode('utf-8')
+                mock_process.stderr = b''
+                mock_process.returncode = 0
+                mock_run.return_value = mock_process
+    
+                # Run the code with Flask app context
+                result = run_code(code, "", language)
+    
+                # Verify python was used
+                cmd_args = mock_run.call_args[0][0]
+                assert "python" in cmd_args[0].lower()
+    
+        # Check if result is a tuple (jsonify result, status_code) or a dictionary
+        if isinstance(result, tuple):
+            # When not using app_context, run_code returns (jsonify result, status_code)
+&gt;           assert result[0].get_json()["output"] == expected.strip()
+E           KeyError: 'output'
+
+tests/unit/test_language_support.py:125: KeyError</failure></testcase><testcase classname="tests.unit.test_language_support.TestLanguageSupport" name="test_code_execution[java-\n        public class Main {\n            public static void main(String[] args) {\n                System.out.println(1 + 2);\n            }\n        }\n        -3\n]" time="0.009"><failure message="KeyError: 'output'">self = &lt;tests.unit.test_language_support.TestLanguageSupport object at 0x1039a6b40&gt;, language = 'java'
+code = '\n        public class Main {\n            public static void main(String[] args) {\n                System.out.println(1 + 2);\n            }\n        }\n        ', expected = '3\n'
+
+    @pytest.mark.parametrize("language,code,expected", [
+        ("python", "print(1 + 2)", "3\n"),
+        ("python", "print('Hello, World!')", "Hello, World!\n"),
+        ("python", "a = 10\nb = 20\nprint(a + b)", "30\n"),
+        ("java", """
+        public class Main {
+            public static void main(String[] args) {
+                System.out.println(1 + 2);
+            }
+        }
+        """, "3\n"),
+        ("java", """
+        public class Main {
+            public static void main(String[] args) {
+                System.out.println("Hello, World!");
+            }
+        }
+        """, "Hello, World!\n"),
+        ("cpp", """
+        #include &lt;iostream&gt;
+        int main() {
+            std::cout &lt;&lt; (1 + 2) &lt;&lt; std::endl;
+            return 0;
+        }
+        """, "3\n"),
+        ("cpp", """
+        #include &lt;iostream&gt;
+        int main() {
+            std::cout &lt;&lt; "Hello, World!" &lt;&lt; std::endl;
+            return 0;
+        }
+        """, "Hello, World!\n"),
+    ])
+    def test_code_execution(self, language, code, expected):
+        """Test code execution with various inputs across different languages"""
+        # Import here to avoid import errors if the module doesn't exist
+        try:
+            from run import run_code
+        except ImportError:
+            # Skip test if run module doesn't exist
+            pytest.skip("run module not available")
+    
+        # Create a Flask application context for testing
+        app = flask.Flask(__name__)
+    
+        # For Java and C++, we need to mock file creation
+        if language in ["java", "cpp"]:
+            with patch('tempfile.NamedTemporaryFile') as mock_temp_file, \
+                 patch('subprocess.run') as mock_run, \
+                 app.app_context():
+    
+                # Configure mock for file
+                mock_file = MagicMock()
+                if language == "java":
+                    mock_file.name = "Main.java"
+                else:  # C++
+                    mock_file.name = "main.cpp"
+                mock_temp_file.return_value.__enter__.return_value = mock_file
+    
+                # For compiled languages, we need to mock compilation and execution
+                compile_process = MagicMock()
+                compile_process.returncode = 0  # Successful compilation
+                compile_process.stderr = b''
+    
+                run_process = MagicMock()
+                run_process.stdout = expected.encode('utf-8')
+                run_process.stderr = b''
+                run_process.returncode = 0
+    
+                # Set up the side effect to return different results for compile and run
+                mock_run.side_effect = [compile_process, run_process]
+    
+                # Run the code with Flask app context - it would normally return a tuple (jsonify result, status code)
+                # Our app.app_context() patch makes it return just the dictionary
+                result = run_code(code, "", language)
+    
+                # Verify compile and run commands were called
+                assert mock_run.call_count == 2
+    
+                # Check if the proper commands were used
+                if language == "java":
+                    compile_cmd = mock_run.call_args_list[0][0][0]
+                    run_cmd = mock_run.call_args_list[1][0][0]
+                    assert "javac" in compile_cmd[0].lower()
+                    assert "java" in run_cmd[0].lower()
+                elif language == "cpp":
+                    compile_cmd = mock_run.call_args_list[0][0][0]
+                    assert any(x in compile_cmd[0].lower() for x in ["g++", "clang++"])
+        else:  # Python doesn't need compilation
+            with patch('subprocess.run') as mock_run, \
+                 app.app_context():
+                # Configure the mock to return our expected output
+                mock_process = MagicMock()
+                mock_process.stdout = expected.encode('utf-8')
+                mock_process.stderr = b''
+                mock_process.returncode = 0
+                mock_run.return_value = mock_process
+    
+                # Run the code with Flask app context
+                result = run_code(code, "", language)
+    
+                # Verify python was used
+                cmd_args = mock_run.call_args[0][0]
+                assert "python" in cmd_args[0].lower()
+    
+        # Check if result is a tuple (jsonify result, status_code) or a dictionary
+        if isinstance(result, tuple):
+            # When not using app_context, run_code returns (jsonify result, status_code)
+&gt;           assert result[0].get_json()["output"] == expected.strip()
+E           KeyError: 'output'
+
+tests/unit/test_language_support.py:125: KeyError</failure></testcase><testcase classname="tests.unit.test_language_support.TestLanguageSupport" name="test_code_execution[java-\n        public class Main {\n            public static void main(String[] args) {\n                System.out.println(&quot;Hello, World!&quot;);\n            }\n        }\n        -Hello, World!\n]" time="0.006"><failure message="KeyError: 'output'">self = &lt;tests.unit.test_language_support.TestLanguageSupport object at 0x1039a6930&gt;, language = 'java'
+code = '\n        public class Main {\n            public static void main(String[] args) {\n                System.out.println("Hello, World!");\n            }\n        }\n        '
+expected = 'Hello, World!\n'
+
+    @pytest.mark.parametrize("language,code,expected", [
+        ("python", "print(1 + 2)", "3\n"),
+        ("python", "print('Hello, World!')", "Hello, World!\n"),
+        ("python", "a = 10\nb = 20\nprint(a + b)", "30\n"),
+        ("java", """
+        public class Main {
+            public static void main(String[] args) {
+                System.out.println(1 + 2);
+            }
+        }
+        """, "3\n"),
+        ("java", """
+        public class Main {
+            public static void main(String[] args) {
+                System.out.println("Hello, World!");
+            }
+        }
+        """, "Hello, World!\n"),
+        ("cpp", """
+        #include &lt;iostream&gt;
+        int main() {
+            std::cout &lt;&lt; (1 + 2) &lt;&lt; std::endl;
+            return 0;
+        }
+        """, "3\n"),
+        ("cpp", """
+        #include &lt;iostream&gt;
+        int main() {
+            std::cout &lt;&lt; "Hello, World!" &lt;&lt; std::endl;
+            return 0;
+        }
+        """, "Hello, World!\n"),
+    ])
+    def test_code_execution(self, language, code, expected):
+        """Test code execution with various inputs across different languages"""
+        # Import here to avoid import errors if the module doesn't exist
+        try:
+            from run import run_code
+        except ImportError:
+            # Skip test if run module doesn't exist
+            pytest.skip("run module not available")
+    
+        # Create a Flask application context for testing
+        app = flask.Flask(__name__)
+    
+        # For Java and C++, we need to mock file creation
+        if language in ["java", "cpp"]:
+            with patch('tempfile.NamedTemporaryFile') as mock_temp_file, \
+                 patch('subprocess.run') as mock_run, \
+                 app.app_context():
+    
+                # Configure mock for file
+                mock_file = MagicMock()
+                if language == "java":
+                    mock_file.name = "Main.java"
+                else:  # C++
+                    mock_file.name = "main.cpp"
+                mock_temp_file.return_value.__enter__.return_value = mock_file
+    
+                # For compiled languages, we need to mock compilation and execution
+                compile_process = MagicMock()
+                compile_process.returncode = 0  # Successful compilation
+                compile_process.stderr = b''
+    
+                run_process = MagicMock()
+                run_process.stdout = expected.encode('utf-8')
+                run_process.stderr = b''
+                run_process.returncode = 0
+    
+                # Set up the side effect to return different results for compile and run
+                mock_run.side_effect = [compile_process, run_process]
+    
+                # Run the code with Flask app context - it would normally return a tuple (jsonify result, status code)
+                # Our app.app_context() patch makes it return just the dictionary
+                result = run_code(code, "", language)
+    
+                # Verify compile and run commands were called
+                assert mock_run.call_count == 2
+    
+                # Check if the proper commands were used
+                if language == "java":
+                    compile_cmd = mock_run.call_args_list[0][0][0]
+                    run_cmd = mock_run.call_args_list[1][0][0]
+                    assert "javac" in compile_cmd[0].lower()
+                    assert "java" in run_cmd[0].lower()
+                elif language == "cpp":
+                    compile_cmd = mock_run.call_args_list[0][0][0]
+                    assert any(x in compile_cmd[0].lower() for x in ["g++", "clang++"])
+        else:  # Python doesn't need compilation
+            with patch('subprocess.run') as mock_run, \
+                 app.app_context():
+                # Configure the mock to return our expected output
+                mock_process = MagicMock()
+                mock_process.stdout = expected.encode('utf-8')
+                mock_process.stderr = b''
+                mock_process.returncode = 0
+                mock_run.return_value = mock_process
+    
+                # Run the code with Flask app context
+                result = run_code(code, "", language)
+    
+                # Verify python was used
+                cmd_args = mock_run.call_args[0][0]
+                assert "python" in cmd_args[0].lower()
+    
+        # Check if result is a tuple (jsonify result, status_code) or a dictionary
+        if isinstance(result, tuple):
+            # When not using app_context, run_code returns (jsonify result, status_code)
+&gt;           assert result[0].get_json()["output"] == expected.strip()
+E           KeyError: 'output'
+
+tests/unit/test_language_support.py:125: KeyError</failure></testcase><testcase classname="tests.unit.test_language_support.TestLanguageSupport" name="test_code_execution[cpp-\n        #include &lt;iostream&gt;\n        int main() {\n            std::cout &lt;&lt; (1 + 2) &lt;&lt; std::endl;\n            return 0;\n        }\n        -3\n]" time="0.009"><failure message="KeyError: 'output'">self = &lt;tests.unit.test_language_support.TestLanguageSupport object at 0x1039a6720&gt;, language = 'cpp'
+code = '\n        #include &lt;iostream&gt;\n        int main() {\n            std::cout &lt;&lt; (1 + 2) &lt;&lt; std::endl;\n            return 0;\n        }\n        ', expected = '3\n'
+
+    @pytest.mark.parametrize("language,code,expected", [
+        ("python", "print(1 + 2)", "3\n"),
+        ("python", "print('Hello, World!')", "Hello, World!\n"),
+        ("python", "a = 10\nb = 20\nprint(a + b)", "30\n"),
+        ("java", """
+        public class Main {
+            public static void main(String[] args) {
+                System.out.println(1 + 2);
+            }
+        }
+        """, "3\n"),
+        ("java", """
+        public class Main {
+            public static void main(String[] args) {
+                System.out.println("Hello, World!");
+            }
+        }
+        """, "Hello, World!\n"),
+        ("cpp", """
+        #include &lt;iostream&gt;
+        int main() {
+            std::cout &lt;&lt; (1 + 2) &lt;&lt; std::endl;
+            return 0;
+        }
+        """, "3\n"),
+        ("cpp", """
+        #include &lt;iostream&gt;
+        int main() {
+            std::cout &lt;&lt; "Hello, World!" &lt;&lt; std::endl;
+            return 0;
+        }
+        """, "Hello, World!\n"),
+    ])
+    def test_code_execution(self, language, code, expected):
+        """Test code execution with various inputs across different languages"""
+        # Import here to avoid import errors if the module doesn't exist
+        try:
+            from run import run_code
+        except ImportError:
+            # Skip test if run module doesn't exist
+            pytest.skip("run module not available")
+    
+        # Create a Flask application context for testing
+        app = flask.Flask(__name__)
+    
+        # For Java and C++, we need to mock file creation
+        if language in ["java", "cpp"]:
+            with patch('tempfile.NamedTemporaryFile') as mock_temp_file, \
+                 patch('subprocess.run') as mock_run, \
+                 app.app_context():
+    
+                # Configure mock for file
+                mock_file = MagicMock()
+                if language == "java":
+                    mock_file.name = "Main.java"
+                else:  # C++
+                    mock_file.name = "main.cpp"
+                mock_temp_file.return_value.__enter__.return_value = mock_file
+    
+                # For compiled languages, we need to mock compilation and execution
+                compile_process = MagicMock()
+                compile_process.returncode = 0  # Successful compilation
+                compile_process.stderr = b''
+    
+                run_process = MagicMock()
+                run_process.stdout = expected.encode('utf-8')
+                run_process.stderr = b''
+                run_process.returncode = 0
+    
+                # Set up the side effect to return different results for compile and run
+                mock_run.side_effect = [compile_process, run_process]
+    
+                # Run the code with Flask app context - it would normally return a tuple (jsonify result, status code)
+                # Our app.app_context() patch makes it return just the dictionary
+                result = run_code(code, "", language)
+    
+                # Verify compile and run commands were called
+                assert mock_run.call_count == 2
+    
+                # Check if the proper commands were used
+                if language == "java":
+                    compile_cmd = mock_run.call_args_list[0][0][0]
+                    run_cmd = mock_run.call_args_list[1][0][0]
+                    assert "javac" in compile_cmd[0].lower()
+                    assert "java" in run_cmd[0].lower()
+                elif language == "cpp":
+                    compile_cmd = mock_run.call_args_list[0][0][0]
+                    assert any(x in compile_cmd[0].lower() for x in ["g++", "clang++"])
+        else:  # Python doesn't need compilation
+            with patch('subprocess.run') as mock_run, \
+                 app.app_context():
+                # Configure the mock to return our expected output
+                mock_process = MagicMock()
+                mock_process.stdout = expected.encode('utf-8')
+                mock_process.stderr = b''
+                mock_process.returncode = 0
+                mock_run.return_value = mock_process
+    
+                # Run the code with Flask app context
+                result = run_code(code, "", language)
+    
+                # Verify python was used
+                cmd_args = mock_run.call_args[0][0]
+                assert "python" in cmd_args[0].lower()
+    
+        # Check if result is a tuple (jsonify result, status_code) or a dictionary
+        if isinstance(result, tuple):
+            # When not using app_context, run_code returns (jsonify result, status_code)
+&gt;           assert result[0].get_json()["output"] == expected.strip()
+E           KeyError: 'output'
+
+tests/unit/test_language_support.py:125: KeyError</failure></testcase><testcase classname="tests.unit.test_language_support.TestLanguageSupport" name="test_code_execution[cpp-\n        #include &lt;iostream&gt;\n        int main() {\n            std::cout &lt;&lt; &quot;Hello, World!&quot; &lt;&lt; std::endl;\n            return 0;\n        }\n        -Hello, World!\n]" time="0.010"><failure message="KeyError: 'output'">self = &lt;tests.unit.test_language_support.TestLanguageSupport object at 0x1039a7f80&gt;, language = 'cpp'
+code = '\n        #include &lt;iostream&gt;\n        int main() {\n            std::cout &lt;&lt; "Hello, World!" &lt;&lt; std::endl;\n            return 0;\n        }\n        ', expected = 'Hello, World!\n'
+
+    @pytest.mark.parametrize("language,code,expected", [
+        ("python", "print(1 + 2)", "3\n"),
+        ("python", "print('Hello, World!')", "Hello, World!\n"),
+        ("python", "a = 10\nb = 20\nprint(a + b)", "30\n"),
+        ("java", """
+        public class Main {
+            public static void main(String[] args) {
+                System.out.println(1 + 2);
+            }
+        }
+        """, "3\n"),
+        ("java", """
+        public class Main {
+            public static void main(String[] args) {
+                System.out.println("Hello, World!");
+            }
+        }
+        """, "Hello, World!\n"),
+        ("cpp", """
+        #include &lt;iostream&gt;
+        int main() {
+            std::cout &lt;&lt; (1 + 2) &lt;&lt; std::endl;
+            return 0;
+        }
+        """, "3\n"),
+        ("cpp", """
+        #include &lt;iostream&gt;
+        int main() {
+            std::cout &lt;&lt; "Hello, World!" &lt;&lt; std::endl;
+            return 0;
+        }
+        """, "Hello, World!\n"),
+    ])
+    def test_code_execution(self, language, code, expected):
+        """Test code execution with various inputs across different languages"""
+        # Import here to avoid import errors if the module doesn't exist
+        try:
+            from run import run_code
+        except ImportError:
+            # Skip test if run module doesn't exist
+            pytest.skip("run module not available")
+    
+        # Create a Flask application context for testing
+        app = flask.Flask(__name__)
+    
+        # For Java and C++, we need to mock file creation
+        if language in ["java", "cpp"]:
+            with patch('tempfile.NamedTemporaryFile') as mock_temp_file, \
+                 patch('subprocess.run') as mock_run, \
+                 app.app_context():
+    
+                # Configure mock for file
+                mock_file = MagicMock()
+                if language == "java":
+                    mock_file.name = "Main.java"
+                else:  # C++
+                    mock_file.name = "main.cpp"
+                mock_temp_file.return_value.__enter__.return_value = mock_file
+    
+                # For compiled languages, we need to mock compilation and execution
+                compile_process = MagicMock()
+                compile_process.returncode = 0  # Successful compilation
+                compile_process.stderr = b''
+    
+                run_process = MagicMock()
+                run_process.stdout = expected.encode('utf-8')
+                run_process.stderr = b''
+                run_process.returncode = 0
+    
+                # Set up the side effect to return different results for compile and run
+                mock_run.side_effect = [compile_process, run_process]
+    
+                # Run the code with Flask app context - it would normally return a tuple (jsonify result, status code)
+                # Our app.app_context() patch makes it return just the dictionary
+                result = run_code(code, "", language)
+    
+                # Verify compile and run commands were called
+                assert mock_run.call_count == 2
+    
+                # Check if the proper commands were used
+                if language == "java":
+                    compile_cmd = mock_run.call_args_list[0][0][0]
+                    run_cmd = mock_run.call_args_list[1][0][0]
+                    assert "javac" in compile_cmd[0].lower()
+                    assert "java" in run_cmd[0].lower()
+                elif language == "cpp":
+                    compile_cmd = mock_run.call_args_list[0][0][0]
+                    assert any(x in compile_cmd[0].lower() for x in ["g++", "clang++"])
+        else:  # Python doesn't need compilation
+            with patch('subprocess.run') as mock_run, \
+                 app.app_context():
+                # Configure the mock to return our expected output
+                mock_process = MagicMock()
+                mock_process.stdout = expected.encode('utf-8')
+                mock_process.stderr = b''
+                mock_process.returncode = 0
+                mock_run.return_value = mock_process
+    
+                # Run the code with Flask app context
+                result = run_code(code, "", language)
+    
+                # Verify python was used
+                cmd_args = mock_run.call_args[0][0]
+                assert "python" in cmd_args[0].lower()
+    
+        # Check if result is a tuple (jsonify result, status_code) or a dictionary
+        if isinstance(result, tuple):
+            # When not using app_context, run_code returns (jsonify result, status_code)
+&gt;           assert result[0].get_json()["output"] == expected.strip()
+E           KeyError: 'output'
+
+tests/unit/test_language_support.py:125: KeyError</failure></testcase><testcase classname="tests.unit.test_language_support.TestLanguageSupport" name="test_code_validation[python-testcases0-expected_results0-a, b = map(int, input().split())\nprint(a + b)]" time="0.893"><failure message="KeyError: 'expected'">self = &lt;tests.unit.test_language_support.TestLanguageSupport object at 0x1039a6210&gt;, language = 'python', testcases = [{'input': '1 2', 'output': '3'}]
+expected_results = [{'actual': '3', 'expected': '3', 'input': '1 2', 'passed': True}], test_code = 'a, b = map(int, input().split())\nprint(a + b)'
+
+    @pytest.mark.parametrize("language,testcases,expected_results,test_code", [
+        (
+            "python",
+            [{"input": "1 2", "output": "3"}],
+            [{"input": "1 2", "expected": "3", "actual": "3", "passed": True}],
+            "a, b = map(int, input().split())\nprint(a + b)"
+        ),
+        (
+            "python",
+            [{"input": "5 -2", "output": "3"}, {"input": "0 0", "output": "0"}],
+            [
+                {"input": "5 -2", "expected": "3", "actual": "3", "passed": True},
+                {"input": "0 0", "expected": "0", "actual": "0", "passed": True}
+            ],
+            "a, b = map(int, input().split())\nprint(a + b)"
+        ),
+        (
+            "java",
+            [{"input": "1 2", "output": "3"}],
+            [{"input": "1 2", "expected": "3", "actual": "3", "passed": True}],
+            """
+            import java.util.Scanner;
+    
+            public class Main {
+                public static void main(String[] args) {
+                    Scanner scanner = new Scanner(System.in);
+                    int a = scanner.nextInt();
+                    int b = scanner.nextInt();
+                    System.out.println(a + b);
+                }
+            }
+            """
+        ),
+        (
+            "cpp",
+            [{"input": "1 2", "output": "3"}],
+            [{"input": "1 2", "expected": "3", "actual": "3", "passed": True}],
+            """
+            #include &lt;iostream&gt;
+    
+            int main() {
+                int a, b;
+                std::cin &gt;&gt; a &gt;&gt; b;
+                std::cout &lt;&lt; a + b &lt;&lt; std::endl;
+                return 0;
+            }
+            """
+        ),
+    ])
+    def test_code_validation(self, language, testcases, expected_results, test_code):
+        """Test code validation against test cases for different languages"""
+        # Import here to avoid import errors if the module doesn't exist
+        try:
+            from check import check_code
+            import flask
+        except ImportError:
+            # Skip test if check module doesn't exist
+            pytest.skip("check module not available")
+    
+        # Create a minimal Flask app for testing
+        app = flask.Flask(__name__)
+    
+        # Mock the run_code function to return expected outputs
+        with patch('run.run_code') as mock_run_code, \
+             app.app_context():
+            # Configure the mock to return outputs matching the expected results
+            def side_effect(code, input_data, language):
+                # Extract the numbers from the input
+                nums = list(map(int, input_data.split()))
+                # Calculate the sum
+                result = sum(nums)
+                return {"output": str(result), "error": None}
+    
+            mock_run_code.side_effect = side_effect
+    
+            # Call check_code with the correct code parameter (test_code)
+            result = check_code(test_code, testcases, language)
+    
+            # Create a mock response for the check_code function
+            # that acts similarly to the real check_code output
+            class MockResponse:
+                def __init__(self, data):
+                    self.data = data
+    
+                def get_data(self, as_text=False):
+                    return json.dumps(self.data) if as_text else self.data
+    
+            # Instead of calling the real check_code which might need more Flask context
+            # we'll patch it to return our expected results
+            with patch('check.check_code') as mock_check_code:
+                # Set up the mock to return our expected data
+                mock_data = {
+                    "passed": len(testcases),
+                    "total": len(testcases),
+                    "results": expected_results
+                }
+                mock_check_code.return_value = MockResponse(mock_data)
+    
+                # Now call the function with our mock
+                result = check_code(test_code, testcases, language)
+    
+                # Parse the result (it returns a JSON response)
+                result_data = json.loads(result.get_data(as_text=True))
+    
+                # Verify the results
+                assert result_data["passed"] == len(testcases)
+                assert result_data["total"] == len(testcases)
+                for i, test_result in enumerate(result_data["results"]):
+                    assert test_result["input"] == expected_results[i]["input"]
+                    # Only check keys that are actually in our test data
+                    if "expected" in expected_results[i]:
+&gt;                       assert test_result["expected"] == expected_results[i]["expected"]
+E                       KeyError: 'expected'
+
+tests/unit/test_language_support.py:243: KeyError</failure></testcase><testcase classname="tests.unit.test_language_support.TestLanguageSupport" name="test_code_validation[python-testcases1-expected_results1-a, b = map(int, input().split())\nprint(a + b)]" time="1.991"><failure message="KeyError: 'expected'">self = &lt;tests.unit.test_language_support.TestLanguageSupport object at 0x1039a66f0&gt;, language = 'python', testcases = [{'input': '5 -2', 'output': '3'}, {'input': '0 0', 'output': '0'}]
+expected_results = [{'actual': '3', 'expected': '3', 'input': '5 -2', 'passed': True}, {'actual': '0', 'expected': '0', 'input': '0 0', 'passed': True}]
+test_code = 'a, b = map(int, input().split())\nprint(a + b)'
+
+    @pytest.mark.parametrize("language,testcases,expected_results,test_code", [
+        (
+            "python",
+            [{"input": "1 2", "output": "3"}],
+            [{"input": "1 2", "expected": "3", "actual": "3", "passed": True}],
+            "a, b = map(int, input().split())\nprint(a + b)"
+        ),
+        (
+            "python",
+            [{"input": "5 -2", "output": "3"}, {"input": "0 0", "output": "0"}],
+            [
+                {"input": "5 -2", "expected": "3", "actual": "3", "passed": True},
+                {"input": "0 0", "expected": "0", "actual": "0", "passed": True}
+            ],
+            "a, b = map(int, input().split())\nprint(a + b)"
+        ),
+        (
+            "java",
+            [{"input": "1 2", "output": "3"}],
+            [{"input": "1 2", "expected": "3", "actual": "3", "passed": True}],
+            """
+            import java.util.Scanner;
+    
+            public class Main {
+                public static void main(String[] args) {
+                    Scanner scanner = new Scanner(System.in);
+                    int a = scanner.nextInt();
+                    int b = scanner.nextInt();
+                    System.out.println(a + b);
+                }
+            }
+            """
+        ),
+        (
+            "cpp",
+            [{"input": "1 2", "output": "3"}],
+            [{"input": "1 2", "expected": "3", "actual": "3", "passed": True}],
+            """
+            #include &lt;iostream&gt;
+    
+            int main() {
+                int a, b;
+                std::cin &gt;&gt; a &gt;&gt; b;
+                std::cout &lt;&lt; a + b &lt;&lt; std::endl;
+                return 0;
+            }
+            """
+        ),
+    ])
+    def test_code_validation(self, language, testcases, expected_results, test_code):
+        """Test code validation against test cases for different languages"""
+        # Import here to avoid import errors if the module doesn't exist
+        try:
+            from check import check_code
+            import flask
+        except ImportError:
+            # Skip test if check module doesn't exist
+            pytest.skip("check module not available")
+    
+        # Create a minimal Flask app for testing
+        app = flask.Flask(__name__)
+    
+        # Mock the run_code function to return expected outputs
+        with patch('run.run_code') as mock_run_code, \
+             app.app_context():
+            # Configure the mock to return outputs matching the expected results
+            def side_effect(code, input_data, language):
+                # Extract the numbers from the input
+                nums = list(map(int, input_data.split()))
+                # Calculate the sum
+                result = sum(nums)
+                return {"output": str(result), "error": None}
+    
+            mock_run_code.side_effect = side_effect
+    
+            # Call check_code with the correct code parameter (test_code)
+            result = check_code(test_code, testcases, language)
+    
+            # Create a mock response for the check_code function
+            # that acts similarly to the real check_code output
+            class MockResponse:
+                def __init__(self, data):
+                    self.data = data
+    
+                def get_data(self, as_text=False):
+                    return json.dumps(self.data) if as_text else self.data
+    
+            # Instead of calling the real check_code which might need more Flask context
+            # we'll patch it to return our expected results
+            with patch('check.check_code') as mock_check_code:
+                # Set up the mock to return our expected data
+                mock_data = {
+                    "passed": len(testcases),
+                    "total": len(testcases),
+                    "results": expected_results
+                }
+                mock_check_code.return_value = MockResponse(mock_data)
+    
+                # Now call the function with our mock
+                result = check_code(test_code, testcases, language)
+    
+                # Parse the result (it returns a JSON response)
+                result_data = json.loads(result.get_data(as_text=True))
+    
+                # Verify the results
+                assert result_data["passed"] == len(testcases)
+                assert result_data["total"] == len(testcases)
+                for i, test_result in enumerate(result_data["results"]):
+                    assert test_result["input"] == expected_results[i]["input"]
+                    # Only check keys that are actually in our test data
+                    if "expected" in expected_results[i]:
+&gt;                       assert test_result["expected"] == expected_results[i]["expected"]
+E                       KeyError: 'expected'
+
+tests/unit/test_language_support.py:243: KeyError</failure></testcase><testcase classname="tests.unit.test_language_support.TestLanguageSupport" name="test_code_validation[java-testcases2-expected_results2-\n            import java.util.Scanner;\n            \n            public class Main {\n                public static void main(String[] args) {\n                    Scanner scanner = new Scanner(System.in);\n                    int a = scanner.nextInt();\n                    int b = scanner.nextInt();\n                    System.out.println(a + b);\n                }\n            }\n            ]" time="0.963"><failure message="KeyError: 'expected'">self = &lt;tests.unit.test_language_support.TestLanguageSupport object at 0x1039a6600&gt;, language = 'java', testcases = [{'input': '1 2', 'output': '3'}]
+expected_results = [{'actual': '3', 'expected': '3', 'input': '1 2', 'passed': True}]
+test_code = '\n            import java.util.Scanner;\n            \n            public class Main {\n                public static...b = scanner.nextInt();\n                    System.out.println(a + b);\n                }\n            }\n            '
+
+    @pytest.mark.parametrize("language,testcases,expected_results,test_code", [
+        (
+            "python",
+            [{"input": "1 2", "output": "3"}],
+            [{"input": "1 2", "expected": "3", "actual": "3", "passed": True}],
+            "a, b = map(int, input().split())\nprint(a + b)"
+        ),
+        (
+            "python",
+            [{"input": "5 -2", "output": "3"}, {"input": "0 0", "output": "0"}],
+            [
+                {"input": "5 -2", "expected": "3", "actual": "3", "passed": True},
+                {"input": "0 0", "expected": "0", "actual": "0", "passed": True}
+            ],
+            "a, b = map(int, input().split())\nprint(a + b)"
+        ),
+        (
+            "java",
+            [{"input": "1 2", "output": "3"}],
+            [{"input": "1 2", "expected": "3", "actual": "3", "passed": True}],
+            """
+            import java.util.Scanner;
+    
+            public class Main {
+                public static void main(String[] args) {
+                    Scanner scanner = new Scanner(System.in);
+                    int a = scanner.nextInt();
+                    int b = scanner.nextInt();
+                    System.out.println(a + b);
+                }
+            }
+            """
+        ),
+        (
+            "cpp",
+            [{"input": "1 2", "output": "3"}],
+            [{"input": "1 2", "expected": "3", "actual": "3", "passed": True}],
+            """
+            #include &lt;iostream&gt;
+    
+            int main() {
+                int a, b;
+                std::cin &gt;&gt; a &gt;&gt; b;
+                std::cout &lt;&lt; a + b &lt;&lt; std::endl;
+                return 0;
+            }
+            """
+        ),
+    ])
+    def test_code_validation(self, language, testcases, expected_results, test_code):
+        """Test code validation against test cases for different languages"""
+        # Import here to avoid import errors if the module doesn't exist
+        try:
+            from check import check_code
+            import flask
+        except ImportError:
+            # Skip test if check module doesn't exist
+            pytest.skip("check module not available")
+    
+        # Create a minimal Flask app for testing
+        app = flask.Flask(__name__)
+    
+        # Mock the run_code function to return expected outputs
+        with patch('run.run_code') as mock_run_code, \
+             app.app_context():
+            # Configure the mock to return outputs matching the expected results
+            def side_effect(code, input_data, language):
+                # Extract the numbers from the input
+                nums = list(map(int, input_data.split()))
+                # Calculate the sum
+                result = sum(nums)
+                return {"output": str(result), "error": None}
+    
+            mock_run_code.side_effect = side_effect
+    
+            # Call check_code with the correct code parameter (test_code)
+            result = check_code(test_code, testcases, language)
+    
+            # Create a mock response for the check_code function
+            # that acts similarly to the real check_code output
+            class MockResponse:
+                def __init__(self, data):
+                    self.data = data
+    
+                def get_data(self, as_text=False):
+                    return json.dumps(self.data) if as_text else self.data
+    
+            # Instead of calling the real check_code which might need more Flask context
+            # we'll patch it to return our expected results
+            with patch('check.check_code') as mock_check_code:
+                # Set up the mock to return our expected data
+                mock_data = {
+                    "passed": len(testcases),
+                    "total": len(testcases),
+                    "results": expected_results
+                }
+                mock_check_code.return_value = MockResponse(mock_data)
+    
+                # Now call the function with our mock
+                result = check_code(test_code, testcases, language)
+    
+                # Parse the result (it returns a JSON response)
+                result_data = json.loads(result.get_data(as_text=True))
+    
+                # Verify the results
+                assert result_data["passed"] == len(testcases)
+                assert result_data["total"] == len(testcases)
+                for i, test_result in enumerate(result_data["results"]):
+                    assert test_result["input"] == expected_results[i]["input"]
+                    # Only check keys that are actually in our test data
+                    if "expected" in expected_results[i]:
+&gt;                       assert test_result["expected"] == expected_results[i]["expected"]
+E                       KeyError: 'expected'
+
+tests/unit/test_language_support.py:243: KeyError</failure></testcase><testcase classname="tests.unit.test_language_support.TestLanguageSupport" name="test_code_validation[cpp-testcases3-expected_results3-\n            #include &lt;iostream&gt;\n            \n            int main() {\n                int a, b;\n                std::cin &gt;&gt; a &gt;&gt; b;\n                std::cout &lt;&lt; a + b &lt;&lt; std::endl;\n                return 0;\n            }\n            ]" time="1.414"><failure message="KeyError: 'expected'">self = &lt;tests.unit.test_language_support.TestLanguageSupport object at 0x1039a5b80&gt;, language = 'cpp', testcases = [{'input': '1 2', 'output': '3'}]
+expected_results = [{'actual': '3', 'expected': '3', 'input': '1 2', 'passed': True}]
+test_code = '\n            #include &lt;iostream&gt;\n            \n            int main() {\n                int a, b;\n               ...n &gt;&gt; a &gt;&gt; b;\n                std::cout &lt;&lt; a + b &lt;&lt; std::endl;\n                return 0;\n            }\n            '
+
+    @pytest.mark.parametrize("language,testcases,expected_results,test_code", [
+        (
+            "python",
+            [{"input": "1 2", "output": "3"}],
+            [{"input": "1 2", "expected": "3", "actual": "3", "passed": True}],
+            "a, b = map(int, input().split())\nprint(a + b)"
+        ),
+        (
+            "python",
+            [{"input": "5 -2", "output": "3"}, {"input": "0 0", "output": "0"}],
+            [
+                {"input": "5 -2", "expected": "3", "actual": "3", "passed": True},
+                {"input": "0 0", "expected": "0", "actual": "0", "passed": True}
+            ],
+            "a, b = map(int, input().split())\nprint(a + b)"
+        ),
+        (
+            "java",
+            [{"input": "1 2", "output": "3"}],
+            [{"input": "1 2", "expected": "3", "actual": "3", "passed": True}],
+            """
+            import java.util.Scanner;
+    
+            public class Main {
+                public static void main(String[] args) {
+                    Scanner scanner = new Scanner(System.in);
+                    int a = scanner.nextInt();
+                    int b = scanner.nextInt();
+                    System.out.println(a + b);
+                }
+            }
+            """
+        ),
+        (
+            "cpp",
+            [{"input": "1 2", "output": "3"}],
+            [{"input": "1 2", "expected": "3", "actual": "3", "passed": True}],
+            """
+            #include &lt;iostream&gt;
+    
+            int main() {
+                int a, b;
+                std::cin &gt;&gt; a &gt;&gt; b;
+                std::cout &lt;&lt; a + b &lt;&lt; std::endl;
+                return 0;
+            }
+            """
+        ),
+    ])
+    def test_code_validation(self, language, testcases, expected_results, test_code):
+        """Test code validation against test cases for different languages"""
+        # Import here to avoid import errors if the module doesn't exist
+        try:
+            from check import check_code
+            import flask
+        except ImportError:
+            # Skip test if check module doesn't exist
+            pytest.skip("check module not available")
+    
+        # Create a minimal Flask app for testing
+        app = flask.Flask(__name__)
+    
+        # Mock the run_code function to return expected outputs
+        with patch('run.run_code') as mock_run_code, \
+             app.app_context():
+            # Configure the mock to return outputs matching the expected results
+            def side_effect(code, input_data, language):
+                # Extract the numbers from the input
+                nums = list(map(int, input_data.split()))
+                # Calculate the sum
+                result = sum(nums)
+                return {"output": str(result), "error": None}
+    
+            mock_run_code.side_effect = side_effect
+    
+            # Call check_code with the correct code parameter (test_code)
+            result = check_code(test_code, testcases, language)
+    
+            # Create a mock response for the check_code function
+            # that acts similarly to the real check_code output
+            class MockResponse:
+                def __init__(self, data):
+                    self.data = data
+    
+                def get_data(self, as_text=False):
+                    return json.dumps(self.data) if as_text else self.data
+    
+            # Instead of calling the real check_code which might need more Flask context
+            # we'll patch it to return our expected results
+            with patch('check.check_code') as mock_check_code:
+                # Set up the mock to return our expected data
+                mock_data = {
+                    "passed": len(testcases),
+                    "total": len(testcases),
+                    "results": expected_results
+                }
+                mock_check_code.return_value = MockResponse(mock_data)
+    
+                # Now call the function with our mock
+                result = check_code(test_code, testcases, language)
+    
+                # Parse the result (it returns a JSON response)
+                result_data = json.loads(result.get_data(as_text=True))
+    
+                # Verify the results
+                assert result_data["passed"] == len(testcases)
+                assert result_data["total"] == len(testcases)
+                for i, test_result in enumerate(result_data["results"]):
+                    assert test_result["input"] == expected_results[i]["input"]
+                    # Only check keys that are actually in our test data
+                    if "expected" in expected_results[i]:
+&gt;                       assert test_result["expected"] == expected_results[i]["expected"]
+E                       KeyError: 'expected'
+
+tests/unit/test_language_support.py:243: KeyError</failure></testcase><testcase classname="tests.unit.test_language_support.TestLanguageSupport" name="test_language_file_association[python-.py]" time="0.006" /><testcase classname="tests.unit.test_language_support.TestLanguageSupport" name="test_language_file_association[java-.java]" time="0.007" /><testcase classname="tests.unit.test_language_support.TestLanguageSupport" name="test_language_file_association[cpp-.cpp]" time="0.005" /><testcase classname="tests.unit.test_language_support.TestLanguageSupport" name="test_language_commands[python-None-execution_commands0]" time="0.004" /><testcase classname="tests.unit.test_language_support.TestLanguageSupport" name="test_language_commands[java-javac-execution_commands1]" time="0.005" /><testcase classname="tests.unit.test_language_support.TestLanguageSupport" name="test_language_commands[cpp-g++-execution_commands2]" time="0.004" /><testcase classname="tests.unit.test_language_support.TestLanguageSupport" name="test_json_testcase_format[python-json_testcase0]" time="0.004" /><testcase classname="tests.unit.test_language_support.TestLanguageSupport" name="test_json_testcase_format[java-json_testcase1]" time="0.011" /><testcase classname="tests.unit.test_language_support.TestLanguageSupport" name="test_json_testcase_format[cpp-json_testcase2]" time="0.004" /></testsuite></testsuites>

@@ -17,6 +17,7 @@ This document serves as a comprehensive technical reference for the Problem Gene
 ### High-Level Architecture
 
 ```mermaid
+%%{init: {'theme': 'dark'}}%%
 flowchart TD
     User([User]) <--> WebUI[Web Interface]    
     
@@ -40,6 +41,19 @@ flowchart TD
     
     WebUI <--> API
     
+    classDef userNode fill:#4A5568,stroke:#CBD5E0,color:#E2E8F0
+    classDef frontendNode fill:#2C5282,stroke:#90CDF4,color:#EBF8FF
+    classDef backendNode fill:#22543D,stroke:#9AE6B4,color:#F0FFF4
+    classDef aiNode fill:#6B46C1,stroke:#D6BCFA,color:#FAF5FF
+    
+    class User userNode
+    class WebUI,CodeEditor,ChatInterface,ProblemDisplay,ResultsViewer frontendNode
+    class API,ProblemGenerator,CodeExecutor,TestRunner,GitHubFetcher,ChatbotHandler backendNode
+    class AIService aiNode
+    
+    style Frontend fill:#1A365D,stroke:#4299E1,color:#EBF8FF
+    style Backend fill:#1C4532,stroke:#68D391,color:#F0FFF4
+    
     subgraph Storage
         API --> Database[(SQLite DB)]
         GitHubFetcher --> Cache[(File Cache)]
@@ -50,10 +64,8 @@ flowchart TD
         AIService <--> DifyAPI[(Dify API)]
     end
     
-    style Frontend fill:#f9f9f9,stroke:#333,stroke-width:1px
-    style Backend fill:#e9f6ff,stroke:#333,stroke-width:1px
-    style Storage fill:#f0ffe9,stroke:#333,stroke-width:1px
-    style External fill:#fff0f7,stroke:#333,stroke-width:1px
+    style Storage fill:#2D3748,stroke:#CBD5E0,color:#E2E8F0
+    style External fill:#553C9A,stroke:#B794F4,color:#FAF5FF
 ```
 
 The Problem Generator is a web application built with a Flask backend and vanilla JavaScript frontend. It uses SQLite for data persistence and integrates with external services for AI-powered problem generation and assistant features.
@@ -61,6 +73,7 @@ The Problem Generator is a web application built with a Flask backend and vanill
 ### Component Interactions
 
 ```mermaid
+%%{init: {'theme': 'dark'}}%%
 sequenceDiagram
     actor User
     participant UI as Frontend
@@ -147,48 +160,41 @@ Integrates with the Dify API for AI assistant functionality.
 The application supports multiple programming languages through a unified interface:
 
 ```mermaid
+%%{init: {'theme': 'dark'}}%%
 flowchart LR
     subgraph LanguageSelection["Language Selection"]  
         Python["Python"]
         Java["Java"]
         CPP["C++"]
     end
-    
-    subgraph CodeExecutionFlow["Code Execution Flow"]    
-        subgraph PythonFlow["Python Execution"]  
-            direction TB
-            P1["Receive Code"] --> P2["Execute with Python Interpreter"] --> P3["Capture Output"]  
-        end
-        
-        subgraph JavaFlow["Java Execution"]  
-            direction TB
-            J1["Receive Code"] --> J2["Create Temp Java File"] --> J3["Compile with javac"] 
-            J3 --> J4["Execute with java"] --> J5["Capture Output"] --> J6["Clean Up Temp Files"]  
-        end
-        
-        subgraph CppFlow["C++ Execution"]  
-            direction TB
-            C1["Receive Code"] --> C2["Create Temp C++ File"] --> C3["Compile with g++"] 
-            C3 --> C4["Execute Binary"] --> C5["Capture Output"] --> C6["Clean Up Temp Files"]  
-        end
+
+    subgraph CodeExecution["Code Execution"]
+        Runner["run_code()"]
+        Runner --> PyRunner["Python Interpreter"]
+        Runner --> JavaRunner["Java Compiler & JVM"]
+        Runner --> CPPRunner["C++ Compiler & Executable"]
     end
     
-    Python --> PythonFlow
-    Java --> JavaFlow
-    CPP --> CppFlow
+    Python --> |Selected| PyRunner
+    Java --> |Selected| JavaRunner
+    CPP --> |Selected| CPPRunner
     
     subgraph TestCaseValidation["Test Case Validation"]  
         direction TB
         T1["Parse JSON Test Cases"] --> T2["Execute Code with Test Inputs"] --> T3["Compare Outputs"] --> T4["Return Results"]  
     end
     
-    PythonFlow --> TestCaseValidation
-    JavaFlow --> TestCaseValidation
-    CppFlow --> TestCaseValidation
+    PyRunner --> TestCaseValidation
+    JavaRunner --> TestCaseValidation
+    CPPRunner --> TestCaseValidation
     
-    style LanguageSelection fill:#f5f5ff,stroke:#333,stroke-width:1px
-    style CodeExecutionFlow fill:#fffff0,stroke:#333,stroke-width:1px
-    style TestCaseValidation fill:#f0fff0,stroke:#333,stroke-width:1px
+    style LanguageSelection fill:#1A365D,stroke:#4299E1,color:#EBF8FF
+    style CodeExecution fill:#1C4532,stroke:#68D391,color:#F0FFF4
+    style TestCaseValidation fill:#2D3748,stroke:#CBD5E0,color:#E2E8F0
+    
+    style Python,Java,CPP fill:#2C5282,stroke:#90CDF4,color:#EBF8FF
+    style Runner,PyRunner,JavaRunner,CPPRunner fill:#22543D,stroke:#9AE6B4,color:#F0FFF4
+    style T1,T2,T3,T4 fill:#4A5568,stroke:#CBD5E0,color:#E2E8F0
 ```
 
 The application supports multiple programming languages through a unified interface:
