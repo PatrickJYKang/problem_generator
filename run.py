@@ -9,10 +9,21 @@ def run_code(code, stdin, language):
     """ Runs user-submitted code in the specified language and returns the output. """
     if not code.strip():
         return jsonify({"error": "No code provided"}), 400
+        
+    # Ensure stdin is properly converted to string
+    if stdin is None:
+        stdin = ""
+        
+    # Convert stdin to string if needed
+    if not isinstance(stdin, str):
+        try:
+            stdin = str(stdin)
+        except:
+            stdin = ""
 
     try:
-        if language == "python":
-            # Run Python code
+        if language == "python" or language is None or language == "":
+            # Run Python code (default to Python if language is not specified)
             process = subprocess.run(
                 ["python3", "-c", code], 
                 input=stdin,
@@ -88,9 +99,13 @@ def run_code(code, stdin, language):
         else:
             return jsonify({"error": f"Unsupported language: {language}"}), 400
 
+        # Ensure we have valid outputs
+        stdout = process.stdout.strip() if process.stdout else ""
+        stderr = process.stderr.strip() if process.stderr else ""
+        
         return jsonify({
-            "stdout": process.stdout.strip(),
-            "stderr": process.stderr.strip()
+            "stdout": stdout,
+            "stderr": stderr
         })
 
     except subprocess.TimeoutExpired:

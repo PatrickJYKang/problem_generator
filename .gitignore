@@ -4,3 +4,4 @@ __pycache__/
 *.log
 deploy_instructions.md
 data/*
+.pytest_cache

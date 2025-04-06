@@ -20,17 +20,43 @@ def check_code(code, testcases, language):
     # Validate testcases format
     if not isinstance(testcases, list) or not testcases:
         return jsonify({"error": "No valid testcases found."}), 400
+    
+    # Convert testcases to list format if it's a JSON string
+    if isinstance(testcases, str):
+        try:
+            testcases = json.loads(testcases)
+        except json.JSONDecodeError:
+            return jsonify({"error": "Invalid JSON format for testcases"}), 400
+            
+    # Ensure language is set
+    if not language:
+        language = "python"  # Default to Python if not specified
         
     # Extract inputs and expected outputs from JSON testcases
-    inputs = [tc.get("input", "") for tc in testcases]
-    
-    # Handle different field names for expected output
+    inputs = []
     expected_outputs = []
+    
     for tc in testcases:
-        if "expected_output" in tc:
-            expected_outputs.append(tc.get("expected_output", ""))
+        # Handle various input formats
+        if isinstance(tc, dict):
+            if "input" in tc:
+                inputs.append(tc.get("input", ""))
+            else:
+                inputs.append("")  # Empty input if not provided
+                
+            # Handle different field names for expected output
+            if "expected_output" in tc:
+                expected_outputs.append(tc.get("expected_output", ""))
+            else:
+                expected_outputs.append(tc.get("output", ""))
         else:
-            expected_outputs.append(tc.get("output", ""))
+            # Handle simple string test cases
+            try:
+                inputs.append(str(tc))
+                expected_outputs.append("")
+            except:
+                inputs.append("")
+                expected_outputs.append("")
     
     results = []
     for i, testcase in enumerate(inputs):
@@ -97,7 +123,12 @@ def check_code(code, testcases, language):
                 # Extract the class name from the code
                 import re
                 class_match = re.search(r'public\s+class\s+(\w+)', code)
-                class_name = class_match.group(1) if class_match else "Main"
+                
+                # Default class name if not found
+                if not class_match:
+                    class_name = "Main"
+                else:
+                    class_name = class_match.group(1)
                 
                 # Write the code to a temporary file
                 file_path = os.path.join(temp_dir, f"{class_name}.java")
@@ -271,9 +302,17 @@ def check_code(code, testcases, language):
     passed_count = sum(1 for r in results if r.get("status") == "✅")
     total_count = len(results)
     
-    return jsonify({
+    response_data = {
         "results": results,
         "passed": passed_count,
         "total": total_count,
         "success_rate": f"{passed_count}/{total_count}"
-    })
+    }
+    
+    # Add success flag for easier frontend handling
+    if passed_count == total_count and total_count > 0:
+        response_data["success"] = True
+    else:
+        response_data["success"] = False
+        
+    return jsonify(response_data)
