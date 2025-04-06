@@ -33,7 +33,7 @@ jobs:
         python run_tests.py --no-ui
     
     - name: Upload test report
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: test-report
         path: test_reports/
