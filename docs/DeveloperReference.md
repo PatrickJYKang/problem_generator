@@ -162,7 +162,7 @@ The application supports multiple programming languages through a unified interf
 ```mermaid
 %%{init: {'theme': 'dark'}}%%
 flowchart LR
-    subgraph LanguageSelection["Language Selection"]  
+    subgraph LanguageSelection["Language Selection"]
         Python["Python"]
         Java["Java"]
         CPP["C++"]
@@ -175,13 +175,14 @@ flowchart LR
         Runner --> CPPRunner["C++ Compiler & Executable"]
     end
     
-    Python --> |Selected| PyRunner
-    Java --> |Selected| JavaRunner
-    CPP --> |Selected| CPPRunner
+    Python ---> |Selected| PyRunner
+    Java ---> |Selected| JavaRunner
+    CPP ---> |Selected| CPPRunner
     
-    subgraph TestCaseValidation["Test Case Validation"]  
-        direction TB
-        T1["Parse JSON Test Cases"] --> T2["Execute Code with Test Inputs"] --> T3["Compare Outputs"] --> T4["Return Results"]  
+    subgraph TestCaseValidation["Test Case Validation"]
+        T1["Parse JSON Test Cases"] --> T2["Execute Code with Test Inputs"]
+        T2 --> T3["Compare Outputs"]
+        T3 --> T4["Return Results"]
     end
     
     PyRunner --> TestCaseValidation
@@ -192,9 +193,17 @@ flowchart LR
     style CodeExecution fill:#1C4532,stroke:#68D391,color:#F0FFF4
     style TestCaseValidation fill:#2D3748,stroke:#CBD5E0,color:#E2E8F0
     
-    style Python,Java,CPP fill:#2C5282,stroke:#90CDF4,color:#EBF8FF
-    style Runner,PyRunner,JavaRunner,CPPRunner fill:#22543D,stroke:#9AE6B4,color:#F0FFF4
-    style T1,T2,T3,T4 fill:#4A5568,stroke:#CBD5E0,color:#E2E8F0
+    style Python fill:#2C5282,stroke:#90CDF4,color:#EBF8FF
+    style Java fill:#2C5282,stroke:#90CDF4,color:#EBF8FF
+    style CPP fill:#2C5282,stroke:#90CDF4,color:#EBF8FF
+    style Runner fill:#22543D,stroke:#9AE6B4,color:#F0FFF4
+    style PyRunner fill:#22543D,stroke:#9AE6B4,color:#F0FFF4
+    style JavaRunner fill:#22543D,stroke:#9AE6B4,color:#F0FFF4
+    style CPPRunner fill:#22543D,stroke:#9AE6B4,color:#F0FFF4
+    style T1 fill:#4A5568,stroke:#CBD5E0,color:#E2E8F0
+    style T2 fill:#4A5568,stroke:#CBD5E0,color:#E2E8F0
+    style T3 fill:#4A5568,stroke:#CBD5E0,color:#E2E8F0
+    style T4 fill:#4A5568,stroke:#CBD5E0,color:#E2E8F0
 ```
 
 The application supports multiple programming languages through a unified interface:

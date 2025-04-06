@@ -31,24 +31,6 @@ flowchart TB
         GitHubAPI["GitHub API\nFetch Syllabus"]
         Checker["Problem Checker\ncheck.py"]
         
-        style AppPy fill:#22543D,stroke:#9AE6B4,color:#F0FFF4
-        style GitHubUtils fill:#22543D,stroke:#9AE6B4,color:#F0FFF4
-        style RunPy fill:#22543D,stroke:#9AE6B4,color:#F0FFF4
-        style DbPy fill:#22543D,stroke:#9AE6B4,color:#F0FFF4
-        style GitHubAPI fill:#553C9A,stroke:#B794F4,color:#FAF5FF
-        style Checker fill:#22543D,stroke:#9AE6B4,color:#F0FFF4
-    end
-    
-    style Client fill:#1A365D,stroke:#4299E1,color:#EBF8FF
-    style Server fill:#1C4532,stroke:#68D391,color:#F0FFF4
-    
-    style ProblemDisplay fill:#2C5282,stroke:#90CDF4,color:#EBF8FF
-    style CodeEditor fill:#2C5282,stroke:#90CDF4,color:#EBF8FF
-    style TestResults fill:#2C5282,stroke:#90CDF4,color:#EBF8FF
-    style JavaScript fill:#2C5282,stroke:#90CDF4,color:#EBF8FF
-    style API fill:#2C5282,stroke:#90CDF4,color:#EBF8FF
-    style Chat fill:#2C5282,stroke:#90CDF4,color:#EBF8FF
-        
         AppPy --> GitHubUtils
         AppPy --> RunPy
         AppPy --> DbPy
@@ -56,12 +38,36 @@ flowchart TB
         RunPy --> Checker
     end
     
+    subgraph External["External Services"]
+        DifyAPI["Dify AI API"] 
+    end
+    
     GitHubAPI --> External
     Checker --> DifyAPI
     
-    subgraph External["External Resources"]
+    %% Styling
+    style Client fill:#1A365D,stroke:#4299E1,color:#EBF8FF
+    style Server fill:#1C4532,stroke:#68D391,color:#F0FFF4
+    style External fill:#3C366B,stroke:#B794F4,color:#FAF5FF
+    
+    style ProblemDisplay fill:#2C5282,stroke:#90CDF4,color:#EBF8FF
+    style CodeEditor fill:#2C5282,stroke:#90CDF4,color:#EBF8FF
+    style TestResults fill:#2C5282,stroke:#90CDF4,color:#EBF8FF
+    style JavaScript fill:#2C5282,stroke:#90CDF4,color:#EBF8FF
+    style API fill:#2C5282,stroke:#90CDF4,color:#EBF8FF
+    style Chat fill:#2C5282,stroke:#90CDF4,color:#EBF8FF
+    
+    style AppPy fill:#22543D,stroke:#9AE6B4,color:#F0FFF4
+    style GitHubUtils fill:#22543D,stroke:#9AE6B4,color:#F0FFF4
+    style RunPy fill:#22543D,stroke:#9AE6B4,color:#F0FFF4
+    style DbPy fill:#22543D,stroke:#9AE6B4,color:#F0FFF4
+    style GitHubAPI fill:#553C9A,stroke:#B794F4,color:#FAF5FF
+    style Checker fill:#22543D,stroke:#9AE6B4,color:#F0FFF4
+    style DifyAPI fill:#553C9A,stroke:#B794F4,color:#FAF5FF
+    
+    subgraph ExternalResources["External Resources"]
         GitHubRepo["GitHub Repo\nSyllabus"]
-        DifyAPI["Dify API\nChat AI"]
+        Dify["Dify AI\nCharacter"]
     end
     
     %% Using colors optimized for dark mode readability
