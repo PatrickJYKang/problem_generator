@@ -1,8 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?><testsuites><testsuite name="pytest" errors="1" failures="0" skipped="0" tests="1" time="1.240" timestamp="2025-04-05T17:43:27.409687-07:00" hostname="Mac.lan"><testcase classname="" name="tests.ui.test_ui_components" time="0.000"><error message="collection failure">ImportError while importing test module '/Users/patrickkang/Documents/code/problem_generator/tests/ui/test_ui_components.py'.
-Hint: make sure your test modules/packages have valid Python names.
-Traceback:
-/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/importlib/__init__.py:90: in import_module
-    return _bootstrap._gcd_import(name[level:], package, level)
-tests/ui/test_ui_components.py:3: in &lt;module&gt;
-    from selenium import webdriver
-E   ModuleNotFoundError: No module named 'selenium'</error></testcase></testsuite></testsuites>

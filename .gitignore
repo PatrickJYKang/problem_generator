@@ -1,7 +1,41 @@
+# Virtual environments
 venv/
+.venv/
+env/
+
+# Python cache files
 __pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Environment files
 .env
 *.log
-deploy_instructions.md
+
+# Data and database files
 data/*
-.pytest_cache
+*.db
+*.sqlite
+*.sqlite3
+
+# Test reports and results
+test_reports/
+*.html
+*.xml
+*.json
+report_*.json
+report_*.html
+report_*.xml
+
+# Local development files
+deploy_instructions.md
+
+# Editor/IDE specific files
+.idea/
+.vscode/
+*.swp
+*.swo
+.DS_Store
