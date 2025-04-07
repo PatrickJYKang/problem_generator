@@ -122,48 +122,68 @@
 
   // Add bot message to chat window with markdown support
   function addBotMessage(message) {
-  // Remove typing indicator if present
-  const typingIndicator = document.querySelector('.typing-indicator');
-  if (typingIndicator) {
-    typingIndicator.remove();
-  }
-
-  const messageElement = document.createElement('div');
-  messageElement.className = 'message bot-message';
-  
-  // Use marked.js to render markdown
-  try {
-    // Set options for marked to enable proper code highlighting and safety
-    marked.setOptions({
-      breaks: true,        // Convert line breaks to <br>
-      gfm: true,           // GitHub Flavored Markdown
-      headerIds: false,    // Don't add IDs to headers (for security)
-      mangle: false,       // Don't mangle email addresses
-      sanitize: true,      // Sanitize the output (prevent XSS)
-    });
+    // Remove any typing indicators
+    const typingIndicators = chatMessages.querySelectorAll('.typing-indicator');
+    typingIndicators.forEach(indicator => indicator.remove());
     
-    // Render markdown to HTML
-    messageElement.innerHTML = marked.parse(message);
+    const messageElement = document.createElement('div');
+    messageElement.className = 'message bot-message';
     
-    // Add special handling for code blocks without copy buttons
-    setTimeout(() => {
-      // Use setTimeout to ensure the DOM is fully rendered
-      const codeBlocks = messageElement.querySelectorAll('pre code');
-      codeBlocks.forEach(codeBlock => {
-        // Apply any custom styling or formatting to code blocks
-        // No copy button since it wasn't working properly
-        codeBlock.classList.add('highlighted-code');
+    // Process markdown in the message
+    const formattedMessage = marked.parse(message);
+    messageElement.innerHTML = formattedMessage;
+    
+    // Render LaTeX formulas in the message
+    try {
+      if (typeof renderMathInElement === 'function') {
+        renderMathInElement(messageElement, {
+          delimiters: [
+            {left: '$$', right: '$$', display: true},
+            {left: '$', right: '$', display: false},
+            {left: '\\(', right: '\\)', display: false},
+            {left: '\\[', right: '\\]', display: true}
+          ],
+          throwOnError: false
+        });
+      }
+    } catch (e) {
+      console.error('Error rendering LaTeX in chat message:', e);
+    }
+    
+    // Add code highlighting to any code blocks
+    const codeBlocks = messageElement.querySelectorAll('pre code');
+    if (codeBlocks.length) {
+      codeBlocks.forEach(block => {
+        // Add a copy button to code blocks
+        const codeContainer = block.parentNode;
+        const copyButton = document.createElement('button');
+        copyButton.className = 'copy-code-btn';
+        copyButton.textContent = 'Copy';
+        copyButton.addEventListener('click', function() {
+          const code = block.textContent;
+          navigator.clipboard.writeText(code).then(() => {
+            // Visual feedback
+            copyButton.textContent = 'Copied!';
+            setTimeout(() => {
+              copyButton.textContent = 'Copy';
+            }, 2000);
+          });
+        });
+        
+        // Add copy button to pre element
+        codeContainer.style.position = 'relative';
+        codeContainer.appendChild(copyButton);
+        
+        // Apply syntax highlighting (if hljs is available)
+        if (window.hljs) {
+          hljs.highlightElement(block);
+        }
       });
-    }, 0);
-  } catch (error) {
-    console.error('Error rendering markdown:', error);
-    // Fallback to plain text if markdown parsing fails
-    messageElement.textContent = message;
+    }
+    
+    chatMessages.appendChild(messageElement);
+    scrollToBottom();
   }
-  
-  chatMessages.appendChild(messageElement);
-  scrollToBottom();
-}
 
   // Helper function to scroll chat to bottom
   function scrollToBottom() {

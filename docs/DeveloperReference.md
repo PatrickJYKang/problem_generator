@@ -241,6 +241,8 @@ Core JavaScript functionality for the application.
 - `loadLessons()`: Populates the lesson dropdown from the GitHub API.
 - `setupEventListeners()`: Sets up all UI interaction handlers.
 - `toggleTheme()`: Manages theme switching between light and dark modes.
+- `openHelpModal()`: Displays the help guide with LaTeX support.
+- `renderMarkdown()`: Renders markdown content with HTML.
 
 #### `chatbot.js`
 JavaScript for the AI assistant functionality.
@@ -249,7 +251,7 @@ JavaScript for the AI assistant functionality.
 - `toggleChatWindow()`: Controls chat UI visibility.
 - `handleChatSubmit()`: Processes user messages.
 - `sendChatRequest()`: Communicates with the backend chatbot endpoint.
-- `addBotMessage()`: Renders AI responses with markdown support.
+- `addBotMessage()`: Renders AI responses with markdown and LaTeX support.
 
 ### CSS Styles
 

@@ -19,6 +19,10 @@ const historyBtn     = document.getElementById("history-btn");
 const historyModal   = document.getElementById("history-modal");
 const historyList    = document.getElementById("history-list");
 const closeModalBtn  = document.getElementById("close-modal");
+const helpBtn        = document.getElementById("help-btn");
+const helpModal      = document.getElementById("help-modal");
+const helpContent    = document.getElementById("help-content");
+const closeHelpBtn   = document.getElementById("close-help-modal");
 const chatButton     = document.getElementById("chat-button");
 const chatToggleBtn  = document.getElementById("chat-toggle-btn");
 const chatWindow     = document.getElementById("chat-window");
@@ -29,6 +33,13 @@ let currentProblemId = null;
 
 // CodeMirror editor setup
 let codeEditor;
+
+// Function to render markdown to HTML (simple version without LaTeX)
+function renderMarkdown(markdownContent, targetElement) {
+  // Convert markdown to HTML
+  const htmlContent = marked.parse(markdownContent);
+  targetElement.innerHTML = htmlContent;
+}
 
 // Sync the programming language with the selected course
 function syncLanguageWithCourse(course) {
@@ -94,8 +105,23 @@ function toggleTheme() {
   }
 }
 
-// Initialize the editor when the DOM is loaded
+// Initialize the application when the document is ready
 document.addEventListener("DOMContentLoaded", function() {
+  // Initialize KaTeX auto-render functionality
+  if (typeof renderMathInElement === 'function') {
+    console.log('Initializing KaTeX auto-render');
+    renderMathInElement(document.body, {
+      delimiters: [
+        {left: '$$', right: '$$', display: true},
+        {left: '$', right: '$', display: false},
+        {left: '\\(', right: '\\)', display: false},
+        {left: '\\[', right: '\\]', display: true}
+      ],
+      throwOnError: false
+    });
+  } else {
+    console.warn('KaTeX auto-render not available');
+  }
   // Get current theme directly from localStorage which is more reliable than data-theme attribute
   const storedTheme = localStorage.getItem('theme');
   const currentTheme = storedTheme || 'light';
@@ -166,6 +192,52 @@ document.addEventListener("DOMContentLoaded", function() {
   // Enable history button if problems exist
   checkForProblems();
 });
+
+// Help Modal Functions
+function openHelpModal() {
+  // Display the modal
+  helpModal.style.display = "block";
+  
+  // Load the help markdown content
+  fetch("/static/help.md")
+    .then(response => {
+      if (!response.ok) {
+        throw new Error("Failed to load help content");
+      }
+      return response.text();
+    })
+    .then(markdown => {
+      // Use simple markdown rendering
+      renderMarkdown(markdown, helpContent);
+      
+      // Simply use the global auto-render from KaTeX if available
+      if (window.renderMathInElement && typeof renderMathInElement === 'function') {
+        setTimeout(() => {
+          try {
+            renderMathInElement(helpContent, {
+              delimiters: [
+                {left: '$$', right: '$$', display: true},
+                {left: '$', right: '$', display: false},
+                {left: '\\(', right: '\\)', display: false},
+                {left: '\\[', right: '\\]', display: true}
+              ],
+              throwOnError: false
+            });
+          } catch (e) {
+            console.error('Error rendering LaTeX in help content:', e);
+          }
+        }, 100); // Small delay to ensure DOM is updated
+      }
+    })
+    .catch(error => {
+      console.error("Error loading help content:", error);
+      helpContent.innerHTML = `<p class="error">Error loading help content: ${error.message}</p>`;
+    });
+}
+
+function closeHelpModal() {
+  helpModal.style.display = "none";
+}
 
 // History Modal Functions
 function openHistoryModal() {
@@ -329,9 +401,30 @@ function loadProblem(problemId) {
       
       const problem = data.problem;
       
-      // Update UI with problem details
+      // Display the problem
       titleHeader.textContent = problem.title;
-      resultDiv.innerHTML = marked.parse(problem.problem_text);
+      
+      // Render markdown to HTML
+      renderMarkdown(problem.problem_text, resultDiv);
+      
+      // Render LaTeX formulas if available
+      if (window.renderMathInElement && typeof renderMathInElement === 'function') {
+        setTimeout(() => {
+          try {
+            renderMathInElement(resultDiv, {
+              delimiters: [
+                {left: '$$', right: '$$', display: true},
+                {left: '$', right: '$', display: false},
+                {left: '\\(', right: '\\)', display: false},
+                {left: '\\[', right: '\\]', display: true}
+              ],
+              throwOnError: false
+            });
+          } catch (e) {
+            console.error('Error rendering LaTeX in problem:', e);
+          }
+        }, 100); // Small delay to ensure DOM is updated
+      }
       
       // Store problem ID and testcases
       currentProblemId = problem.id;
@@ -602,10 +695,19 @@ function setupEventListeners() {
     closeModalBtn.addEventListener("click", closeHistoryModal);
   }
   
-  // Close modal when clicking outside of it
+  // Help button
+  helpBtn.addEventListener("click", openHelpModal);
+  
+  // Close help modal button
+  closeHelpBtn.addEventListener("click", closeHelpModal);
+  
+  // Close modals when clicking outside of them
   window.addEventListener("click", (event) => {
     if (event.target === historyModal) {
       closeHistoryModal();
+    }
+    if (event.target === helpModal) {
+      closeHelpModal();
     }
   });
   

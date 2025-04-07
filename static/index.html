@@ -21,6 +21,24 @@
 
   <!-- Marked.js for Markdown rendering -->
   <script src="https://cdn.jsdelivr.net/npm/marked@5.0.2/marked.min.js"></script>
+  
+  <!-- KaTeX for LaTeX math rendering -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js" onload="renderKatexOnLoad()"></script>
+  <script>
+    function renderKatexOnLoad() {
+      renderMathInElement(document.body, {
+        delimiters: [
+          {left: '$$', right: '$$', display: true},
+          {left: '$', right: '$', display: false},
+          {left: '\\(', right: '\\)', display: false},
+          {left: '\\[', right: '\\]', display: true}
+        ],
+        throwOnError: false
+      });
+    }
+  </script>
 </head>
 <body>
   <!-- Main Header -->
@@ -35,6 +53,9 @@
         </button>
         <button id="chat-toggle-btn" title="Toggle AI Assistant">
           <span class="header-icon">💬</span> Assistant
+        </button>
+        <button id="help-btn" title="View Help Guide">
+          <span class="header-icon">❓</span> Help
         </button>
         <button id="theme-toggle-btn" title="Toggle Dark/Light Mode">
           <span id="theme-icon">🌙</span>
@@ -155,8 +176,43 @@
     </div>
   </div>
 
+  <!-- Help Modal -->
+  <div id="help-modal" class="modal" style="display: none;">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>Help Guide</h2>
+        <span id="close-help-modal" class="close-button">&times;</span>
+      </div>
+      <div id="help-content" class="modal-body">
+        <!-- Help content will be loaded from markdown -->
+        <div class="loading-spinner">Loading help guide...</div>
+      </div>
+    </div>
+  </div>
+
   <!-- Include the external JavaScript file -->  
   <script src="/static/script.js"></script>
   <script src="/static/chatbot.js"></script>
+  
+  <!-- Initialize KaTeX rendering -->
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      // Initialize KaTeX rendering for the whole document
+      if (typeof renderMathInElement === 'function') {
+        console.log('Initializing global KaTeX auto-render');
+        renderMathInElement(document.body, {
+          delimiters: [
+            {left: '$$', right: '$$', display: true},
+            {left: '$', right: '$', display: false},
+            {left: '\\(', right: '\\)', display: false},
+            {left: '\\[', right: '\\]', display: true}
+          ],
+          throwOnError: false
+        });
+      } else {
+        console.warn('KaTeX auto-render not available');
+      }
+    });
+  </script>
 </body>
 </html>

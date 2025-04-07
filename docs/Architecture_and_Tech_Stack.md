@@ -85,7 +85,8 @@ flowchart TB
 ### Frontend
 - **HTML/CSS/JavaScript**: Core web technologies for UI and functionality
 - **CodeMirror**: Advanced code editor with syntax highlighting for multiple languages
-- **Markdown-it**: For rendering problem descriptions in markdown format
+- **Marked.js**: For rendering markdown content in problems and help documentation
+- **KaTeX**: For rendering LaTeX mathematical formulas in problem descriptions and AI responses
 - **Fetch API**: For making AJAX requests to the backend
 
 ### Backend

@@ -2,6 +2,13 @@
 
 All notable changes to the Problem Generator will be documented in this file.
 
+## [indev 0.1.1] - 2025-04-06
+
+### Added
+- Help button and modal with concise technical documentation
+- KaTeX integration for LaTeX math formula rendering in problems and AI assistant responses
+- Improved markdown rendering across the application
+
 ## [indev 0.1] - 2025-04-04
 
 ### Added
