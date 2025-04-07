@@ -1,7 +1,7 @@
 /* GitHub Badge */
 .github-badge {
   position: fixed;
-  bottom: 10px;
+  top: 10px;
   left: 10px;
   z-index: 100;
   background-color: var(--bg-color);
@@ -204,6 +204,8 @@
   --output-bg: #f8f8f8;
   --input-container-bg: #f7f7f7; /* Original light color for input container */
   --input-textarea-bg: #ffffff; /* Original color for textarea */
+  --link-color: #0066cc; /* Link color for light mode */
+  --link-hover-color: #004499; /* Link hover color for light mode */
   --module-bg: #ffffff; /* Module background color */
   --module-header-bg: #f2f2f2; /* Module header background */
   --module-border: #ddd; /* Module border color */
@@ -228,18 +230,20 @@
   --header-bg: #2d2d2d;
   --main-header-bg: #252525; /* Main header background in dark mode */
   --main-header-text: #f0f0f0; /* Main header text in dark mode */
-  --button-bg: #444444;
-  --button-hover-bg: #555555;
-  --button-text: #f0f0f0;
-  --button-text-color: #f0f0f0; /* Button text color in dark mode */
+  --button-bg: #383838;
+  --button-text-color: #e0e0e0;
+  --button-hover-bg: #444444;
+  --button-text: #e0e0e0;
   --input-bg: #2d2d2d;
   --code-bg: #252525;
+  --output-bg: #252525;
+  --input-container-bg: #1e1e1e;
+  --input-textarea-bg: #252525;
+  --link-color: #66b3ff; /* Lighter blue for dark mode links */
+  --link-hover-color: #99ccff; /* Even lighter blue for hover in dark mode */
   --module-bg: #2a2a2a; /* Module background in dark mode */
   --module-header-bg: #333333; /* Module header background in dark mode */
   --module-border: #444; /* Module border color in dark mode */
-  --output-bg: #252525;
-  --input-container-bg: #2a2a2a; /* Dark gray for input container */
-  --input-textarea-bg: #333333; /* Slightly lighter gray for textarea */
   --scrollbar-track: #2a2a2a;
   --scrollbar-thumb: #555555;
   --scrollbar-thumb-hover: #666666;
@@ -258,7 +262,18 @@ body, html {
   transition: background-color 0.3s ease, color 0.3s ease;
   font-size: var(--font-size-base); /* Using the base font size variable */
 }
-  
+
+/* Global link styling */
+a {
+  color: var(--link-color);
+  text-decoration: underline;
+  transition: color 0.2s ease;
+}
+
+a:hover {
+  color: var(--link-hover-color);
+}
+
   /* Main Header styles */
   .main-header {
     background-color: var(--main-header-bg);
@@ -618,4 +633,76 @@ body, html {
   body.chat-open .container {
     transform: translateX(0px);
     opacity: 0.95;
+  }
+  
+  /* Page Footer */
+  .page-footer {
+    background-color: var(--main-header-bg);
+    color: var(--main-header-text);
+    padding: 0.5rem;
+    text-align: center;
+    font-size: 0.85rem;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    width: 100%;
+    border-top: 1px solid var(--border-color);
+    z-index: 90;
+  }
+  
+  .footer-content {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 1.5rem;
+  }
+  
+  .page-footer p {
+    margin: 0;
+  }
+  
+  /* Footer links - keep white for better contrast on dark footer */
+  .page-footer a {
+    color: var(--main-header-text);
+    text-decoration: underline;
+    transition: opacity 0.2s;
+  }
+  
+  .page-footer a:hover {
+    opacity: 0.8;
+  }
+  
+  /* Adjust container height to fit within viewport with fixed footer */
+  .container {
+    height: calc(100vh - 110px); /* Subtracting header height + footer height + some padding */
+    max-height: calc(100vh - 110px);
+    overflow: hidden;
+  }
+  
+  /* Allow the left side to scroll if needed */
+  .markdown {
+    overflow-y: auto;
+    max-height: 100%;
+  }
+  
+  /* Right side code editor container adjustments */
+  .code-env {
+    max-height: 100%;
+    overflow: hidden;
+  }
+  
+  /* Editor and input container height adjustments */
+  .editor-container {
+    max-height: 65%;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .bottom-container {
+    max-height: 35%;
+    overflow: hidden;
   }
