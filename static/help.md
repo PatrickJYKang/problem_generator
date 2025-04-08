@@ -4,6 +4,7 @@
 3. Write your solution in the code editor
 4. Test with "Run Code"
 5. Verify with "Check Answer"
+6. Check code style with "Check Style"
 
 ## Key Features
 
@@ -19,10 +20,6 @@
 - **Input**: Input data for your program
 - **Console**: View output and errors
 - **Reset**: Clear the console to input again
-
-**Problem Solving**
-- **Check Answer**: Validate against test cases
-- **Return**: Go back to lesson selection
 
 ## Common Issues
 
@@ -48,6 +45,13 @@
 **Error Messages**
 - Timeout: Your code took too long to execute
 - Compilation error: Syntax issues in your code
+
+**Style Errors**
+- Style errors are detected by a linter, which follows precise rules for each language
+- Style errors are not critical for code execution, but they can help you write better code
+- The Format Code button in C++ automatically formats your code to follow the style rules with `clang-format`
+    - A known issue is that `clang-format` formats your code with two spaces for indentation. We are working on a fix.
+    - In any case, the code that `clang-format` formats is not saved, and your code reverts to the original code after you return to the problem page. We are also working on a fix for this.
 
 All code runs securely in your browser. **Your work and Assistant chats are not automatically saved**.
 

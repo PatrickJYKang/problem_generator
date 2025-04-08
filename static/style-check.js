@@ -9,33 +9,43 @@ const styleCheck = (function() {
   
   // Initialize the module
   function init() {
-    // Check if the button already exists to prevent duplicates
-    if (!document.getElementById('style-check-btn')) {
-      // Create and add the style check button
-      styleCheckButton = document.createElement('button');
-      styleCheckButton.id = 'style-check-btn';
-      styleCheckButton.className = 'btn btn-primary';
-      styleCheckButton.textContent = 'Check Style';
-      styleCheckButton.title = 'Check code style with a linter';
-      
-      // Add the button near the check answer button, but not inside the style check container
-      const styleCheckContainer = document.querySelector('.style-check-container');
-      if (!styleCheckContainer) {
-        const actionButtonsDiv = document.querySelector('.action-buttons');
-        if (actionButtonsDiv) {
-          actionButtonsDiv.appendChild(styleCheckButton);
-        } else {
-          const checkAnswerBtn = document.getElementById('check-answer-btn');
-          if (checkAnswerBtn && checkAnswerBtn.parentNode) {
-            checkAnswerBtn.parentNode.insertBefore(styleCheckButton, checkAnswerBtn.nextSibling);
-          }
-        }
-      }
-      
-      // Add event listener
-      styleCheckButton.addEventListener('click', runStyleCheck);
-      console.log('Style check button added to DOM');
+    // Hook up observers for return button
+    const retryBtn = document.getElementById('retry-btn');
+    if (retryBtn) {
+      retryBtn.addEventListener('click', removeStyleCheckButton);
     }
+    console.log('Style check module initialized');
+  }
+  
+  // Simple function to add the style check button
+  function addStyleCheckButton() {
+    // Don't add duplicate buttons
+    if (document.getElementById('style-check-btn')) {
+      return;
+    }
+    
+    // Check for the key element that tells us we're on a problem page
+    const checkAnswerBtn = document.getElementById('check-answer-btn');
+    if (!checkAnswerBtn || checkAnswerBtn.style.display === 'none') {
+      // Not on an active problem page
+      return;
+    }
+    
+    console.log('Adding style check button');
+    
+    // Create the style check button
+    styleCheckButton = document.createElement('button');
+    styleCheckButton.id = 'style-check-btn';
+    styleCheckButton.className = 'btn btn-primary';
+    styleCheckButton.textContent = 'Check Style';
+    styleCheckButton.title = 'Check code style with a linter';
+    
+    // Find where to add the button (right after the check answer button)
+    checkAnswerBtn.parentNode.insertBefore(styleCheckButton, checkAnswerBtn.nextSibling);
+    
+    // Add event listener
+    styleCheckButton.addEventListener('click', runStyleCheck);
+    console.log('Style check button added to DOM');
   }
   
   // Run the style check
@@ -528,9 +538,20 @@ const styleCheck = (function() {
     });
   }
   
+    // Remove the style check button from the DOM
+  function removeStyleCheckButton() {
+    const styleCheckBtn = document.getElementById('style-check-btn');
+    if (styleCheckBtn) {
+      console.log('Removing style check button');
+      styleCheckBtn.remove();
+    }
+  }
+  
   // Public API
   return {
     init: init,
+    addStyleCheckButton: addStyleCheckButton,
+    removeStyleCheckButton: removeStyleCheckButton,
     runStyleCheck: runStyleCheck,
     restoreOriginalProblem: restoreOriginalProblem,
     formatCode: formatCode
@@ -539,9 +560,74 @@ const styleCheck = (function() {
 
 // Initialize the module when the document is ready
 document.addEventListener('DOMContentLoaded', function() {
-  // Initialize after a short delay to ensure other elements are loaded
+  // Initial initialization after a short delay
   setTimeout(styleCheck.init, 500);
   
-  // Add console log for debugging
+  // Set up a mutation observer to detect changes to the result div
+  const resultDiv = document.getElementById('result');
+  if (resultDiv) {
+    // Watch for changes to the result div (problem content)
+    const observer = new MutationObserver(function(mutations) {
+      // Check if we're back to the default state
+      if (resultDiv.textContent === 'Your generated problem will appear here.') {
+        // We've returned to the generate page
+        console.log('Returned to generate page, removing style button');
+        styleCheck.removeStyleCheckButton();
+      } 
+      // Check if a problem is being displayed
+      else if (resultDiv.textContent && 
+               resultDiv.textContent !== 'Your generated problem will appear here.') {
+        console.log('Problem content detected, checking for style button');
+        // Wait a moment for other elements to be updated
+        setTimeout(styleCheck.addStyleCheckButton, 300);
+      }
+    });
+    
+    // Observe changes to the result div
+    observer.observe(resultDiv, { childList: true, subtree: true, characterData: true });
+  }
+  
+  // Also watch for the selection module visibility changes
+  const selectionModule = document.getElementById('selection-module');
+  if (selectionModule) {
+    const moduleObserver = new MutationObserver(function(mutations) {
+      mutations.forEach(function(mutation) {
+        if (mutation.type === 'attributes' && mutation.attributeName === 'style') {
+          // If the selection module is shown again, we're back on the generate page
+          if (selectionModule.style.display === '' || 
+              selectionModule.style.display === 'block') {
+            console.log('Selection module shown, removing style check button');
+            styleCheck.removeStyleCheckButton();
+          } 
+          // If it's hidden, we're on a problem page
+          else if (selectionModule.style.display === 'none') {
+            console.log('Selection module hidden, adding style check button');
+            setTimeout(styleCheck.addStyleCheckButton, 300);
+          }
+        }
+      });
+    });
+    
+    // Observe style changes on the selection module
+    moduleObserver.observe(selectionModule, { attributes: true });
+  }
+  
+  // Listen for a custom event that might be triggered when a problem is loaded
+  document.addEventListener('problemGenerated', function() {
+    console.log('Problem generated event detected');
+    setTimeout(styleCheck.addStyleCheckButton, 300);
+  });
+  
+  // Check every second for a while after the page loads
+  // This is a fallback in case the other methods don't trigger
+  let checkCount = 0;
+  const intervalId = setInterval(function() {
+    styleCheck.addStyleCheckButton();
+    checkCount++;
+    if (checkCount > 10) { // Check for 10 seconds
+      clearInterval(intervalId);
+    }
+  }, 1000);
+  
   console.log('Style check module initialized');
 });

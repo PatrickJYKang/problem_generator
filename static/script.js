@@ -502,6 +502,14 @@ function loadProblem(problemId) {
       // Hide the selection module when problem is loaded
       const selectionModule = document.getElementById('selection-module');
       if (selectionModule) selectionModule.classList.add('hidden');
+      
+      // Add the style check button (with a slight delay to ensure DOM is updated)
+      if (window.styleCheck && typeof styleCheck.addStyleCheckButton === 'function') {
+        setTimeout(() => {
+          styleCheck.addStyleCheckButton();
+          console.log('Added style check button after problem load');
+        }, 500);
+      }
     })
     .catch(err => {
       console.error("Error loading problem:", err);
