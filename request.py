@@ -156,7 +156,10 @@ if __name__ == "__main__":
         programming_language = sys.argv[3]
     else:
         # Set default language based on course
-        if "python" in course.lower():
+        if course == "csa":
+            # AP Computer Science A uses Java
+            programming_language = "java"
+        elif "python" in course.lower():
             programming_language = "python"
         elif "java" in course.lower():
             programming_language = "java"

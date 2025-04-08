@@ -285,6 +285,24 @@
       syllabus = syllabus.substring(0, 50000) + '\n... (truncated for size)';
     }
     
+    // Determine the appropriate language based on the course
+    let language;
+    if (course === 'csa') {
+      // AP Computer Science A uses Java
+      language = 'java';
+    } else if (course.toLowerCase().includes('python')) {
+      language = 'python';
+    } else if (course.toLowerCase().includes('java')) {
+      language = 'java';
+    } else if (course.toLowerCase().includes('cpp') || course.toLowerCase().includes('c++')) {
+      language = 'cpp';
+    } else {
+      // Default to Python if course doesn't match any known language
+      language = 'python';
+    }
+    
+    console.log(`Determined language for course ${course}: ${language}`);
+    
     // Create request data - using same format that works with generate endpoint
     const requestData = {
       query,
@@ -293,6 +311,7 @@
       problem,
       code,
       syllabus,
+      language, // Add the language parameter explicitly
       conversation_id: conversationId,
       user: 'end_user' // Required parameter
     };

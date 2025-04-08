@@ -33,3 +33,6 @@ deploy_instructions.md
 *.swp
 *.swo
 .DS_Store
+
+split_csa.py
+syllabi/csa

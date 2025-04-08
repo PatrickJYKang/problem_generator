@@ -427,10 +427,10 @@ flowchart TD
     J --> L
     K --> L
     
-    style ProblemGeneration fill:#f0f0ff,stroke:#333,stroke-width:1px
-    style CodeExecution fill:#fff0f0,stroke:#333,stroke-width:1px
-    style ProblemManagement fill:#f0fff0,stroke:#333,stroke-width:1px
-    style AIAssistant fill:#fffff0,stroke:#333,stroke-width:1px
+    style ProblemGeneration fill:#1A365D,stroke:#4299E1,stroke-width:1px
+    style CodeExecution fill:#742A2A,stroke:#FC8181,stroke-width:1px
+    style ProblemManagement fill:#22543D,stroke:#68D391,stroke-width:1px
+    style AIAssistant fill:#744210,stroke:#F6E05E,stroke-width:1px
 ```
 
 ### Problem Generation

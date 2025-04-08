@@ -22,6 +22,8 @@ const closeModalBtn  = document.getElementById("close-modal");
 const helpBtn        = document.getElementById("help-btn");
 const helpModal      = document.getElementById("help-modal");
 const helpContent    = document.getElementById("help-content");
+const homeBtn        = document.getElementById("home-btn");
+const logoLink       = document.getElementById("logo-link");
 const closeHelpBtn   = document.getElementById("close-help-modal");
 const chatButton     = document.getElementById("chat-button");
 const chatToggleBtn  = document.getElementById("chat-toggle-btn");
@@ -47,7 +49,8 @@ function syncLanguageWithCourse(course) {
   const courseToLanguage = {
     "learnpython.org": "python",
     "learn-cpp.org": "cpp",
-    "learnjavaonline.org": "java"
+    "learnjavaonline.org": "java",
+    "csa": "java"  // AP Computer Science A uses Java
   };
   
   // Get the appropriate language for the course
@@ -598,13 +601,47 @@ function loadLessons(skipClearCodeCheck = true) {
       lessonSelect.appendChild(defaultOption);
       
       // Add optgroups for each category in the correct order
-      const categories = ["basics", "advanced"];
+      let categories = ["basics", "advanced"];
+      
+      // If course is AP Computer Science A, use the unit structure instead
+      if (course === "csa") {
+        categories = [
+          "unit1-primitive-types",
+          "unit2-using-objects",
+          "unit3-boolean-expressions-conditionals",
+          "unit4-iteration",
+          "unit5-writing-classes",
+          "unit6-array",
+          "unit7-arraylist",
+          "unit8-2d-array",
+          "unit9-inheritance",
+          "unit10-recursion"
+        ];
+      }
       
       categories.forEach(category => {
         if (data[category]) {
           // Create an optgroup for this category
           const group = document.createElement("optgroup");
-          group.label = category.charAt(0).toUpperCase() + category.slice(1); // Capitalize
+          
+          // Format the label based on the category
+          let label = category;
+          if (course === "csa" && category.startsWith("unit")) {
+            // Format CSA unit labels as "Unit X: Description"
+            const unitMatch = category.match(/unit(\d+)-(.+)/);
+            if (unitMatch) {
+              const unitNum = unitMatch[1];
+              const unitDesc = unitMatch[2].split('-').map(word => 
+                word.charAt(0).toUpperCase() + word.slice(1)
+              ).join(' ');
+              label = `Unit ${unitNum}: ${unitDesc}`;
+            }
+          } else {
+            // Standard capitalization for other categories
+            label = category.charAt(0).toUpperCase() + category.slice(1);
+          }
+          
+          group.label = label;
           
           // For ordered categories, we need a special approach
           // Since Object.keys() and for...in loops don't guarantee order in JS objects
@@ -719,6 +756,50 @@ function setupEventListeners() {
     }
   });
   
+  // Home button and logo link - same functionality as retry button
+  const handleHomeAction = () => {
+    // Check if code editor has content before returning
+    if (codeEditor && codeEditor.getValue().trim() !== "") {
+      if (!confirm("Returning to the lesson selection will clear your code. Are you sure you want to continue?")) {
+        return; // Don't proceed if user cancels
+      }
+      // Clear the code editor
+      codeEditor.setValue("");
+      
+      // Also reset chat conversation
+      resetChatConversation();
+    }
+    
+    checkAnswerBtn.style.display = "none";
+    retryBtn.style.display = "none";
+    resultsDiv.innerHTML = "";  // Clear test case results
+
+    // Hide console if visible and show input container
+    consoleDiv.style.display = "none";
+    inputContainer.style.display = "block";
+
+    // Reset UI elements back to input stage
+    titleHeader.textContent = "Problem Generator"; // Reset title
+    resultDiv.innerHTML = `<p>Your generated problem will appear here.</p>`;
+    generateBtn.style.display = "inline-block";
+    
+    // Show the selection module again
+    const selectionModule = document.getElementById('selection-module');
+    if (selectionModule) selectionModule.classList.remove('hidden');
+  };
+  
+  // Add event listeners to home button and logo
+  if (homeBtn) {
+    homeBtn.addEventListener("click", handleHomeAction);
+  }
+  
+  if (logoLink) {
+    logoLink.addEventListener("click", (e) => {
+      e.preventDefault(); // Prevent default anchor behavior
+      handleHomeAction();
+    });
+  }
+  
   // Handle language change
   languageSelect.addEventListener("change", () => {
     const language = languageSelect.value;
@@ -754,7 +835,10 @@ function setupEventListeners() {
     
     // Set the programming language based on the course
     let language;
-    if (course.toLowerCase().includes('python')) {
+    if (course === 'csa') {
+      // AP Computer Science A uses Java
+      language = 'java';
+    } else if (course.toLowerCase().includes('python')) {
       language = 'python';
     } else if (course.toLowerCase().includes('java')) {
       language = 'java';

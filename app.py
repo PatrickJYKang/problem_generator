@@ -24,16 +24,38 @@ def serve_index():
 @app.route('/syllabi/<path:filename>')
 def serve_syllabi(filename):
     """ 
-    Fetches syllabus files from GitHub repository.
-    This endpoint now acts as a proxy to GitHub content.
+    Fetches syllabus files from GitHub repository or local filesystem.
+    This endpoint now acts as a proxy to GitHub content or serves local files for CSA.
     """
     try:
-        # Create a GitHub fetcher
-        github_fetcher = GitHubFetcher()
-        
         # Parse the requested path
         path_parts = filename.split('/')
         language = path_parts[0] if len(path_parts) > 0 else 'learnpython.org'
+        
+        # Special handling for AP CSA course - read from local filesystem
+        if language == "csa":
+            # Build local filesystem path
+            local_path = os.path.join('syllabi', filename)
+            
+            # Check if the file exists
+            if not os.path.exists(local_path):
+                print(f"CSA file not found at: {local_path}")
+                return jsonify({"error": f"File {filename} not found"}), 404
+                
+            # Serve the file based on its extension
+            if filename.endswith('.json'):
+                with open(local_path, 'r') as f:
+                    content = json.load(f)
+                return jsonify(content)
+            elif filename.endswith('.md'):
+                with open(local_path, 'r') as f:
+                    content = f.read()
+                return content, 200, {'Content-Type': 'text/markdown'}
+            else:
+                return send_from_directory('syllabi', filename)
+        
+        # For non-CSA courses, use GitHub fetcher
+        github_fetcher = GitHubFetcher()
         
         # Handle index.json separately as it's needed for lesson navigation
         if path_parts[-1] == 'index.json':
@@ -71,7 +93,7 @@ def serve_syllabi(filename):
 @app.route('/github/lessons', methods=['GET'])
 def get_lessons():
     """ 
-    Gets the list of available lessons from GitHub repository.
+    Gets the list of available lessons from GitHub repository or local filesystem.
     This helps the frontend to populate the lesson dropdown.
     """
     try:
@@ -79,9 +101,27 @@ def get_lessons():
         lang = request.args.get('lang', 'en')
         
         print(f"Request for lessons: language={language}, lang={lang}")
-        github_fetcher = GitHubFetcher()
         
-        # The fetcher already has fallback logic if GitHub API fails
+        # Special handling for AP CSA course - read from local filesystem
+        if language == "csa":
+            # Path to local csa index.json
+            csa_index_path = os.path.join('syllabi', 'csa', 'index.json')
+            try:
+                if os.path.exists(csa_index_path):
+                    print(f"Loading CSA lessons from local file: {csa_index_path}")
+                    with open(csa_index_path, 'r') as f:
+                        lessons = json.load(f)
+                    print(f"Returning CSA lessons with units: {list(lessons.keys())}")
+                    return jsonify(lessons)
+                else:
+                    print(f"CSA index file not found at: {csa_index_path}")
+                    return jsonify({"error": "CSA course content not found"}), 404
+            except Exception as e:
+                print(f"Error reading CSA index file: {str(e)}")
+                return jsonify({"error": f"Failed to read CSA index: {str(e)}"}), 500
+        
+        # For other courses, use GitHub fetcher
+        github_fetcher = GitHubFetcher()
         lessons = github_fetcher.get_lessons(language, lang)
         
         print(f"Returning lessons with categories: {list(lessons.keys())}")

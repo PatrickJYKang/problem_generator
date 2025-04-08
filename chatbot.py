@@ -93,6 +93,20 @@ def handle_chatbot_request():
         code = data.get('code', '')
         syllabus = data.get('syllabus', '')
         conversation_id = data.get('conversation_id', None)
+        
+        # Determine the language based on the course
+        language = data.get('language', '')
+        if not language:
+            if course == "csa":
+                language = "java"
+            elif "python" in course.lower():
+                language = "python"
+            elif "java" in course.lower():
+                language = "java"
+            elif "cpp" in course.lower() or "c++" in course.lower():
+                language = "cpp"
+            else:
+                language = "python"  # Default to Python
 
         # Initialize temporary file cleanup list
         file_paths = []
@@ -101,6 +115,7 @@ def handle_chatbot_request():
         payload = {
             'inputs': {
                 'Course': course,  # Capitalized as required
+                'Language': language,  # Add the language to the inputs
                 'Lesson': lesson,  # Capitalized as required
             },
             'query': user_query,

@@ -193,7 +193,7 @@
   --text-color: #333333;
   --border-color: #cccccc;
   --header-bg: #f0f0f0;
-  --main-header-bg: #3a3a3a; /* Main header background */
+  --main-header-bg: #252525; /* Main header background */
   --main-header-text: #ffffff; /* Main header text */
   --button-bg: #f0f0f0; /* Light colored buttons in light mode */
   --button-text-color: #333333; /* Button text color in light mode */
@@ -229,7 +229,7 @@
   --border-color: #555555;
   --header-bg: #2d2d2d;
   --main-header-bg: #252525; /* Main header background in dark mode */
-  --main-header-text: #f0f0f0; /* Main header text in dark mode */
+  --main-header-text: #ffffff; /* Main header text in dark mode */
   --button-bg: #383838;
   --button-text-color: #e0e0e0;
   --button-hover-bg: #444444;
@@ -284,11 +284,19 @@ a:hover {
     top: 0;
     z-index: 100;
   }
+
+  .header-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    max-width: 1200px;
+    margin: 0 auto;
+  }
   
   .version-tag {
     font-size: 0.6em;
-    background-color: var(--accent-color);
-    color: white;
+    background-color: rgba(255, 255, 255, 0.2);
+    color: #fff;
     padding: 0.2rem 0.5rem;
     border-radius: 12px;
     margin-left: 8px;
@@ -297,28 +305,35 @@ a:hover {
     font-weight: normal;
   }
   
-  .header-container {
+  .logo {
     display: flex;
-    justify-content: space-between;
     align-items: center;
-    max-width: 1400px;
-    margin: 0 auto;
   }
   
   .logo h1 {
+    font-size: 1.7rem;
     margin: 0;
-    font-size: 1.5rem;
-    font-weight: 600;
+    font-weight: 500;
+    color: var(--main-header-text);
+  }
+  
+  .logo h1 a {
+    color: var(--main-header-text);
+    text-decoration: none;
+    transition: color 0.3s ease;
+  }
+  
+  .logo h1 a:hover {
+    color: #f0f0f0;
   }
   
   .header-controls {
     display: flex;
-    gap: 12px;
-    align-items: center;
+    gap: 0.5rem;
   }
   
   .header-controls button {
-    background: transparent;
+    background: rgba(255, 255, 255, 0.05);
     color: var(--main-header-text);
     border: 1px solid rgba(255, 255, 255, 0.15);
     border-radius: 4px;
