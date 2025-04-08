@@ -10,12 +10,20 @@ All notable changes to the Problem Generator will be documented in this file.
 - Improved Java style checker with PMD integration
 - Code formatting capability for Java and C++ with "Format Code" button
 - Custom formatting rules to ensure consistent code style
+- AP Computer Science A (CSA) course integration
+- Local syllabus loading for CSA content
+- Home button in header for easy navigation to lesson selection
+- Clickable title/logo for navigating back to lesson selection
+- In-depth documentation of Dify AI workflows
 
 ### Changed
 - Style check UI now displays line-by-line error highlighting
 - Improved error detection for common Java and C++ style issues
 - Style check button only appears on problem pages (not on generate page)
 - Streamlined style check error display with better user feedback
+- Automatically set Java as default language for CSA course
+- Improved header styling consistency between light and dark themes
+- Enhanced content loading mechanism for different course types
 
 ### Fixed
 - Fixed Java code style detection to properly identify spacing issues
