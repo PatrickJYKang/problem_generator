@@ -1,0 +1,188 @@
+/* Style Check Styling */
+.style-check-container {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%; /* Make it full height */
+  margin-top: 10px;
+  font-family: monospace;
+  overflow: auto;
+  background-color: var(--code-bg);
+  border-radius: 4px;
+  border: 1px solid var(--border-color);
+  max-height: none; /* Remove height restriction */
+}
+
+.style-check-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 12px;
+  background-color: var(--header-bg);
+  border-bottom: 1px solid var(--border-color);
+  font-weight: bold;
+}
+
+.style-check-summary {
+  font-size: 0.9em;
+}
+
+.style-check-content {
+  padding: 0;
+  margin: 0;
+  flex-grow: 1; /* Allow it to grow to fill space */
+  overflow-y: auto;
+}
+
+.style-check-line {
+  display: flex;
+  margin: 0;
+  padding: 0;
+  position: relative;
+}
+
+.line-number {
+  width: 40px;
+  text-align: right;
+  padding: 2px 10px 2px 0;
+  color: #888;
+  user-select: none;
+  background-color: var(--code-bg);
+  border-right: 1px solid var(--border-color);
+}
+
+.line-content {
+  padding: 2px 5px;
+  white-space: pre;
+  flex-grow: 1;
+  overflow: visible !important; /* Ensure tooltips can overflow */
+}
+
+.line-with-error {
+  background-color: rgba(255, 0, 0, 0.05);
+  position: relative;
+}
+
+.error-highlight {
+  background-color: rgba(255, 200, 200, 0.5);
+  border-bottom: 1px wavy rgba(255, 0, 0, 0.7);
+  position: relative;
+  cursor: pointer;
+  padding: 0 1px;
+  margin: 0 -1px;
+  border-radius: 2px;
+  overflow: visible !important; /* Ensure tooltips can overflow */
+}
+
+.error-tooltip {
+  visibility: hidden;
+  position: fixed; /* Use fixed positioning instead of absolute */
+  z-index: 1000; /* Much higher z-index to ensure it's above everything */
+  background-color: var(--bg-color);
+  color: var(--text-color);
+  border: 1px solid var(--border-color);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+  padding: 8px 12px;
+  border-radius: 4px;
+  font-size: 0.9em;
+  max-width: 300px;
+  white-space: normal;
+  pointer-events: none; /* Make sure mouse events pass through */
+  transform: translateY(-100%);
+  margin-top: -8px; /* Add some space between the tooltip and the highlighted code */
+}
+
+.error-code {
+  font-weight: bold;
+  color: #d32f2f;
+  margin-right: 5px;
+}
+
+.error-highlight:hover .error-tooltip {
+  visibility: visible;
+  animation: fadeInTooltip 0.2s ease-in-out;
+}
+
+@keyframes fadeInTooltip {
+  from { opacity: 0; transform: translateY(-90%); }
+  to { opacity: 1; transform: translateY(-100%); }
+}
+
+.style-check-button {
+  margin-top: 0;
+  margin-right: 8px;
+  padding: 6px 12px;
+  background-color: var(--button-bg);
+  color: var(--button-text);
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.9em;
+  transition: background-color 0.2s;
+}
+
+.style-check-button:hover {
+  background-color: var(--button-hover-bg);
+}
+
+/* Dark mode adjustments */
+[data-theme="dark"] .error-highlight {
+  background-color: rgba(255, 100, 100, 0.3);
+  border-bottom: 1px wavy rgba(255, 120, 120, 0.8);
+}
+
+/* Back to code button */
+.back-to-code {
+  margin-left: auto;
+  font-size: 0.9em;
+  color: var(--link-color);
+  cursor: pointer;
+}
+
+.back-to-code:hover {
+  text-decoration: underline;
+}
+
+/* Raw code display */
+.raw-code {
+  padding: 10px;
+  white-space: pre-wrap;
+  border-left: 3px solid var(--border-color);
+  margin: 10px 0;
+  font-family: monospace;
+  background-color: var(--code-bg);
+  overflow-x: auto;
+}
+
+/* Error summary and list */
+.error-summary {
+  padding: 8px 12px;
+  background-color: var(--header-bg);
+  border-top: 1px solid var(--border-color);
+  font-weight: bold;
+  position: sticky;
+  top: 0;
+  z-index: 5;
+}
+
+.error-list {
+  margin: 0;
+  padding: 8px 12px;
+  border-top: 1px solid var(--border-color);
+  background-color: var(--code-bg);
+}
+
+.error-item {
+  padding: 5px 0;
+  border-bottom: 1px dotted var(--border-color);
+  line-height: 1.4;
+}
+
+.error-item:last-child {
+  border-bottom: none;
+}
+
+.error-location {
+  font-weight: bold;
+  margin-right: 5px;
+}

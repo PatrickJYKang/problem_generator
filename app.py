@@ -6,6 +6,7 @@ import db  # Import the database module
 from github_utils import GitHubFetcher  # Import GitHub fetcher
 from dotenv import load_dotenv
 import chatbot  # Import the chatbot module
+from style_check import check_style, format_cpp_code, format_java_code  # Import the style checking module
 
 # Load environment variables from .env file
 load_dotenv()
@@ -264,6 +265,7 @@ def check_code_endpoint():
             print(f"Error storing solution in database: {str(e)}")
     
     return result
+
 @app.route("/problems", methods=["GET"])
 def get_problems_endpoint():
     """ Get all problems or filter by course/lesson """
@@ -326,6 +328,50 @@ def chatbot_endpoint():
     """ Handle chatbot requests through Dify API """
     # This route now uses the dedicated chatbot module
     return chatbot.handle_chatbot_request()
+
+@app.route('/check_style', methods=['POST'])
+def style_check_route():
+    # Get the code and language from the request
+    data = request.get_json()
+    if not data:
+        return jsonify({"error": "No data provided"}), 400
+        
+    code = data.get('code', '')
+    language = data.get('language', 'python')
+    
+    # Debug for diagnosing style check issues
+    print(f"[APP] Received style check request for {language}")
+    print(f"[APP] Code preview (first 100 chars): {code[:100]}...")
+    print(f"[APP] Code length: {len(code)} characters")
+    
+    # Check the style
+    result = check_style(code, language)
+    print(f"[APP] Style check complete, sending response")
+    return result
+
+@app.route('/format_code', methods=['POST'])
+def format_code_route():
+    # Get the code and language from the request
+    data = request.get_json()
+    if not data:
+        return jsonify({"error": "No data provided"}), 400
+        
+    code = data.get('code', '')
+    language = data.get('language', 'cpp')  # Default to C++
+    
+    print(f"[APP] Received code formatting request for {language}")
+    print(f"[APP] Code length: {len(code)} characters")
+    
+    # Format based on language
+    if language == "cpp":
+        result = format_cpp_code(code)
+    elif language == "java":
+        result = format_java_code(code)
+    else:
+        return jsonify({"error": f"Formatting not supported for {language}"}), 400
+    
+    print(f"[APP] Code formatting complete, sending response")
+    return result
 
 if __name__ == '__main__':
     app.run(port=5000, debug=True)

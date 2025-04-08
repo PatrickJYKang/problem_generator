@@ -22,13 +22,7 @@ data/*
 *.sqlite3
 
 # Test reports and results
-test_reports/
-*.html
-*.xml
-*.json
-report_*.json
-report_*.html
-report_*.xml
+test_reports/*
 
 # Local development files
 deploy_instructions.md
