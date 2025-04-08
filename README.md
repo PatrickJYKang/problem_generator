@@ -2,7 +2,7 @@
 
 A web application that dynamically generates coding problems based on your current learning progress. This tool helps you practice and reinforce your programming skills with targeted exercises that match your knowledge level.
 
-Access at [https://problems.patrickkang.me/](https://problems.patrickkang.me/). Everything is free (for now).
+Access at [https://problems.patrickkang.me/](https://problems.patrickkang.me/). Everything is free (for now). *please don't spam, or delete good problems thx*.
 
 [![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](LICENSE)
 [![Version](https://img.shields.io/badge/version-indev%200.2-orange.svg)](docs/CHANGELOG.md)
