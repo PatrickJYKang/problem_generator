@@ -1,9 +1,9 @@
-# Problem Generator (indev 0.1)
+# Problem Generator (indev 0.2)
 
 A web application that dynamically generates coding problems based on your current learning progress. This tool helps you practice and reinforce your programming skills with targeted exercises that match your knowledge level.
 
 [![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](LICENSE)
-[![Version](https://img.shields.io/badge/version-indev%200.1-orange.svg)](docs/CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-indev%200.2-orange.svg)](docs/CHANGELOG.md)
 
 ## Features
 
@@ -12,6 +12,8 @@ A web application that dynamically generates coding problems based on your curre
 - **Interactive Code Editor**: Write and test your code directly in the browser with syntax highlighting
 - **Input/Output Testing**: Provide input to your programs and see the output in real-time
 - **Automatic Feedback**: Check your solutions against test cases with detailed results
+- **Style Checking**: Verify your code adheres to language-specific style guidelines with integrated linters
+- **Code Formatting**: Automatically format your Java and C++ code with proper indentation and spacing
 - **Progressive Learning**: The app builds a custom syllabus based on your current lesson, including all previous lessons
 - **Problem History**: Review and reload previously generated problems
 - **Dark/Light Mode**: Toggle between themes for comfortable coding in any environment
@@ -28,8 +30,10 @@ A web application that dynamically generates coding problems based on your curre
 4. Write your solution in the code editor
 5. Run your code to test it with custom input
 6. Check your answer against the provided test cases
-7. Access your problem history to review previous exercises
-8. Click the chat icon to open the AI assistant for help with your problem or code
+7. Use the "Check Style" button to verify your code follows proper style guidelines
+8. For Java and C++, use the "Format Code" button to automatically format your code
+9. Access your problem history to review previous exercises
+10. Click the chat icon to open the AI assistant for help with your problem or code
 
 ## System Architecture
 
@@ -193,6 +197,8 @@ For production environments, using Gunicorn as a WSGI server is recommended:
 - **POST /generate** - Generates a new problem based on course and lesson
 - **POST /run_code** - Executes user code in the specified language
 - **POST /check_code** - Validates user code against test cases
+- **POST /check_style** - Checks code style using language-specific linters
+- **POST /format_code** - Formats code to follow style guidelines
 - **GET /problems** - Retrieves all stored problems or filters by course/lesson
 - **GET /problems/:id** - Gets a specific problem by ID with test cases
 - **GET /problems/:id/solutions** - Gets all solutions for a specific problem

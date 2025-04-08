@@ -113,6 +113,7 @@ sequenceDiagram
 - **SQLite Database**: Stores problems, solutions, and user history
 - **GitHub Integration**: Fetches lesson content from tutorial repositories
 - **Dify API**: Provides AI assistant functionality
+- **Style Checker**: Provides style checking and code formatting functionality
 
 ## Backend Components
 
@@ -128,6 +129,7 @@ The main Flask application that defines routes, initializes the database, and ha
 - `run_code_endpoint()`: Executes user code in various languages.
 - `check_code_endpoint()`: Validates user code against test cases.
 - `chatbot_endpoint()`: Handles AI assistant interactions.
+- `style_check_endpoint()`: Runs style checks on user code.
 
 #### `db.py`
 Database interaction layer responsible for data persistence.
@@ -154,6 +156,17 @@ Integrates with the Dify API for AI assistant functionality.
 **Key Functions:**
 - `handle_chatbot_request()`: Processes chat messages and returns AI responses.
 - `prepare_context()`: Formats problem and code context for the AI.
+
+#### `style_check.py`
+Provides style checking and code formatting functionality for all supported languages.
+
+**Key Functions:**
+- `check_style()`: Main function that routes to language-specific style checkers.
+- `check_python_style()`: Uses flake8 to check Python code style.
+- `check_java_style()`: Uses PMD to check Java code style.
+- `check_cpp_style()`: Uses clang-tidy to check C++ code style.
+- `format_java_code()`: Formats Java code with custom rules for spacing and indentation.
+- `format_cpp_code()`: Formats C++ code using clang-format.
 
 ### Language Support
 
@@ -208,9 +221,9 @@ flowchart LR
 
 The application supports multiple programming languages through a unified interface:
 
-- **Python**: Direct execution using the Python interpreter.
-- **Java**: Compilation and execution using JDK.
-- **C++**: Compilation using g++ and execution of the resulting binary.
+- **Python**: Direct execution using the Python interpreter. Style checking with flake8.
+- **Java**: Compilation and execution using JDK. Style checking with PMD and custom formatting.
+- **C++**: Compilation with g++ and execution of the resulting binary. Style checking with clang-tidy and formatting with clang-format.
 
 Each language implements:
 - Code execution with input/output handling
@@ -244,6 +257,16 @@ Core JavaScript functionality for the application.
 - `openHelpModal()`: Displays the help guide with LaTeX support.
 - `renderMarkdown()`: Renders markdown content with HTML.
 
+#### `style-check.js`
+JavaScript for the style checking and code formatting functionality.
+
+**Key Functions:**
+- `addStyleCheckButton()`: Adds the style check button when viewing a problem.
+- `runStyleCheck()`: Sends code to the server for style checking.
+- `displayStyleResults()`: Shows style errors with line highlighting.
+- `formatCode()`: Requests code formatting from the server.
+- `removeStyleCheckButton()`: Removes the button when returning to generate page.
+
 #### `chatbot.js`
 JavaScript for the AI assistant functionality.
 
@@ -254,6 +277,15 @@ JavaScript for the AI assistant functionality.
 - `addBotMessage()`: Renders AI responses with markdown and LaTeX support.
 
 ### CSS Styles
+
+#### `style-check.css`
+Styles for the code style checking UI.
+
+**Key Features:**
+- `.error-highlight`: Highlights lines with style errors.
+- `.error-tooltip`: Shows detailed error information on hover.
+- `.style-check-container`: Contains the style check results.
+- `.format-button`: Style for the code formatting button.
 
 - `style.css`: Main styling for the application.
 - `dark-mode.css`: Dark theme styling.
@@ -408,6 +440,10 @@ flowchart TD
 ### Code Execution
 - `POST /run_code`: Executes user code and returns output.
 - `POST /check_code`: Validates code against test cases.
+
+### Code Style and Formatting
+- `POST /check_style`: Checks code style using language-specific linters.
+- `POST /format_code`: Formats code to follow language style guidelines.
 
 ### Problem Management
 - `GET /problems`: Lists all saved problems.

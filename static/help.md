@@ -55,6 +55,12 @@
 
 All code runs securely in your browser. **Your work and Assistant chats are not automatically saved**.
 
+## About Problem Generator
+
+**Version**: indev 0.2 (April 2025)
+
+Problem Generator is an educational tool designed to help you practice programming in multiple languages with dynamically generated problems, style checking, and automated feedback.
+
 ## Contact
 
 If you have any questions or issues, please email [patrick.jy.kang@gmail.com](mailto:patrick.jy.kang@gmail.com) or raise an issue on [GitHub](https://github.com/PatrickJYKang/problem_generator/issues). For issues with specific problems, because all problems are AI generated and the prompts and such used to generate them are still at a very early stage in development, please do not expect them to be perfect. If specific problems do have issues, generally, please do not raise a new issue on GitHub, but if repeated issues with similar requests persist, please do raise an issue or email me.

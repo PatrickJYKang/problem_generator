@@ -2,6 +2,27 @@
 
 All notable changes to the Problem Generator will be documented in this file.
 
+## [indev 0.2] - 2025-04-07
+
+### Added
+- Style checking functionality for all supported languages (Python, Java, C++)
+- Added "Check Style" button for all programming languages
+- Improved Java style checker with PMD integration
+- Code formatting capability for Java and C++ with "Format Code" button
+- Custom formatting rules to ensure consistent code style
+
+### Changed
+- Style check UI now displays line-by-line error highlighting
+- Improved error detection for common Java and C++ style issues
+- Style check button only appears on problem pages (not on generate page)
+- Streamlined style check error display with better user feedback
+
+### Fixed
+- Fixed Java code style detection to properly identify spacing issues
+- Fixed C++ code formatting with proper clang-format integration
+- Resolved bug where style check would fail on empty code
+- Fixed issues with problem navigation maintaining correct state
+
 ## [indev 0.1.1] - 2025-04-06
 
 ### Added
