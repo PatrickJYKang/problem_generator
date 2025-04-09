@@ -786,6 +786,18 @@ function setupEventListeners() {
     // Show the selection module again
     const selectionModule = document.getElementById('selection-module');
     if (selectionModule) selectionModule.classList.remove('hidden');
+    
+    // Show course and lesson selectors again
+    document.querySelector('label[for="course-select"]').style.display = 'block';
+    courseSelect.style.display = 'block';
+    document.querySelector('label[for="lesson-select"]').style.display = 'block';
+    lessonSelect.style.display = 'block';
+    document.querySelectorAll('br').forEach(br => {
+      if (br.nextElementSibling === courseSelect || br.nextElementSibling === lessonSelect ||
+          br.previousElementSibling === courseSelect || br.previousElementSibling === lessonSelect) {
+        br.style.display = 'inline';
+      }
+    });
   };
   
   // Add event listeners to home button and logo
