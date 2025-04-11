@@ -2,6 +2,11 @@
 
 All notable changes to the Problem Generator will be documented in this file.
 
+## [indev 0.2.1] - 2025-04-10
+
+### Fixed
+- Resolved issues with LaTeX rendering in the application through appropriate prompting with only the `$$%Your LaTeX here%$$` delimiter.
+
 ## [indev 0.2] - 2025-04-07
 
 ### Added

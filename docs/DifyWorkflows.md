@@ -44,15 +44,15 @@ The workflow begins when a user requests a new problem through the application i
 #### 3. Generate
 **Process**: Generates a programming problem based on the syllabus content.
 
-**Prompt Description**: The prompt provides the syllabus content to the LLM (GPT-4o) along with instructions to:
+**Prompt Description**: The prompt provides the syllabus content to the LLM (GPT-4o) along with instructions to (bolded instructions should be emphasised to the LLM):
 - Be sure not to involve any concepts outside of what the user has learnt
-- Delimit test cases properly with whitespace
-- Avoid generating test cases with inputs literally in list, dictionary, or similar format (e.g. `['input1', 'input2']`)
+- **Delimit test cases properly with whitespace**
+- **Avoid generating test cases with inputs literally in list, dictionary, or similar format (e.g. `['input1', 'input2']`)**
 - Limit the problem to be solvable in a reasonable number of lines
 - Not give away the solution or give any sample code
 - Be clear what language should be used
 - Only output the problem statement and sample test cases and nothing more
-- When inserting LaTeX, either use the `$$%Your LaTeX here%$$` delimeter, or use `\\[\\]` instead of `\[\]`
+- **When inserting LaTeX, to only use the `$$%Your LaTeX here%$$` delimiter, and never the `\[\]` or `\(\)` delimiters**.
 
 #### 4. Testcases
 **Process**: Creates test cases to validate user solutions using the GPT-4o model.
