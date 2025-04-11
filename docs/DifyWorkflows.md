@@ -138,11 +138,11 @@ The workflow begins when a user sends a message to the chat assistant, asking fo
 #### 5. Answer Generator
 **Process**: Generates a helpful response based on all the contextual information.
 
-**Prompt Description**: This prompt sends all the collected context (syllabus, problem, code, conversation history) to the LLM (GPT-4o) with instructions to:
+**Prompt Description**: This prompt sends all the collected context (syllabus, problem, code, conversation history) to the LLM (GPT-4o) with instructions to (bolded instructions should be emphasised to the LLM):
 - Help the user to the best of their ability
 - Not go beyond the user's current knowledge
 - Not write code or solutions
-- When inserting LaTeX, either use the `$$%Your LaTeX here%$$` delimeter, or use `\\[\\]` instead of `\\[\\]`
+- **When inserting LaTeX, to only use the `$$%Your LaTeX here%$$` delimiter, and never the `\[\]` or `\(\)` delimiters**.
 
 #### 6. Answer
 The assistant's response is returned to the application and displayed to the user in the chat interface.
@@ -160,4 +160,4 @@ The assistant's response is returned to the application and displayed to the use
 
 ---
 
-*Note: This documentation describes the Dify workflows as implemented in Problem Generator version 0.2. Future versions may include workflow enhancements or additional features. Updates to the Dify workflows are scheduled separate to the main application updates, so a major change may not be reflected in a major release or in the [Changelog](./CHANGELOG.md).*
+*Note: This documentation describes the Dify workflows as implemented in Problem Generator version 0.2.1. Future versions may include workflow enhancements or additional features. Updates to the Dify workflows are scheduled separate to the main application updates, so a major change may not be reflected in a major release or in the [Changelog](./CHANGELOG.md).*
