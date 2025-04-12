@@ -138,7 +138,9 @@ def store_problem(title, problem_text, course, lesson, testcases, language=None)
         
         # Determine language based on course if not provided
         if not language:
-            if 'python' in course.lower():
+            if course.lower() == 'csa':
+                language = 'java'  # AP Computer Science A uses Java
+            elif 'python' in course.lower():
                 language = 'python'
             elif 'java' in course.lower():
                 language = 'java'
@@ -417,8 +419,37 @@ def populate_language_column():
             conn.close()
         return 0
 
+def update_csa_problem_languages():
+    """
+    Update all CSA course problems to use 'java' as their language.
+    
+    Returns:
+        int: Number of problems updated
+    """
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        
+        # Update all problems with course='csa' to use language='java'
+        cursor.execute('UPDATE problems SET language = "java" WHERE course = "csa"')
+        updated = cursor.rowcount
+        
+        conn.commit()
+        conn.close()
+        logger.info(f"Updated {updated} CSA problems to use Java language")
+        return updated
+    except Exception as e:
+        logger.error(f"Error updating CSA problem languages: {str(e)}")
+        logger.error(traceback.format_exc())
+        if 'conn' in locals():
+            conn.close()
+        return 0
+
 # Initialize the database when this module is imported
 init_db()
 
 # Now run the populate function to fill in language data for existing records
 populate_language_column()
+
+# Update CSA problems to use Java language
+updated_csa_problems = update_csa_problem_languages()

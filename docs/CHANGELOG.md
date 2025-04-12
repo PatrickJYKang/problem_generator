@@ -2,14 +2,25 @@
 
 All notable changes to the Problem Generator will be documented in this file.
 
+## [indev 0.2.2] - 2025-04-12
+
+### Fixed
+
+- Fixed home button and logo navigation not showing course/lesson selectors when clicked
+- Improved style check display to group multiple errors at the same position together
+- Fixed CSA problems being incorrectly stored with Python language in database instead of Java
+- Added migration function to update existing CSA problems to use Java language
+
 ## [indev 0.2.1] - 2025-04-10
 
 ### Fixed
+
 - Resolved issues with LaTeX rendering in the application through appropriate prompting with only the `$$%Your LaTeX here%$$` delimiter.
 
 ## [indev 0.2] - 2025-04-07
 
 ### Added
+
 - Style checking functionality for all supported languages (Python, Java, C++)
 - Added "Check Style" button for all programming languages
 - Improved Java style checker with PMD integration
@@ -22,6 +33,7 @@ All notable changes to the Problem Generator will be documented in this file.
 - In-depth documentation of Dify AI workflows
 
 ### Changed
+
 - Style check UI now displays line-by-line error highlighting
 - Improved error detection for common Java and C++ style issues
 - Style check button only appears on problem pages (not on generate page)
@@ -31,6 +43,7 @@ All notable changes to the Problem Generator will be documented in this file.
 - Enhanced content loading mechanism for different course types
 
 ### Fixed
+
 - Fixed Java code style detection to properly identify spacing issues
 - Fixed C++ code formatting with proper clang-format integration
 - Resolved bug where style check would fail on empty code
@@ -39,6 +52,7 @@ All notable changes to the Problem Generator will be documented in this file.
 ## [indev 0.1.1] - 2025-04-06
 
 ### Added
+
 - Help button and modal with concise technical documentation
 - KaTeX integration for LaTeX math formula rendering in problems and AI assistant responses
 - Improved markdown rendering across the application
@@ -46,6 +60,7 @@ All notable changes to the Problem Generator will be documented in this file.
 ## [indev 0.1] - 2025-04-04
 
 ### Added
+
 - Initial version of the Problem Generator application
 - Multi-language support for Python, Java, and C++
 - Problem generation with AI assistance

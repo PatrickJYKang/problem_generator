@@ -257,12 +257,23 @@ const styleCheck = (function() {
           // Sort errors by column
           lineErrors.sort((a, b) => (a.column || 0) - (b.column || 0));
           
+          // Group errors by column
+          const errorsByColumn = {};
+          lineErrors.forEach(error => {
+            const column = Math.max(0, (error.column || 1) - 1); // Convert to 0-based index
+            if (!errorsByColumn[column]) {
+              errorsByColumn[column] = [];
+            }
+            errorsByColumn[column].push(error);
+          });
+          
           // Build highlighted content
           let htmlContent = '';
           let lastPosition = 0;
           
-          lineErrors.forEach(error => {
-            const column = Math.max(0, (error.column || 1) - 1); // Convert to 0-based index
+          // Process all column positions in order
+          Object.entries(errorsByColumn).forEach(([columnStr, columnErrors]) => {
+            const column = parseInt(columnStr, 10);
             
             // Add text before the error
             if (column > lastPosition) {
@@ -279,31 +290,43 @@ const styleCheck = (function() {
               errorLength = match ? match[0].length : 1;
               
               // Special handling for specific error types
-              if (error.code === 'readability-magic-numbers' || 
-                  error.code === 'magic-numbers') {
+              // Use the first error's code to determine highlight length
+              const firstErrorCode = columnErrors[0].code || '';
+              if (firstErrorCode === 'readability-magic-numbers' || 
+                  firstErrorCode === 'magic-numbers') {
                 // Highlight numeric literals
                 const numMatch = restOfLine.match(/^\d+(\.\d+)?/);
                 errorLength = numMatch ? numMatch[0].length : errorLength;
-              } else if (error.code === 'readability-identifier-length') {
+              } else if (firstErrorCode === 'readability-identifier-length') {
                 // Highlight short identifiers
                 const idMatch = restOfLine.match(/^[a-zA-Z_]\w*/);
                 errorLength = idMatch ? idMatch[0].length : errorLength;
               }
             }
             
-            // Create the tooltip
+            // Create combined tooltip content from all errors at this position
             const errorId = `error-${lineNum}-${column}`;
-            const tooltipCode = error.code || '';
-            const tooltipMessage = error.message || 'Style issue';
-            const tooltip = `<span class="error-code">${tooltipCode}</span> ${escapeHtml(tooltipMessage)}`;
+            let tooltipContent = '';
+            
+            // Add each error to the tooltip
+            columnErrors.forEach((error, index) => {
+              const tooltipCode = error.code || '';
+              const tooltipMessage = error.message || 'Style issue';
+              
+              if (index > 0) {
+                tooltipContent += '<br>';
+              }
+              
+              tooltipContent += `<span class="error-code">${tooltipCode}</span> ${escapeHtml(tooltipMessage)}`;
+            });
             
             // Get the content to highlight
             const highlightContent = column < lineContent.length ? 
                                      lineContent.substring(column, column + errorLength) : 
                                      '⏎'; // Use symbol if we're at the end of line
             
-            // Add the error highlight with tooltip
-            htmlContent += `<span class="error-highlight" data-error-id="${errorId}">${escapeHtml(highlightContent)}<span class="error-tooltip" id="${errorId}-tooltip">${tooltip}</span></span>`;
+            // Add the error highlight with combined tooltip
+            htmlContent += `<span class="error-highlight" data-error-id="${errorId}">${escapeHtml(highlightContent)}<span class="error-tooltip" id="${errorId}-tooltip">${tooltipContent}</span></span>`;
             
             // Update position tracker
             lastPosition = column + errorLength;
@@ -341,26 +364,66 @@ const styleCheck = (function() {
       errorListHeader.textContent = 'Style Issues';
       errorList.appendChild(errorListHeader);
       
-      // Add each error to the list
+      // Group errors by line and column
+      const groupedErrors = {};
       errors.forEach(error => {
+        const key = `${error.line || '?'}-${error.column || '?'}`;
+        if (!groupedErrors[key]) {
+          groupedErrors[key] = {
+            line: error.line || '?',
+            column: error.column || '?',
+            errors: []
+          };
+        }
+        groupedErrors[key].errors.push({
+          code: error.code || '',
+          message: error.message || 'Style issue'
+        });
+      });
+      
+      // Add grouped errors to the list
+      Object.values(groupedErrors).forEach(group => {
         const errorItem = document.createElement('div');
         errorItem.className = 'error-item';
         
         const location = document.createElement('span');
         location.className = 'error-location';
-        location.textContent = `Line ${error.line || '?'}, Col ${error.column || '?'}: `;
-        
-        const code = document.createElement('span');
-        code.className = 'error-code';
-        code.textContent = error.code || '';
-        
-        const message = document.createElement('span');
-        message.className = 'error-message';
-        message.textContent = ` ${error.message || 'Style issue'}`;
-        
+        location.textContent = `Line ${group.line}, Col ${group.column}: `;
         errorItem.appendChild(location);
-        errorItem.appendChild(code);
-        errorItem.appendChild(message);
+        
+        // Add each error in the group
+        group.errors.forEach((error, index) => {
+          if (index > 0) {
+            // Add separator between multiple errors
+            const separator = document.createElement('div');
+            separator.className = 'error-separator';
+            separator.style.marginLeft = '15px';
+            errorItem.appendChild(separator);
+          }
+          
+          const code = document.createElement('span');
+          code.className = 'error-code';
+          code.textContent = error.code;
+          
+          const message = document.createElement('span');
+          message.className = 'error-message';
+          message.textContent = ` ${error.message}`;
+          
+          // For first error, append to existing content
+          // For subsequent errors, create a new line with proper indentation
+          if (index === 0) {
+            errorItem.appendChild(code);
+            errorItem.appendChild(message);
+          } else {
+            const container = document.createElement('div');
+            container.style.marginLeft = '15px';
+            container.style.marginTop = '5px';
+            container.appendChild(code);
+            container.appendChild(message);
+            errorItem.appendChild(container);
+          }
+        });
+        
         errorList.appendChild(errorItem);
       });
       
