@@ -6,12 +6,12 @@
 %%{init: {'theme': 'dark'}}%%
 flowchart TB
     subgraph Client["Client (Web Browser)"]
-        ProblemDisplay["Problem Display\nHTML/CSS"] 
-        CodeEditor["Code Editor\nCodeMirror"] 
-        TestResults["Test Results\nHTML/CSS"]
-        JavaScript["JavaScript\nscript.js"]
-        API["Problem Generator\nREST API"]
-        Chat["AI Assistant Chat\nchatbot.js"]
+        ProblemDisplay["Problem Display<br>HTML/CSS"] 
+        CodeEditor["Code Editor<br>CodeMirror"] 
+        TestResults["Test Results<br>HTML/CSS"]
+        JavaScript["JavaScript<br>script.js"]
+        API["Problem Generator<br>REST API"]
+        Chat["AI Assistant Chat<br>chatbot.js"]
         
         ProblemDisplay --> JavaScript
         CodeEditor --> JavaScript
@@ -24,12 +24,12 @@ flowchart TB
     Chat --> Server
     
     subgraph Server["Server (Flask)"]
-        AppPy["app.py\nMain Server"]
-        GitHubUtils["github_utils.py\nGitHub Fetcher"]
-        RunPy["run.py\nCode Runner"]
-        DbPy["db.py\nSQLite"]
-        GitHubAPI["GitHub API\nFetch Syllabus"]
-        Checker["Problem Checker\ncheck.py"]
+        AppPy["app.py<br>Main Server"]
+        GitHubUtils["github_utils.py<br>GitHub Fetcher"]
+        RunPy["run.py<br>Code Runner"]
+        DbPy["db.py<br>SQLite"]
+        GitHubAPI["GitHub API<br>Fetch Syllabus"]
+        Checker["Problem Checker<br>check.py"]
         
         AppPy --> GitHubUtils
         AppPy --> RunPy
@@ -66,8 +66,8 @@ flowchart TB
     style DifyAPI fill:#553C9A,stroke:#B794F4,color:#FAF5FF
     
     subgraph ExternalResources["External Resources"]
-        GitHubRepo["GitHub Repo\nSyllabus"]
-        Dify["Dify AI\nCharacter"]
+        GitHubRepo["GitHub Repo<br>Syllabus"]
+        Dify["Dify AI<br>Character"]
     end
     
     %% Using colors optimized for dark mode readability
@@ -109,11 +109,11 @@ flowchart TB
 ```mermaid
 %%{init: {'theme': 'dark'}}%%
 flowchart LR
-    A["Select\nCourse"] --> B["Select\nLesson"]
-    B --> C["Click\nGenerate"]
-    C --> D["Problem\nDisplayed"]
-    C --> E["API Request\nto Backend"]
-    E --> F["Problem Saved\nto Database"]
+    A["Select<br>Course"] --> B["Select<br>Lesson"]
+    B --> C["Click<br>Generate"]
+    C --> D["Problem<br>Displayed"]
+    C --> E["API Request<br>to Backend"]
+    E --> F["Problem Saved<br>to Database"]
     
     %% Using colors optimized for dark mode readability
     classDef userActions fill:#2C5282,stroke:#90CDF4,stroke-width:1px,color:#EBF8FF;
@@ -128,11 +128,11 @@ flowchart LR
 ```mermaid
 %%{init: {'theme': 'dark'}}%%
 flowchart LR
-    A["Write\nCode"] --> B["Select\nLanguage"]
-    B --> C["Click Check\nAnswer"]
-    C --> D["Results\nDisplayed"]
-    C --> E["Code Sent\nfor Testing"]
-    E --> F["Test Results\n& Solution\nSaved"]
+    A["Write<br>Code"] --> B["Select<br>Language"]
+    B --> C["Click Check<br>Answer"]
+    C --> D["Results<br>Displayed"]
+    C --> E["Code Sent<br>for Testing"]
+    E --> F["Test Results<br>& Solution<br>Saved"]
     
     %% Using colors optimized for dark mode readability
     classDef userActions fill:#2C5282,stroke:#90CDF4,stroke-width:1px,color:#EBF8FF;
@@ -147,10 +147,10 @@ flowchart LR
 ```mermaid
 %%{init: {'theme': 'dark'}}%%
 flowchart LR
-    A["Open\nChat"] --> B["Send Message\nwith Question"]
-    B --> C["Response\nGenerated"]
-    B --> D["Context\nGathered"]
-    D --> E["Dify API\nRequest"]
+    A["Open<br>Chat"] --> B["Send Message<br>with Question"]
+    B --> C["Response<br>Generated"]
+    B --> D["Context<br>Gathered"]
+    D --> E["Dify API<br>Request"]
     E --> C
     
     %% Using colors optimized for dark mode readability
@@ -217,6 +217,7 @@ The application supports multiple programming languages:
 ## Environment Configuration
 
 The application uses:
+
 - Environment variables for API keys and configuration
 - Local SQLite database for persistent storage
 - Browser localStorage for user preferences (theme, etc.)
@@ -224,6 +225,7 @@ The application uses:
 ## Dark/Light Theme Support
 
 The application implements theme switching with:
+
 - CSS variables for theming
 - CodeMirror themes that match the overall UI
 - Local storage to remember user theme preferences
@@ -231,6 +233,7 @@ The application implements theme switching with:
 ## GitHub Integration
 
 The application fetches learning materials from GitHub, specifically:
+
 - Lesson indices for navigation
 - Syllabus content in Markdown format
 - Organized by programming language and difficulty level
